@@ -46,9 +46,7 @@
         {
             structureDrawData = new Dictionary<int, DrawData>
             {
-                { StructureIDs.Obelisk, new DrawData(TextureDictionary.GetStructureTexture(StructureIDs.Obelisk), RenderHelper.Dimension2X2) },
-                { StructureIDs.House, new DrawData(TextureDictionary.GetStructureTexture(StructureIDs.House), RenderHelper.Dimension1X1) },
-                { StructureIDs.Temple, new DrawData(TextureDictionary.GetStructureTexture(StructureIDs.Temple), RenderHelper.Dimension1X1) }
+
             };
         }
 

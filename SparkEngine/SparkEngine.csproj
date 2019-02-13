@@ -42,7 +42,6 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="DataStructures\DrawData.cs" />
     <Compile Include="Debug\CellPositionInfo.cs" />
     <Compile Include="Debug\DebugLog.cs" />
     <Compile Include="Debug\DebugMessage.cs" />
@@ -54,15 +53,10 @@
     <Compile Include="Dictionaries\StructureDictionary.cs" />
     <Compile Include="Dictionaries\TextureDictionary.cs" />
     <Compile Include="Dictionaries\TileDictionary.cs" />
-    <Compile Include="Entities\Subject.cs" />
-    <Compile Include="Entities\SubjectManager.cs" />
     <Compile Include="Game1.cs" />
-    <Compile Include="DataStructures\GameSettings.cs" />
-    <Compile Include="DataStructures\MapData.cs" />
     <Compile Include="IDs\EffectIDs.cs" />
     <Compile Include="IDs\EntityIDs.cs" />
     <Compile Include="IDs\FontIDs.cs" />
-    <Compile Include="IDs\ResourceIDs.cs" />
     <Compile Include="IDs\StateIDs.cs" />
     <Compile Include="IDs\StructureIDs.cs" />
     <Compile Include="IDs\TileIDs.cs" />
@@ -83,18 +77,11 @@
     <Compile Include="Pathfinding\PathFinder.cs" />
     <Compile Include="Pathfinding\PathFinderTest.cs" />
     <Compile Include="Pathfinding\PathNode.cs" />
-    <Compile Include="Player\Player.cs" />
-    <Compile Include="Player\Resource.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="DataStructures\TileData.cs" />
     <Compile Include="Rendering\Camera.cs" />
     <Compile Include="Rendering\RenderHelper.cs" />
     <Compile Include="States\GameState.cs" />
-    <Compile Include="States\Primary\DebugState.cs" />
-    <Compile Include="States\Primary\LevelState.cs" />
-    <Compile Include="States\Primary\MenuState.cs" />
-    <Compile Include="States\Secondary\BuildState.cs" />
     <Compile Include="States\StateActivityLevel.cs" />
     <Compile Include="States\StateManager.cs" />
     <Compile Include="Time\OnTickEventArgs.cs" />
@@ -102,7 +89,6 @@
     <Compile Include="Time\Ticker.cs" />
     <Compile Include="Time\TimeManager.cs" />
     <Compile Include="UI\Buttons\Button.cs" />
-    <Compile Include="UI\Buttons\StateChangeButton.cs" />
     <Compile Include="UI\Pivot.cs" />
     <Compile Include="UI\ProgressBar.cs" />
     <Compile Include="UI\ResourceWindow.cs" />
@@ -111,6 +97,7 @@
     <Compile Include="UI\UIElement.cs" />
     <Compile Include="UI\UIManager.cs" />
     <Compile Include="UI\UIPanel.cs" />
+    <Compile Include="World\MapTileMode.cs" />
     <Compile Include="World\Terrain.cs" />
     <Compile Include="World\TerrainCell.cs" />
     <Compile Include="World\WorldObject.cs" />
@@ -123,7 +110,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Documentation\index.html" />
     <Content Include="Icon.ico" />
     <Content Include="obj\x86\Debug\Obelisk.csproj.FileListAbsolute.txt" />
     <Content Include="obj\x86\Debug\Obelisk.exe" />

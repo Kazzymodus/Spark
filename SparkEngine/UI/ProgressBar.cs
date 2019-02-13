@@ -6,7 +6,6 @@
     using SparkEngine.IDs;
     using SparkEngine.Rendering;
     using SparkEngine.States;
-    using SparkEngine.Tasks;
     using SparkEngine.World;
 
     public class ProgressBar : UIElement

@@ -24,8 +24,7 @@
         {
             entities = new Dictionary<int, DrawData>
             {
-                // {EntityID.Subject, new DrawData(TextureManager.GetEntityTexture(EntityID.Subject), RenderHelper.Dimension1X1)}
-                { EntityIDs.Subject, new DrawData(TextureDictionary.GetTileTexture(TileIDs.CursorTile), RenderHelper.Dimension1X1) }
+
             };
         }
 

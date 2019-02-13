@@ -25,7 +25,7 @@
         {
             fonts = new Dictionary<int, SpriteFont>()
             {
-                { FontIDs.CourierNew, content.Load<SpriteFont>(FontPath + "CourierNew") },
+
             };
         }
 

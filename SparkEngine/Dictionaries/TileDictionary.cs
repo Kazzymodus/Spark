@@ -23,9 +23,7 @@
         {
             tiles = new Dictionary<int, TileData>
             {
-                { TileIDs.BlankTile, new TileData(TextureDictionary.GetTileTexture(TileIDs.BlankTile)) },
-                { TileIDs.GrassTile, new TileData(TextureDictionary.GetTileTexture(TileIDs.GrassTile)) },
-                { TileIDs.CursorTile, new TileData(TextureDictionary.GetTileTexture(TileIDs.CursorTile)) }
+
             };
         }
 

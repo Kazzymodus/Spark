@@ -57,10 +57,7 @@
         {
             tileTextures = new Dictionary<int, Texture2D>()
             {
-                { TileIDs.GridTile, content.Load<Texture2D>(TileTexturePath + "GridTile") },
-                { TileIDs.BlankTile, content.Load<Texture2D>(TileTexturePath + "BlankTile") },
-                { TileIDs.GrassTile, content.Load<Texture2D>(TileTexturePath + "GrassTile") },
-                { TileIDs.CursorTile, content.Load<Texture2D>(TileTexturePath + "CursorTile") }
+
             };
         }
 
@@ -68,9 +65,7 @@
         {
             structureTextures = new Dictionary<int, Texture2D>
             {
-                { StructureIDs.Obelisk, content.Load<Texture2D>(StructureTexturePath + "Obelisk") },
-                { StructureIDs.House, content.Load<Texture2D>(StructureTexturePath + "House") },
-                { StructureIDs.Temple, content.Load<Texture2D>(StructureTexturePath + "House") }
+
             };
         }
 
@@ -78,7 +73,7 @@
         {
             entityTextures = new Dictionary<int, Texture2D>
             {
-                { EntityIDs.Subject, content.Load<Texture2D>(EntityTexturePath + "Subject") }
+
             };
         }
 
@@ -86,12 +81,7 @@
         {
             uiTextures = new Dictionary<int, Texture2D>
             {
-                { UserInterfaceIDs.ProgressBar, content.Load<Texture2D>(UITexturePath + "ProgressBar") },
-                { UserInterfaceIDs.ResourceIcons, content.Load<Texture2D>(UITexturePath + "ResourceIcons") },
-                { UserInterfaceIDs.Button, content.Load<Texture2D>(UITexturePath + "Button") },
-                { UserInterfaceIDs.PanelBackdrops.TopBar, content.Load<Texture2D>(PanelBackdropPath + "TopBar") },
-                { UserInterfaceIDs.PanelBackdrops.Tasks, content.Load<Texture2D>(PanelBackdropPath + "Tasks") },
-                { UserInterfaceIDs.PanelBackdrops.BuildTask, content.Load<Texture2D>(PanelBackdropPath + "BuildTask") }
+
             };
         }
 

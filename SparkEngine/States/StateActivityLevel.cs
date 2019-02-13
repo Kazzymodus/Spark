@@ -12,6 +12,6 @@
         StandBy,
         Paused,
         Hidden,
-        Inactive
+        Stopped
     }
 }

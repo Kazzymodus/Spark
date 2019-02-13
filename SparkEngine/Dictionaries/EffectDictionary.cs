@@ -25,7 +25,7 @@
         {
             effects = new Dictionary<int, Effect>()
             {
-                { EffectIDs.PixelShaders, content.Load<Effect>(EffectPath + "PixelShaders") },
+
             };
         }
 

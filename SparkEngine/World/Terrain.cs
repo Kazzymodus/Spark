@@ -15,13 +15,15 @@
         #region Private Fields
 
         private Tile[,] tileGrid;
+        private readonly MapTileMode tileMode;
 
         #endregion
 
         #region Constructors
 
-        public Terrain(TileData tileData, Vector2 dimensions)
+        public Terrain(MapTileMode tileMode, TileData tileData, Vector2 dimensions)
         {
+            this.tileMode = tileMode;
             Dimensions = dimensions;
 
             GenerateCellGrid(tileData);
