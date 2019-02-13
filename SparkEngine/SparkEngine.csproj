@@ -7,7 +7,7 @@
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{DA514F5A-0945-4F6F-B46D-C6C266F0B19C}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SparkEngine</RootNamespace>
     <AssemblyName>SparkEngine</AssemblyName>
@@ -37,13 +37,83 @@
   <PropertyGroup>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup />
   <PropertyGroup>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <StartupObject />
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="DataStructures\DrawData.cs" />
+    <Compile Include="Debug\CellPositionInfo.cs" />
+    <Compile Include="Debug\DebugLog.cs" />
+    <Compile Include="Debug\DebugMessage.cs" />
+    <Compile Include="Debug\DebugTile.cs" />
+    <Compile Include="Debug\DebugTiler.cs" />
+    <Compile Include="Dictionaries\EffectDictionary.cs" />
+    <Compile Include="Dictionaries\EntityDictionary.cs" />
+    <Compile Include="Dictionaries\FontDictionary.cs" />
+    <Compile Include="Dictionaries\StructureDictionary.cs" />
+    <Compile Include="Dictionaries\TextureDictionary.cs" />
+    <Compile Include="Dictionaries\TileDictionary.cs" />
+    <Compile Include="Entities\Subject.cs" />
+    <Compile Include="Entities\SubjectManager.cs" />
     <Compile Include="Game1.cs" />
+    <Compile Include="DataStructures\GameSettings.cs" />
+    <Compile Include="DataStructures\MapData.cs" />
+    <Compile Include="IDs\EffectIDs.cs" />
+    <Compile Include="IDs\EntityIDs.cs" />
+    <Compile Include="IDs\FontIDs.cs" />
+    <Compile Include="IDs\ResourceIDs.cs" />
+    <Compile Include="IDs\StateIDs.cs" />
+    <Compile Include="IDs\StructureIDs.cs" />
+    <Compile Include="IDs\TileIDs.cs" />
+    <Compile Include="IDs\UserInterfaceIDs.cs" />
+    <Compile Include="Input\IClickable.cs" />
+    <Compile Include="Input\IHoverable.cs" />
+    <Compile Include="Input\InputHandler.cs" />
+    <Compile Include="Input\MouseButtons.cs" />
+    <Compile Include="Level\Map.cs" />
+    <Compile Include="Level\ObjectManager.cs" />
+    <Compile Include="ObeliskGame.cs" />
+    <Compile Include="obj\x86\Debug\TemporaryGeneratedFile_036C0B5B-1481-4323-8D20-8F5ADCB23D92.cs" />
+    <Compile Include="obj\x86\Debug\TemporaryGeneratedFile_5937a670-0e60-4077-877b-f7221da3dda1.cs" />
+    <Compile Include="obj\x86\Debug\TemporaryGeneratedFile_E7A71F73-0F8D-4B9B-B56E-8E70B10BC5D3.cs" />
+    <Compile Include="obj\x86\Release\TemporaryGeneratedFile_036C0B5B-1481-4323-8D20-8F5ADCB23D92.cs" />
+    <Compile Include="obj\x86\Release\TemporaryGeneratedFile_5937a670-0e60-4077-877b-f7221da3dda1.cs" />
+    <Compile Include="obj\x86\Release\TemporaryGeneratedFile_E7A71F73-0F8D-4B9B-B56E-8E70B10BC5D3.cs" />
+    <Compile Include="Pathfinding\PathFinder.cs" />
+    <Compile Include="Pathfinding\PathFinderTest.cs" />
+    <Compile Include="Pathfinding\PathNode.cs" />
+    <Compile Include="Player\Player.cs" />
+    <Compile Include="Player\Resource.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="DataStructures\TileData.cs" />
+    <Compile Include="Rendering\Camera.cs" />
+    <Compile Include="Rendering\RenderHelper.cs" />
+    <Compile Include="States\GameState.cs" />
+    <Compile Include="States\Primary\DebugState.cs" />
+    <Compile Include="States\Primary\LevelState.cs" />
+    <Compile Include="States\Primary\MenuState.cs" />
+    <Compile Include="States\Secondary\BuildState.cs" />
+    <Compile Include="States\StateActivityLevel.cs" />
+    <Compile Include="States\StateManager.cs" />
+    <Compile Include="Time\OnTickEventArgs.cs" />
+    <Compile Include="Time\TemporaryTicker.cs" />
+    <Compile Include="Time\Ticker.cs" />
+    <Compile Include="Time\TimeManager.cs" />
+    <Compile Include="UI\Buttons\Button.cs" />
+    <Compile Include="UI\Buttons\StateChangeButton.cs" />
+    <Compile Include="UI\Pivot.cs" />
+    <Compile Include="UI\ProgressBar.cs" />
+    <Compile Include="UI\ResourceWindow.cs" />
+    <Compile Include="UI\StateUI.cs" />
+    <Compile Include="UI\Tooltip.cs" />
+    <Compile Include="UI\UIElement.cs" />
+    <Compile Include="UI\UIManager.cs" />
+    <Compile Include="UI\UIPanel.cs" />
+    <Compile Include="World\Terrain.cs" />
+    <Compile Include="World\TerrainCell.cs" />
+    <Compile Include="World\WorldObject.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="MonoGame.Framework">
@@ -53,11 +123,30 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Documentation\index.html" />
     <Content Include="Icon.ico" />
+    <Content Include="obj\x86\Debug\Obelisk.csproj.FileListAbsolute.txt" />
+    <Content Include="obj\x86\Debug\Obelisk.exe" />
+    <Content Include="obj\x86\Debug\Obelisk.pdb" />
   </ItemGroup>
   <ItemGroup>
-    <MonoGameContentReference Include="Content\Content.mgcb" />
     <None Include="app.manifest" />
+    <None Include="obj\x86\Debug\CoreCompileInputs.cache" />
+    <None Include="obj\x86\Debug\DesignTimeResolveAssemblyReferencesInput.cache" />
+    <None Include="obj\x86\Debug\Obelisk.csproj.CopyComplete" />
+    <None Include="obj\x86\Debug\Obelisk.csproj.CoreCompileInputs.cache" />
+    <None Include="obj\x86\Debug\Obelisk.csprojAssemblyReference.cache" />
+    <None Include="obj\x86\Debug\Obelisk.csprojResolveAssemblyReference.cache" />
+    <None Include="obj\x86\Debug\SparkEngine.csproj.CoreCompileInputs.cache" />
+    <None Include="obj\x86\Debug\SparkEngine.csprojAssemblyReference.cache" />
+    <None Include="obj\x86\Release\DesignTimeResolveAssemblyReferencesInput.cache" />
+    <None Include="obj\x86\Release\Obelisk.csproj.CoreCompileInputs.cache" />
+    <None Include="obj\x86\Release\Obelisk.csprojResolveAssemblyReference.cache" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Localisation\" />
+    <Folder Include="obj\Windows\Content\" />
+    <Folder Include="obj\x86\Debug\TempPE\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\MonoGame\v3.0\MonoGame.Content.Builder.targets" />
