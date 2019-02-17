@@ -3,14 +3,27 @@
     using System.Collections.Generic;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
-    using SparkEngine.Dictionaries;
-    using SparkEngine.IDs;
 
     public class DebugTiler
     {
         #region Fields
 
         private List<DebugTile> debugTiles = new List<DebugTile>();
+
+        #endregion
+
+        #region Constructors
+
+        public DebugTiler(Texture2D tileSprite)
+        {
+            TileSprite = tileSprite;
+        }
+
+        #endregion
+
+        #region Properties
+
+        public Texture2D TileSprite { get; set; }
 
         #endregion
 
@@ -23,7 +36,7 @@
 
         public void AddDebugTile(Vector2 coordinates, Color colour)
         {
-            DebugTile tile = new DebugTile(TileDictionary.GetTile(TileIDs.BlankTile).Texture, coordinates, colour);
+            DebugTile tile = new DebugTile(TileSprite, coordinates, colour);
             debugTiles.Add(tile);
         }
 

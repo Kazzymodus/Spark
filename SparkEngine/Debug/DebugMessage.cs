@@ -2,8 +2,6 @@
 {
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
-    using SparkEngine.Dictionaries;
-    using SparkEngine.IDs;
 
     public struct DebugMessage
     {
@@ -28,9 +26,9 @@
 
         #region Methods
 
-        internal void Draw(SpriteBatch spriteBatch)
+        internal void Draw(SpriteBatch spriteBatch, SpriteFont font)
         {
-            spriteBatch.DrawString(FontDictionary.GetFont(FontIDs.CourierNew), text, drawPosition, colour);
+            spriteBatch.DrawString(font, text, drawPosition, colour);
         }
 
         #endregion

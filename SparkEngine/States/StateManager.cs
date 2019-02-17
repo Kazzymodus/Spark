@@ -5,14 +5,13 @@
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using SparkEngine.Rendering;
-    using SparkEngine.States.Primary;
 
-    public static class StateManager
+    public class StateManager
     {
         #region Fields
 
-        private static Stack<GameState> states = new Stack<GameState>();
-        private static Stack<GameState> pushRequests = new Stack<GameState>();
+        private Stack<GameState> states = new Stack<GameState>();
+        private Stack<GameState> pushRequests = new Stack<GameState>();
 
         #endregion
 
@@ -22,17 +21,17 @@
 
         #region Methods
 
-        public static void RequestStatePush(GameState state)
+        public void RequestStatePush(GameState state)
         {
             pushRequests.Push(state);
         }
 
-        internal static void Initialise(int screenWidth, int screenHeight)
+        internal void Initialise(int screenWidth, int screenHeight)
         {
             GameState.SetDefaultCamera(new Camera(screenWidth, screenHeight));           
         }
 
-        internal static void UpdateStates(GameTime gameTime)
+        internal void UpdateStates(GameTime gameTime)
         {
             foreach (GameState state in states)
             {
@@ -40,6 +39,7 @@
 
                 if (activityLevel != StateActivityLevel.Paused && activityLevel != StateActivityLevel.Stopped)
                 {
+                    state.ProcessInput(gameTime);
                     state.Update(gameTime);
                 }
             }
@@ -50,7 +50,7 @@
             }
         }
 
-        internal static void DrawWorldStates(SpriteBatch spriteBatch)
+        internal void DrawWorldStates(SpriteBatch spriteBatch)
         {
             foreach (GameState state in states)
             {
@@ -63,7 +63,7 @@
             }
         }
 
-        internal static void DrawScreenStates(SpriteBatch spriteBatch)
+        internal void DrawScreenStates(SpriteBatch spriteBatch)
         {
             spriteBatch.Begin();
 
@@ -80,7 +80,7 @@
             spriteBatch.End();
         }
 
-        private static void PushNewRequests()
+        private void PushNewRequests()
         {
             foreach (GameState state in pushRequests)
             {

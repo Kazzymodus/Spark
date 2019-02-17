@@ -37,7 +37,7 @@
 
         public StateActivityLevel ActivityLevel { get; set; }
 
-        public StateUI StateUI { get; protected set; }
+        // public StateUI StateUI { get; protected set; }
 
         public Camera Camera { get; }
 
@@ -45,38 +45,29 @@
 
         #region Methods
 
-        public void Pause()
-        {
-            ActivityLevel = StateActivityLevel.Paused;
-        }
-
         internal static void SetDefaultCamera(Camera camera)
         {
             DefaultCamera = camera;
         }
 
-        protected internal void DrawUI(SpriteBatch spriteBatch)
+        protected internal virtual void ProcessInput(GameTime gameTime)
         {
-            StateUI.Draw(spriteBatch);
+
         }
 
         protected internal virtual void Update(GameTime gameTime)
         {
-            ProcessInput(gameTime);
+
         }
 
         protected internal virtual void DrawWorld(SpriteBatch spriteBatch)
         {
+
         }
 
         protected internal virtual void DrawScreen(SpriteBatch spriteBatch)
         {
-            DrawUI(spriteBatch);
-        }
-
-        protected internal virtual void ProcessInput(GameTime gameTime)
-        {
-
+            
         }
 
         #endregion

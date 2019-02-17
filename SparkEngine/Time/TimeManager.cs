@@ -6,7 +6,6 @@
     using System.Text;
     using System.Threading.Tasks;
     using Microsoft.Xna.Framework;
-    using SparkEngine.Player;
 
     public static class TimeManager
     {
@@ -18,7 +17,7 @@
 
         #region Methods
 
-        internal static void Update(GameTime gameTime, Player player)
+        internal static void Update(GameTime gameTime)
         {
             // Probably should do this differently.
 
@@ -27,7 +26,7 @@
                 TemporaryTicker ticker = temporaryTickers[i];
                 if (ticker.IsActive)
                 {
-                    ticker.Update(gameTime, player); // This is bad.
+                    ticker.Update(gameTime); // This is bad.
 
                     if (ticker.TimeLeft <= 0)
                     {

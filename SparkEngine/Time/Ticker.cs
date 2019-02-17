@@ -6,7 +6,6 @@
     using System.Text;
     using System.Threading.Tasks;
     using Microsoft.Xna.Framework;
-    using SparkEngine.Player;
 
     /// <summary>
     /// A ticker that will continuously fire in set intervals.
@@ -64,7 +63,7 @@
             IsActive = true;
         }
 
-        internal virtual void Update(GameTime gameTime, Player player)
+        internal virtual void Update(GameTime gameTime)
         {
             Timer += (float)gameTime.ElapsedGameTime.TotalSeconds;
 
@@ -72,7 +71,6 @@
             {
                 OnTickEventArgs args = new OnTickEventArgs
                 {
-                    Player = player
                 };
                 OnTickEvent?.Invoke(this, args);
                 Timer = 0;

@@ -7,8 +7,6 @@
     using System.Threading.Tasks;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
-    using SparkEngine.Dictionaries;
-    using SparkEngine.IDs;
     using SparkEngine.Input;
 
     public abstract class Button : UIElement, IClickable, IHoverable

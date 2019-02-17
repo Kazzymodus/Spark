@@ -10,9 +10,18 @@
 
         private const int ListMessageDistance = 10;
 
-        private List<DebugMessage> worldMessages = new List<DebugMessage>();
-        private List<DebugMessage> screenMessages = new List<DebugMessage>();
-        private List<DebugMessage> listMessages = new List<DebugMessage>();
+        private readonly List<DebugMessage> worldMessages = new List<DebugMessage>();
+        private readonly List<DebugMessage> screenMessages = new List<DebugMessage>();
+        private readonly List<DebugMessage> listMessages = new List<DebugMessage>();
+
+        #endregion
+
+        #region Constructors
+
+        public DebugLog(SpriteFont font)
+        {
+            MessageFont = font;
+        }
 
         #endregion
 
@@ -22,6 +31,8 @@
         {
             get { return new Vector2(8); }
         }
+
+        public SpriteFont MessageFont { get; set; }
 
         #endregion
 
@@ -83,7 +94,7 @@
         {
             foreach (DebugMessage message in messages)
             {
-                message.Draw(spriteBatch);
+                message.Draw(spriteBatch, MessageFont);
             }
 
             messages.Clear();

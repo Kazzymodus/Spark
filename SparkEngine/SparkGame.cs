@@ -4,10 +4,8 @@
     using Microsoft.Xna.Framework.Graphics;
     using Microsoft.Xna.Framework.Input;
     using SparkEngine.Debug;
-    using SparkEngine.Dictionaries;
     using SparkEngine.Input;
     using SparkEngine.States;
-    using SparkEngine.States.Primary;
 
     public class ObeliskGame : Game
     {
@@ -15,7 +13,7 @@
 
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
-        private static bool exitGame;
+        private static bool quitFlag;
 
         #endregion
 
@@ -50,15 +48,7 @@
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            TextureDictionary.LoadTextures(Content);
-            FontDictionary.LoadFonts(Content);
-            EffectDictionary.LoadEffects(Content);
-            
-            TileDictionary.LoadTiles();
-            StructureDictionary.LoadStructures(Content);
-            EntityDictionary.LoadEntities();
-
-            StateManager.Initialise(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+            // StateManager.Initialise(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
         }
 
         /// <summary>
@@ -80,12 +70,12 @@
             if (IsActive)
             {
                 InputHandler.Update();
-                StateManager.UpdateStates(gameTime);
+                // StateManager.UpdateStates(gameTime);
             }
 
             base.Update(gameTime);
 
-            if (exitGame)
+            if (quitFlag)
             {
                 Exit();
             }
@@ -103,19 +93,19 @@
 
                 // TODO: Add your drawing code here
 
-                StateManager.DrawWorldStates(spriteBatch);
-                StateManager.DrawScreenStates(spriteBatch);
+                // StateManager.DrawWorldStates(spriteBatch);
+                // StateManager.DrawScreenStates(spriteBatch);
             }
 
             base.Draw(gameTime);
         }
 
         /// <summary>
-        /// Calling this method will exit the game at the end of the current Update call.
+        /// Calling this method will quit the application at the end of the current Update call.
         /// </summary>
-        public static void SetExitFlag()
+        public static void QuitApplication()
         {
-            exitGame = true;
+            quitFlag = true;
         }
 
         #endregion

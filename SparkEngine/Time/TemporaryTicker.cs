@@ -6,7 +6,6 @@
     using System.Text;
     using System.Threading.Tasks;
     using Microsoft.Xna.Framework;
-    using SparkEngine.Player;
 
     /// <summary>
     /// A ticker that will fire a limited amount of times in set intervals.
@@ -65,9 +64,9 @@
             return ticker;
         }
 
-        internal override void Update(GameTime gameTime, Player owner)
+        internal override void Update(GameTime gameTime)
         {
-            base.Update(gameTime, owner);
+            base.Update(gameTime);
 
             TimeLeft -= (float)gameTime.ElapsedGameTime.TotalSeconds;
         }

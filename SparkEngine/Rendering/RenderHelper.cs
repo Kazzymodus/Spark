@@ -37,7 +37,11 @@
 
         #endregion
 
+        #region Properties
+
         public static Vector2 TerrainSize { get; private set; }
+
+        #endregion
 
         #region Methods
 

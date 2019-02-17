@@ -1,4 +1,4 @@
-﻿namespace SparkEngine.Time
+﻿namespace SparkEngine.Assets
 {
     using System;
     using System.Collections.Generic;
@@ -6,7 +6,7 @@
     using System.Text;
     using System.Threading.Tasks;
 
-    public class OnTickEventArgs : EventArgs
+    public abstract class AssetDictionaryInt<T> : AssetDictionary<int, T>
     {
     }
 }

@@ -23,7 +23,7 @@
         /// </summary>
         private Matrix transform;
         /// <summary>
-        /// 
+        /// The minimum x-position the camera can move to.
         /// </summary>
         private int minXPos;
         /// <summary>

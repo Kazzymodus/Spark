@@ -3,9 +3,6 @@
     using System.Collections.Generic;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
-    using SparkEngine.Dictionaries;
-    using SparkEngine.Entities;
-    using SparkEngine.IDs;
     using SparkEngine.Rendering;
     using SparkEngine.States;
     using SparkEngine.World;
