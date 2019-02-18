@@ -43,14 +43,15 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Components\Component.cs" />
+    <Compile Include="Components\IDrawableComponent.cs" />
     <Compile Include="Debug\CellPositionInfo.cs" />
     <Compile Include="Debug\DebugLog.cs" />
     <Compile Include="Debug\DebugMessage.cs" />
     <Compile Include="Debug\DebugTile.cs" />
     <Compile Include="Debug\DebugTiler.cs" />
     <Compile Include="Assets\AssetDictionary.cs" />
-    <Compile Include="Assets\AssetDictionaryInt.cs" />
-    <Compile Include="Assets\AssetDictionaryString.cs" />
+    <Compile Include="Entities\Entity.cs" />
     <Compile Include="Input\IClickable.cs" />
     <Compile Include="Input\IHoverable.cs" />
     <Compile Include="Input\InputHandler.cs" />

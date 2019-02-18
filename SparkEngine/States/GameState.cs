@@ -1,7 +1,10 @@
 ﻿namespace SparkEngine.States
 {
+    using System.Collections.Generic;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
+    using SparkEngine.Components;
+    using SparkEngine.Entities;
     using SparkEngine.Rendering;
     using SparkEngine.UI;
 
@@ -41,6 +44,8 @@
 
         public Camera Camera { get; }
 
+        public List<Entity> GameObjects { get; } = new List<Entity>();
+
         #endregion
 
         #region Methods
@@ -68,6 +73,21 @@
         protected internal virtual void DrawScreen(SpriteBatch spriteBatch)
         {
             
+        }
+
+        private List<Component> FetchComponents()
+        {
+            List<Component> components = new List<Component>();
+            
+            foreach (Entity gameObject in GameObjects)
+            {
+                foreach (Component component in gameObject.Components)
+                {
+                    components.Add(component);
+                }
+            }
+
+            return components;
         }
 
         #endregion
