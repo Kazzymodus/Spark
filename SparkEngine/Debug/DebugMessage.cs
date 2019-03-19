@@ -7,7 +7,7 @@
     {
         #region Fields
 
-        private string text;
+        private string message;
         private Vector2 drawPosition;
         private Color colour;
 
@@ -15,9 +15,9 @@
 
         #region Constructors
 
-        public DebugMessage(string text, Vector2 drawPosition, Color colour)
+        public DebugMessage(string message, Vector2 drawPosition, Color colour)
         {
-            this.text = text;
+            this.message = message;
             this.drawPosition = drawPosition;
             this.colour = colour;
         }
@@ -28,7 +28,7 @@
 
         internal void Draw(SpriteBatch spriteBatch, SpriteFont font)
         {
-            spriteBatch.DrawString(font, text, drawPosition, colour);
+            spriteBatch.DrawString(font, message, drawPosition, colour);
         }
 
         #endregion

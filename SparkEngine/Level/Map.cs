@@ -1,103 +1,103 @@
-﻿namespace SparkEngine.Level
-{
-    using System.Collections.Generic;
-    using Microsoft.Xna.Framework;
-    using Microsoft.Xna.Framework.Graphics;
-    using SparkEngine.Rendering;
-    using SparkEngine.States;
-    using SparkEngine.World;
+﻿//namespace SparkEngine.Level
+//{
+//    using System.Collections.Generic;
+//    using Microsoft.Xna.Framework;
+//    using Microsoft.Xna.Framework.Graphics;
+//    using SparkEngine.Rendering;
+//    using SparkEngine.States;
+//    using SparkEngine.World;
 
-    public class Map
-    {
-        #region Constructors
+//    public class Map
+//    {
+//        #region Constructors
 
-        public Map(TileData tileData, MapData mapData)
-        {
-            Terrain = new Terrain(tileData, mapData.Dimensions);
-        }
+//        public Map(TileData tileData, MapData mapData)
+//        {
+//            Terrain = new Terrain(tileData, mapData.Dimensions);
+//        }
 
-        #endregion
+//        #endregion
 
-        #region Properties
+//        #region Properties
 
-        public int Rotations { get; private set; }
 
-        public Terrain Terrain { get; }
 
-        public ObjectManager ObjectManager { get; } = new ObjectManager();
+//        public Terrain Terrain { get; }
 
-        #endregion
+//        public ObjectManager ObjectManager { get; } = new ObjectManager();
 
-        #region Methods
+//        #endregion
 
-        public void Rotate(int rotations, Camera camera)
-        {
-            int modulatedRotations = rotations % 4;
+//        #region Methods
 
-            Rotations += modulatedRotations + 4; // In case a negative rotation is passed.
-            Rotations %= 4;
+//        public void Rotate(int rotations, Camera camera)
+//        {
+//            int modulatedRotations = rotations % 4;
 
-            camera.RotateCamera(modulatedRotations);
+//            Rotations += modulatedRotations + 4; // In case a negative rotation is passed.
+//            Rotations %= 4;
 
-            ObjectManager.ResetDrawOrderAll(this);
-        }
+//            camera.RotateCamera(modulatedRotations);
 
-        public Vector2 GetCursorCoordinates(Camera camera)
-        {
-            Vector2 coordinate = RenderHelper.PixelsToCoords(camera.MouseWorldPosition);
+//            ObjectManager.ResetDrawOrderAll(this);
+//        }
 
-            for (int i = 0; i < Rotations; i++)
-            {
-                Vector2 oldCoord = coordinate;
+//        public Vector2 GetCursorCoordinates(Camera camera)
+//        {
+//            Vector2 coordinate = RenderHelper.PixelsToCoords(camera.MouseWorldPosition);
 
-                coordinate.X = oldCoord.Y;
-                coordinate.Y = (Terrain.Dimensions.X - 1) - oldCoord.X;
-            }
+//            for (int i = 0; i < Rotations; i++)
+//            {
+//                Vector2 oldCoord = coordinate;
 
-            return coordinate;
-        }
+//                coordinate.X = oldCoord.Y;
+//                coordinate.Y = (Terrain.Dimensions.X - 1) - oldCoord.X;
+//            }
 
-        public void SpawnStructure(Structure structure)
-        {
-            Terrain.OccupyTiles(structure.Coordinates, structure);
+//            return coordinate;
+//        }
 
-            ObjectManager.RegisterStructure(structure, this);
-        }
+//        public void SpawnStructure(Structure structure)
+//        {
+//            Terrain.OccupyTiles(structure.Coordinates, structure);
 
-        public void SpawnSubject(Vector2 coordinates, DrawData drawData, int rotation = RenderHelper.RotationNone)
-        {
-            Subject subject = new Subject(coordinates, drawData, rotation);
-            ObjectManager.RegisterSubject(subject, this);
-        }
+//            ObjectManager.RegisterStructure(structure, this);
+//        }
 
-        public void CreateTask(Task task)
-        {
-            ObjectManager.RegisterTask(task, this);
-            Terrain.OccupyTiles(task.Coordinates, task);
-        }
+//        public void SpawnSubject(Vector2 coordinates, DrawData drawData, int rotation = RenderHelper.RotationNone)
+//        {
+//            Subject subject = new Subject(coordinates, drawData, rotation);
+//            ObjectManager.RegisterSubject(subject, this);
+//        }
 
-        public Vector2 RotateCoordsInMap(Vector2 coords)
-        {
-            Vector2 rotatedCoords = coords;
+//        public void CreateTask(Task task)
+//        {
+//            ObjectManager.RegisterTask(task, this);
+//            Terrain.OccupyTiles(task.Coordinates, task);
+//        }
 
-            for (int i = 0; i < Rotations; i++)
-            {
-                Vector2 oldCoords = rotatedCoords;
+//        public Vector2 RotateCoordsInMap(Vector2 coords)
+//        {
+//            Vector2 rotatedCoords = coords;
 
-                // Rotate counterclockwise because we need to establish where the coord is GOING to be.
+//            for (int i = 0; i < Rotations; i++)
+//            {
+//                Vector2 oldCoords = rotatedCoords;
 
-                rotatedCoords.X = (Terrain.Dimensions.X - 1) - oldCoords.Y;
-                rotatedCoords.Y = oldCoords.X;
-            }
+//                // Rotate counterclockwise because we need to establish where the coord is GOING to be.
 
-            return rotatedCoords;
-        }
+//                rotatedCoords.X = (Terrain.Dimensions.X - 1) - oldCoords.Y;
+//                rotatedCoords.Y = oldCoords.X;
+//            }
 
-        internal void DrawTerrain(SpriteBatch spriteBatch, Map map, Rectangle visibleCoordinates, bool drawGrid)
-        {
-            Terrain.DrawTiles(spriteBatch, map, visibleCoordinates, drawGrid);
-        }
+//            return rotatedCoords;
+//        }
 
-        #endregion
-    }
-}
+//        internal void DrawTerrain(SpriteBatch spriteBatch, Map map, Rectangle visibleCoordinates, bool drawGrid)
+//        {
+//            Terrain.DrawTiles(spriteBatch, map, visibleCoordinates, drawGrid);
+//        }
+
+//        #endregion
+//    }
+//}

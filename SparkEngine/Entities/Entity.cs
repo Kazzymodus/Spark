@@ -5,10 +5,14 @@
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
-    using SparkEngine.Components;
 
-    public abstract class Entity
+    public class Entity
     {
-        public List<Component> Components { get; } = new List<Component>();
+        public Entity(int id)
+        {
+            ID = id;
+        }
+
+        public int ID { get; }
     }
 }

@@ -2,11 +2,12 @@
 {
     using System;
     using Microsoft.Xna.Framework;
-    using SparkEngine.DataStructures;
 
     public static class RenderHelper
     {
         #region Fields
+
+        public const float SqrtTwoReciprocal = 1.41421356237f; // Move this somewhere better.
 
         public const int DefaultTileWidth = 64;
         public const int DefaultTileHeight = 32;
@@ -121,11 +122,6 @@
             rotatedPosition.Y += rotations == 1 || rotations == 2 ? 1 * (size - 1) : 0;
 
             return rotatedPosition;
-        }
-
-        public static void Initialise(GameSettings settings)
-        {
-            TerrainSize = settings.TerrainSize;
         }
 
         #endregion

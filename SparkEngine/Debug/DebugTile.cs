@@ -8,7 +8,7 @@
     {
         #region Fields
 
-        private Texture2D texture;
+        private Texture2D sprite;
         private Vector2 coordinates;
         private Color colour;
 
@@ -16,9 +16,9 @@
 
         #region Constructors
 
-        public DebugTile(Texture2D texture, Vector2 coordinates, Color colour)
+        public DebugTile(Texture2D sprite, Vector2 coordinates, Color colour)
         {
-            this.texture = texture;
+            this.sprite = sprite;
             this.coordinates = coordinates;
             this.colour = colour;
         }
@@ -35,7 +35,7 @@
             int frameX = RenderHelper.DefaultTileWidth * rotations;
             Rectangle drawRectangle = new Rectangle(frameX, 0, RenderHelper.DefaultTileWidth, RenderHelper.DefaultTileHeight);
 
-            spriteBatch.Draw(texture, drawPosition, drawRectangle, colour);
+            spriteBatch.Draw(sprite, drawPosition, drawRectangle, colour);
         }
 
         #endregion

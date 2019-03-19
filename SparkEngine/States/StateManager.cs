@@ -26,9 +26,9 @@
             pushRequests.Push(state);
         }
 
-        internal void Initialise(int screenWidth, int screenHeight)
+        internal void Initialise(GraphicsDeviceManager graphics)
         {
-            GameState.SetDefaultCamera(new Camera(screenWidth, screenHeight));           
+            GameState.SetDefaultCamera(new Camera(graphics));           
         }
 
         internal void UpdateStates(GameTime gameTime)
@@ -50,7 +50,7 @@
             }
         }
 
-        internal void DrawWorldStates(SpriteBatch spriteBatch)
+        internal void Draw(SpriteBatch spriteBatch)
         {
             foreach (GameState state in states)
             {
@@ -58,26 +58,9 @@
 
                 if (activityLevel != StateActivityLevel.Hidden && activityLevel != StateActivityLevel.Stopped)
                 {
-                    state.DrawWorld(spriteBatch);
+                    state.Draw(spriteBatch);
                 }
             }
-        }
-
-        internal void DrawScreenStates(SpriteBatch spriteBatch)
-        {
-            spriteBatch.Begin();
-
-            foreach (GameState state in states)
-            {
-                StateActivityLevel activityLevel = state.ActivityLevel;
-
-                if (activityLevel != StateActivityLevel.Hidden && activityLevel != StateActivityLevel.Stopped)
-                {
-                    state.DrawScreen(spriteBatch);
-                }
-            }
-
-            spriteBatch.End();
         }
 
         private void PushNewRequests()

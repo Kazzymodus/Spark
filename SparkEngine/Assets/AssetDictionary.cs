@@ -7,7 +7,7 @@
     using System.Text;
     using System.Threading.Tasks;
 
-    public abstract class AssetDictionary<TKey, TValue>
+    public class AssetDictionary<TKey, TValue>
     {
         private readonly IDictionary<TKey, TValue> assetDictionary = new Dictionary<TKey, TValue>();
 

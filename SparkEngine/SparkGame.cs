@@ -26,8 +26,9 @@
                 // Certain resolutions may invalidate cursor calculations.
                 // 1152x648 is the highest windowed resolution that fits on my screen.
 
-                PreferredBackBufferWidth = 1152,
-                PreferredBackBufferHeight = 648,
+                PreferredBackBufferWidth = GraphicsDevice.DisplayMode.Width,
+                PreferredBackBufferHeight = GraphicsDevice.DisplayMode.Height,
+                IsFullScreen = true                
             };
 
             Content.RootDirectory = "Content";
