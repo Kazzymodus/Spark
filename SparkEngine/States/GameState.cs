@@ -11,22 +11,22 @@
     using SparkEngine.UI;
 
     /// <summary>
-    /// Describes a slice of
+    /// Describes a part of your game with its own entities.
     /// </summary>
     public class GameState
     {
         #region Constructors
 
-        internal GameState(StateActivityLevel activityLevel, Camera camera = null)
+        /// <summary>
+        /// Creates a new game state.
+        /// </summary>
+        /// <param name="activityLevel">The activity level the state starts at. Active by default.</param>
+        /// <param name="camera">The camera used for drawing the game state. If not provided, uses the default camera.</param>
+        public GameState(string name, StateActivityLevel activityLevel = StateActivityLevel.Active, Camera camera = null)
         {
-            if (camera == null)
-            {
-                Camera = DefaultCamera;
-            }
-            else
-            {
-                Camera = camera;
-            }
+            Name = name;
+            ActivityLevel = activityLevel;
+            Camera = camera ?? DefaultCamera;
         }
 
         #endregion
@@ -34,6 +34,8 @@
         #region Properties
 
         public static Camera DefaultCamera { get; private set; }
+
+        public string Name { get; }
 
         public bool UsesDefaultCamera
         {
@@ -51,13 +53,13 @@
 
         private static int nextEntityId = 1;
 
-        private static List<int> availableEntityIdPool;
+        private static List<int> availableEntityIdPool = new List<int>();
 
-        private List<ComponentManager> ComponentManagers { get; }
+        private List<ComponentManager> ComponentManagers { get; } = new List<ComponentManager>();
 
         private List<Entity> entities = new List<Entity>();
 
-        private Dictionary<string, DrawLayer> drawLayers = new Dictionary<string, DrawLayer>
+        private readonly Dictionary<string, DrawLayer> drawLayers = new Dictionary<string, DrawLayer>
         {
             { "Default", new DrawLayer() }
         };
@@ -66,40 +68,12 @@
 
         #region Methods
 
-        internal static void SetDefaultCamera(Camera camera)
-        {
-            DefaultCamera = camera;
-        }
-
-        protected internal virtual void ProcessInput(GameTime gameTime)
-        {     
-            foreach (ComponentManager manager in ComponentManagers)
-            {
-                manager.Update(gameTime);
-            }
-        }
-
-        protected internal virtual void Update(GameTime gameTime)
-        {
-            foreach (ComponentManager manager in ComponentManagers)
-            {
-                manager.Update(gameTime);
-            }
-        }
-
-        protected internal virtual void Draw(SpriteBatch spriteBatch)
-        {
-            foreach (KeyValuePair<string, DrawLayer> entries in drawLayers)
-            {
-                entries.Value.Draw(spriteBatch, Camera);
-            }
-        }
-
-        private int CreateNewEntity(params Component[] components)
+        public int CreateNewEntity(params Component[] components)
         {
             int id = GetAvailableEntityID(out bool usedIdFromPool);
             Entity entity = new Entity(id);
-            if(usedIdFromPool)
+
+            if (usedIdFromPool)
             {
                 availableEntityIdPool.Remove(id);
             }
@@ -118,6 +92,35 @@
             return id;
         }
 
+        public static void SetDefaultCamera(Camera camera)
+        {
+            DefaultCamera = camera;
+        }
+
+        internal void ProcessInput(GameTime gameTime)
+        {     
+            foreach (ComponentManager manager in ComponentManagers)
+            {
+                manager.Update(gameTime);
+            }
+        }
+
+        internal void Update(GameTime gameTime)
+        {
+            foreach (ComponentManager manager in ComponentManagers)
+            {
+                manager.Update(gameTime);
+            }
+        }
+
+        internal void Draw(SpriteBatch spriteBatch)
+        {
+            foreach (KeyValuePair<string, DrawLayer> entries in drawLayers)
+            {
+                entries.Value.Draw(spriteBatch, Camera);
+            }
+        }
+
         private void AddComponentToEntity<TComponent>(Entity entity, TComponent component) where TComponent : Component
         {
             component.SetOwner(entity);
@@ -130,6 +133,11 @@
             }
 
             manager.AddComponent(component);
+
+            if (component is IDrawableComponent)
+            {
+                drawLayers["Default"].RegisterComponent((IDrawableComponent)component);
+            }
         }
 
         private ComponentManager<TComponent> GetComponentManager<TComponent>() where TComponent : Component
@@ -138,7 +146,7 @@
             {
                 if (manager is ComponentManager<TComponent>)
                 {
-                    return manager as ComponentManager<TComponent>;
+                    return (ComponentManager<TComponent>)manager;
                 }
             }
 

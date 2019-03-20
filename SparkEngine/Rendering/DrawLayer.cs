@@ -15,51 +15,79 @@
 
         internal void RegisterComponent(IDrawableComponent component)
         {
-            components.Add(component);
+            switch(component.SpriteSortMethod)
+            {
+                case SpriteSortMethod.First:
+                    FirstAdd(component, components);
+                    return;
+                case SpriteSortMethod.HeightAsDistance:
+                    HeightAsDistanceAdd(component, components);
+                    return;
+                default:
+                    throw new NotImplementedException();
+            }
+
         }
 
         internal void Draw(SpriteBatch spriteBatch, Camera camera)
         {
-            Sort();
-
+            spriteBatch.Begin();
+            
             foreach(IDrawableComponent component in components)
             {
                 component.Draw(spriteBatch, camera);
             }
+
+            spriteBatch.End();
         }
 
         private void Sort()
         {
             List<IDrawableComponent> drawOrder = new List<IDrawableComponent>();
-            
+
             foreach (IDrawableComponent component in components)
             {
-                if (component.SpriteSortMethod == SpriteSortMethod.HeightAsDistance)
+                switch (component.SpriteSortMethod)
                 {
-                    float drawHeight = component.DrawPosition.Y;
-                    int index = 0;
-                    bool inserted = false;
-
-                    for (int i = 0; i < drawOrder.Count; i++)
-                    {
-                        if (drawOrder[i].DrawPosition.Y > drawHeight)
-                        {
-                            drawOrder.Insert(index, component);
-                            inserted = true;
-                            break;
-                        }
-
-                        index = i;
-                    }
-
-                    if (!inserted)
-                    {
-                        drawOrder.Add(component);
-                    }
+                    case SpriteSortMethod.First:
+                        FirstAdd(component, drawOrder);
+                        break;
+                    case SpriteSortMethod.HeightAsDistance:
+                        HeightAsDistanceAdd(component, drawOrder);
+                        break;
                 }
             }
 
             components = drawOrder;
+        }
+
+        private void HeightAsDistanceAdd(IDrawableComponent component, List<IDrawableComponent> destination)
+        {
+            float drawHeight = component.DrawPosition.Y;
+            int index = 0;
+            bool inserted = false;
+
+            for (int i = 0; i < destination.Count; i++)
+            {
+                if (destination[i].DrawPosition.Y > drawHeight)
+                {
+                    destination.Insert(index, component);
+                    inserted = true;
+                    break;
+                }
+
+                index = i;
+            }
+
+            if (!inserted)
+            {
+                destination.Add(component);
+            }
+        }
+
+        private void FirstAdd(IDrawableComponent component, List<IDrawableComponent> destination)
+        {
+            destination.Insert(0, component);
         }
     }
 }

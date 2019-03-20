@@ -86,7 +86,7 @@
             return keyboardState.IsKeyUp(key) && oldKeyboardState.IsKeyDown(key);
         }
 
-        internal static void Update()
+        public static void Update()
         {
             oldMouseState = mouseState;
             mouseState = Mouse.GetState();

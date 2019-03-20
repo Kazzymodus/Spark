@@ -9,9 +9,9 @@
     using SparkEngine.UI;
 
     /// <summary>
-    /// A WorldObject component indicates that this object is placed in the world.
+    /// A GridObject is an object that can occupy a coordinate on a grid, like a tile based terrain.
     /// </summary>
-    public class WorldObject : Component, IDrawableComponent
+    public class GridObject : Component, IDrawableComponent
     {
         #region Fields
 
@@ -24,15 +24,15 @@
 
         #region Constructors
 
-        public WorldObject(Vector2 coordinates, int rotation = RenderHelper.RotationNone)
+        public GridObject(Texture2D spriteSheet, Vector2 coordinates, Vector2 dimensions, int rotation = RenderHelper.RotationNone)
         {
+            SpriteSheet = spriteSheet;
             Coordinates = coordinates;
+            Dimensions = dimensions;
             Rotation = rotation;
 
             pivot.X = Dimensions.X * (RenderHelper.DefaultTileWidth * 0.5f);
             pivot.Y = SpriteSheet.Height - (Dimensions.X * RenderHelper.DefaultTileHeight * 0.5f);
-
-            SpriteSortMethod = SpriteSortMethod.None;
         }
 
         #endregion
@@ -42,7 +42,7 @@
         /// <summary>
         /// The spritesheet used for rendering the object.
         /// </summary>
-        public Texture2D SpriteSheet { get; set; }
+        public Texture2D SpriteSheet { get; }
         
         /// <summary>
         /// The dimensions in tiles of the object.
@@ -65,7 +65,7 @@
         /// </summary>
         public int Rotation { get; private set; }
 
-        public SpriteSortMethod SpriteSortMethod { get; }
+        public SpriteSortMethod SpriteSortMethod { get; } = SpriteSortMethod.HeightAsDistance;
 
         public Vector2 DrawPosition { get; private set; }
 

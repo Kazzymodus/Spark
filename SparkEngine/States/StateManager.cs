@@ -11,7 +11,7 @@
         #region Fields
 
         private Stack<GameState> states = new Stack<GameState>();
-        private Stack<GameState> pushRequests = new Stack<GameState>();
+        private List<GameState> pushRequests = new List<GameState>();
 
         #endregion
 
@@ -23,15 +23,15 @@
 
         public void RequestStatePush(GameState state)
         {
-            pushRequests.Push(state);
+            pushRequests.Add(state);
         }
 
-        internal void Initialise(GraphicsDeviceManager graphics)
+        public void Initialise(GraphicsDeviceManager graphics)
         {
             GameState.SetDefaultCamera(new Camera(graphics));           
         }
 
-        internal void UpdateStates(GameTime gameTime)
+        public void UpdateStates(GameTime gameTime)
         {
             foreach (GameState state in states)
             {
@@ -50,7 +50,7 @@
             }
         }
 
-        internal void Draw(SpriteBatch spriteBatch)
+        public void DrawStates(SpriteBatch spriteBatch)
         {
             foreach (GameState state in states)
             {

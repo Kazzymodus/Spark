@@ -1,13 +1,17 @@
-﻿namespace Obelisk
+﻿namespace SparkTest
 {
+    using System.Collections.Generic;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using Microsoft.Xna.Framework.Input;
     using SparkEngine.Debug;
+    using SparkEngine.Assets;
     using SparkEngine.Input;
     using SparkEngine.States;
+    using SparkEngine.Components;
+    using SparkEngine.Rendering;
 
-    public class ObeliskGame : Game
+    public class SparkGame : Game
     {
         #region Fields
 
@@ -15,20 +19,24 @@
         private SpriteBatch spriteBatch;
         private static bool quitFlag;
 
+        private StateManager stateManager = new StateManager();
+
+        private AssetDictionary<Texture2D> textures;
+
         #endregion
 
         #region Constructors
 
-        public ObeliskGame()
+        public SparkGame()
         {
             graphics = new GraphicsDeviceManager(this)
             {
                 // Certain resolutions may invalidate cursor calculations.
                 // 1152x648 is the highest windowed resolution that fits on my screen.
 
-                PreferredBackBufferWidth = GraphicsDevice.DisplayMode.Width,
-                PreferredBackBufferHeight = GraphicsDevice.DisplayMode.Height,
-                IsFullScreen = true                
+                PreferredBackBufferWidth = 1152,
+                PreferredBackBufferHeight = 648,
+                //IsFullScreen = true                
             };
 
             Content.RootDirectory = "Content";
@@ -37,6 +45,14 @@
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Calling this method will quit the application at the end of the current Update call.
+        /// </summary>
+        public static void QuitApplication()
+        {
+            quitFlag = true;
+        }
 
         protected override void Initialize()
         {
@@ -48,6 +64,12 @@
         protected override void LoadContent()
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
+
+            textures = new AssetDictionary<Texture2D>("Textures", Content);
+            textures.TryAddAsset("Obelisk");
+            textures.TryAddAsset("GrassTile");
+
+            BuildStates();
 
             // StateManager.Initialise(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
         }
@@ -68,10 +90,17 @@
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+            // Temp addition to quickly quit while testing.
+
+            if (InputHandler.IsKeyPressed(Keys.Escape))
+            {
+                quitFlag = true;
+            }
+
             if (IsActive)
             {
                 InputHandler.Update();
-                // StateManager.UpdateStates(gameTime);
+                stateManager.UpdateStates(gameTime);
             }
 
             base.Update(gameTime);
@@ -94,19 +123,25 @@
 
                 // TODO: Add your drawing code here
 
-                // StateManager.DrawWorldStates(spriteBatch);
+                stateManager.DrawStates(spriteBatch);
                 // StateManager.DrawScreenStates(spriteBatch);
             }
 
             base.Draw(gameTime);
         }
 
-        /// <summary>
-        /// Calling this method will quit the application at the end of the current Update call.
-        /// </summary>
-        public static void QuitApplication()
+        private void BuildStates()
         {
-            quitFlag = true;
+            GameState.SetDefaultCamera(new Camera(graphics));
+
+            GameState menu = new GameState("Menu");
+            stateManager.RequestStatePush(menu);
+
+            Terrain terrain = new Terrain(new Vector2(50), textures.GetAsset("GrassTile"));
+            menu.CreateNewEntity(terrain);
+
+            GridObject gridObject = new GridObject(textures.GetAsset("Obelisk"), Vector2.Zero, new Vector2(2));
+            menu.CreateNewEntity(gridObject);
         }
 
         #endregion

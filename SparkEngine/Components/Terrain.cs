@@ -17,6 +17,12 @@
 
         #region Constructors
 
+        public Terrain(Vector2 dimensions, Texture2D tileSpriteSheet)
+        {
+            Dimensions = dimensions;
+            GenerateCellGrid(tileSpriteSheet);
+        }
+
         //public Terrain(MapTileMode tileMode, TileData tileData, Vector2 dimensions)
         //{
         //    this.tileMode = tileMode;
@@ -34,9 +40,16 @@
 
         public Vector2 TileSize { get; }
 
+        public Vector2 DrawPosition { get; private set; }
+
         #endregion
 
         #region Public Methods
+
+        public void CalculateDrawPosition(Camera camera)
+        {
+            DrawPosition = Vector2.Zero;
+        }
 
         /// <summary>
         /// Get the tile corresponding to the passed coordinates.
@@ -53,7 +66,7 @@
         //    List<TerrainTile> terrainTiles;
         //}
 
-        public bool WorldObjectCanBePlaced(WorldObject gameObject, Vector2 coordinates)
+        public bool WorldObjectCanBePlaced(GridObject gameObject, Vector2 coordinates)
         {
             for (int xTile = 0; xTile < Dimensions.X; xTile++)
             {
@@ -87,18 +100,11 @@
             return !(tileGrid[(int)coordinates.X, (int)coordinates.Y].Occupant == null); // || !tileGrid[(int)coordinates.X, (int)coordinates.Y].Occupant.IsPathBlocker);
         }
 
-        public SpriteSortMethod SpriteSortMethod { get; }
-
-        public Vector2 DrawPosition { get; private set; }
+        public SpriteSortMethod SpriteSortMethod { get; } = SpriteSortMethod.First;
 
         #endregion
 
         #region Internal Methods
-
-        public void CalculateDrawPosition(Camera camera)
-        {
-            DrawPosition = Vector2.Zero;
-        }
 
         public void Draw(SpriteBatch spriteBatch, Camera camera)
         {
@@ -111,7 +117,7 @@
             }
         }
 
-        internal void OccupyTiles(Vector2 coordinates, WorldObject occupant)
+        internal void OccupyTiles(Vector2 coordinates, GridObject occupant)
         {
             Vector2 dimensions = occupant.Dimensions;
 
@@ -127,7 +133,7 @@
             }
         }
 
-        internal void UnoccupyTiles(Vector2 coordinates, WorldObject occupant)
+        internal void UnoccupyTiles(Vector2 coordinates, GridObject occupant)
         {
             UnoccupyTiles(coordinates, occupant.Dimensions);
         }
@@ -150,7 +156,7 @@
 
         #region Private Fields
 
-        private void GenerateCellGrid()
+        private void GenerateCellGrid(Texture2D tileSpriteSheet)
         {
             tileGrid = new TerrainTile[(int)Dimensions.X, (int)Dimensions.Y];
             Random colourGenner = new Random();
@@ -159,7 +165,7 @@
             {
                 for (int j = 0; j < Dimensions.Y; j++)
                 {
-                    tileGrid[i, j] = new TerrainTile();
+                    tileGrid[i, j] = new TerrainTile(new Vector2(i, j ), tileSpriteSheet);
                 }
             }
         }
@@ -195,21 +201,27 @@
     {
         #region Private Fields
 
-        public Texture2D SpriteSheet { get; set; }
-
         #endregion
 
         #region Constructors
+
+        public TerrainTile(Vector2 coordinates, Texture2D spriteSheet)
+        {
+            Coordinates = coordinates;
+            SpriteSheet = spriteSheet;
+        }
 
         #endregion
 
         #region Public Properties
 
+        public Texture2D SpriteSheet { get; }
+
         public Color Color { get; set; } = Color.White;
 
         public Vector2 Coordinates { get; }
 
-        public WorldObject Occupant { get; private set; }
+        public GridObject Occupant { get; private set; }
 
         public bool IsOccupied
         {
@@ -220,7 +232,7 @@
 
         #region Internal Methods
 
-        internal void Occupy(WorldObject occupant)
+        internal void Occupy(GridObject occupant)
         {
             Occupant = occupant;
         }
@@ -232,56 +244,20 @@
 
         internal void Draw(SpriteBatch spriteBatch, Camera camera)
         {
-            throw new NotImplementedException();
+            Vector2 correctedCoords = Coordinates;
+            correctedCoords.X -= RenderHelper.TerrainSize.X;
+
+            Vector2 rotatedCoords = RenderHelper.RotateCoordsInMap(Coordinates, camera.Rotations);
+            Vector2 drawPosition = RenderHelper.CoordsToPixels(rotatedCoords);
+
+            int frameX = RenderHelper.DefaultTileWidth * camera.Rotations;
+
+            Rectangle drawRectangle = new Rectangle(frameX, 0, RenderHelper.DefaultTileWidth, RenderHelper.DefaultTileHeight);
+
+            Color colour = Color.White;
+
+            spriteBatch.Draw(SpriteSheet, drawPosition, drawRectangle, colour);
         }
-
-        //internal void Draw(SpriteBatch spriteBatch, Map map, bool drawGrid)
-        //{
-        //    Vector2 correctedCoords = Coordinates;
-        //    correctedCoords.X -= RenderHelper.TerrainSize.X;
-
-        //    Vector2 rotatedCoords = RenderHelper.RotateCoordsInMap(Coordinates, map.Rotations);
-        //    Vector2 drawPosition = RenderHelper.CoordsToPixels(rotatedCoords);
-
-        //    int frameX = RenderHelper.DefaultTileWidth * map.Rotations;
-
-        //    Rectangle drawRectangle = new Rectangle(frameX, 0, RenderHelper.DefaultTileWidth, RenderHelper.DefaultTileHeight);
-
-        //    Color colour = new Color(255, colourOffset, 255);
-        //    //Color colour = Color.White;
-
-        //    spriteBatch.Draw(tileTexture, drawPosition, drawRectangle, colour);
-
-        //    if (drawGrid)
-        //    {
-        //        spriteBatch.Draw(gridTexture, drawPosition, Color.White);
-        //    }
-
-        //    if (StateManager.DebugState.IsActive)
-        //    {
-        //        string logMessage = "";
-
-        //        switch (StateManager.DebugState.CellDataMode)
-        //        {
-        //            case CellPositionInfo.StaticCarthesian:
-        //                logMessage = "C: " + Coordinates.X + "." + Coordinates.Y;
-        //                break;
-        //            case CellPositionInfo.StaticIsometric:
-        //                Vector2 iso = RenderHelper.CoordsToIsometric(Coordinates);
-        //                logMessage = "I: " + iso.X + "." + iso.Y;
-        //                break;
-        //            case CellPositionInfo.RotatedCarthesian:
-        //                logMessage = "C: " + rotatedCoords.X + "." + rotatedCoords.Y;
-        //                break;
-        //            case CellPositionInfo.RotatedIsometric:
-        //                iso = RenderHelper.CoordsToIsometric(rotatedCoords);
-        //                logMessage = "I: " + iso.X + "." + iso.Y;
-        //                break;
-        //        }
-
-        //        StateManager.DebugState.DebugLog.AddWorldMessage(logMessage, drawPosition + DebugLog.TileMessageOffset);
-        //    }
-        //}
 
         #endregion
     }
