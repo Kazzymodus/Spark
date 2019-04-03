@@ -37,7 +37,10 @@
 
         internal override void ProcessInput(GameTime gameTime)
         {
-            throw new NotImplementedException();
+            foreach(Component component in components)
+            {
+                component.ProcessInput(gameTime);
+            }
         }
 
         internal override void Update(GameTime gameTime)

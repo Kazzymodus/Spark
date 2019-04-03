@@ -7,17 +7,14 @@
 
     interface IDrawableComponent
     {
-        SpriteSortMethod SpriteSortMethod { get; }
+        LayerSortMethod LayerSortMethod { get; }
 
-        Vector2 DrawPosition { get; }
-
-        void Draw(SpriteBatch spriteBatch, Camera camera);
+        void Draw(SpriteBatch spriteBatch, Camera camera, Vector2 unit);
 
         /// <summary>
-        /// Calculates the draw position.
-        /// Should be called whenever anything affecting the draw position is changed (position, camera rotation).
+        /// Returns the draw position.
         /// </summary>
         /// <param name="camera">The camera this component will be rendered to.</param>
-        void CalculateDrawPosition(Camera camera);
+        Vector2 GetDrawPosition(Camera camera, Vector2 unit);
     }
 }

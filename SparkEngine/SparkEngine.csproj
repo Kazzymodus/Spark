@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="Components\Component.cs" />
     <Compile Include="Components\IDrawableComponent.cs" />
+    <Compile Include="Components\TerrainTile.cs" />
     <Compile Include="Debug\CellPositionInfo.cs" />
     <Compile Include="Debug\DebugLog.cs" />
     <Compile Include="Debug\DebugMessage.cs" />
@@ -59,14 +60,15 @@
     <Compile Include="Level\Map.cs" />
     <Compile Include="Level\ObjectManager.cs" />
     <Compile Include="Rendering\DrawLayer.cs" />
-    <Compile Include="Rendering\IsometricCamera.cs" />
-    <Compile Include="Rendering\SpriteSortMethod.cs" />
+    <Compile Include="Rendering\LayerSortMethod.cs" />
     <Compile Include="Pathfinding\PathFinder.cs" />
     <Compile Include="Pathfinding\PathFinderTest.cs" />
     <Compile Include="Pathfinding\PathNode.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rendering\Camera.cs" />
-    <Compile Include="Rendering\RenderHelper.cs" />
+    <Compile Include="Rendering\Projector.cs" />
+    <Compile Include="Rendering\SpriteData.cs" />
+    <Compile Include="Rendering\TileMode.cs" />
     <Compile Include="States\ComponentManager.cs" />
     <Compile Include="States\GameState.cs" />
     <Compile Include="States\StateActivityLevel.cs" />

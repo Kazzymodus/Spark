@@ -1,6 +1,6 @@
 ﻿namespace SparkEngine.Rendering
 {
-    public enum SpriteSortMethod
+    public enum LayerSortMethod
     {
         /// <summary>
         /// Sprites with this method aren't sorted at all.

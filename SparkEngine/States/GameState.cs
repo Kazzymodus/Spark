@@ -70,6 +70,11 @@
 
         public int CreateNewEntity(params Component[] components)
         {
+            return CreateNewEntity("Default", components);
+        }
+
+        public int CreateNewEntity(string drawLayerName, params Component[] components)
+        {
             int id = GetAvailableEntityID(out bool usedIdFromPool);
             Entity entity = new Entity(id);
 
@@ -101,7 +106,7 @@
         {     
             foreach (ComponentManager manager in ComponentManagers)
             {
-                manager.Update(gameTime);
+                manager.ProcessInput(gameTime);
             }
         }
 
@@ -121,7 +126,7 @@
             }
         }
 
-        private void AddComponentToEntity<TComponent>(Entity entity, TComponent component) where TComponent : Component
+        private void AddComponentToEntity<TComponent>(Entity entity, TComponent component, string drawLayerName = "Default") where TComponent : Component
         {
             component.SetOwner(entity);
 
@@ -136,7 +141,7 @@
 
             if (component is IDrawableComponent)
             {
-                drawLayers["Default"].RegisterComponent((IDrawableComponent)component);
+                drawLayers[drawLayerName].RegisterComponent((IDrawableComponent)component, Camera);
             }
         }
 

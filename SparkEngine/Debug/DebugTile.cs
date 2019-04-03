@@ -1,43 +1,45 @@
-﻿namespace SparkEngine.Debug
-{
-    using Microsoft.Xna.Framework;
-    using Microsoft.Xna.Framework.Graphics;
-    using SparkEngine.Rendering;
+﻿//namespace SparkEngine.Debug
+//{
+//    using Microsoft.Xna.Framework;
+//    using Microsoft.Xna.Framework.Graphics;
+//    using SparkEngine.Rendering;
 
-    public struct DebugTile
-    {
-        #region Fields
+//    public struct DebugTile
+//    {
+//        #region Fields
 
-        private Texture2D sprite;
-        private Vector2 coordinates;
-        private Color colour;
+//        private Texture2D sprite;
+//        private Vector2 coordinates;
+//        private Color colour;
 
-        #endregion
+//        #endregion
 
-        #region Constructors
+//        #region Constructors
 
-        public DebugTile(Texture2D sprite, Vector2 coordinates, Color colour)
-        {
-            this.sprite = sprite;
-            this.coordinates = coordinates;
-            this.colour = colour;
-        }
+//        public DebugTile(Texture2D sprite, Vector2 coordinates, Color colour)
+//        {
+//            this.sprite = sprite;
+//            this.coordinates = coordinates;
+//            this.colour = colour;
+//        }
 
-        #endregion
+//        #endregion
 
-        #region Methods
+//        #region Methods
 
-        internal void Draw(SpriteBatch spriteBatch, int rotations)
-        {
-            Vector2 rotatedCoords = RenderHelper.RotateCoordsInMap(coordinates, rotations);
-            Vector2 drawPosition = RenderHelper.CoordsToPixels(rotatedCoords);
+//        internal void Draw(SpriteBatch spriteBatch, int rotations)
+//        {
+//            //Vector2 rotatedCoords = Projector.RotateCoordsInMap(coordinates, rotations);
+//            //Vector2 drawPosition = Projector.CoordsToPixels(rotatedCoords);
 
-            int frameX = RenderHelper.DefaultTileWidth * rotations;
-            Rectangle drawRectangle = new Rectangle(frameX, 0, RenderHelper.DefaultTileWidth, RenderHelper.DefaultTileHeight);
+//            Vector2 drawPosition = Projector.CarthesianToPixels(coordinates);
 
-            spriteBatch.Draw(sprite, drawPosition, drawRectangle, colour);
-        }
+//            int frameX = Projector.DefaultTileWidth * rotations;
+//            Rectangle drawRectangle = new Rectangle(frameX, 0, Projector.DefaultTileWidth, Projector.DefaultTileHeight);
 
-        #endregion
-    }
-}
+//            spriteBatch.Draw(sprite, drawPosition, drawRectangle, colour);
+//        }
+
+//        #endregion
+//    }
+//}

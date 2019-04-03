@@ -10,6 +10,7 @@
     using SparkEngine.States;
     using SparkEngine.Components;
     using SparkEngine.Rendering;
+    using SparkTest.Components;
 
     public class SparkGame : Game
     {
@@ -68,6 +69,7 @@
             textures = new AssetDictionary<Texture2D>("Textures", Content);
             textures.TryAddAsset("Obelisk");
             textures.TryAddAsset("GrassTile");
+            textures.TryAddAsset("GrassTopDown");
 
             BuildStates();
 
@@ -137,11 +139,14 @@
             GameState menu = new GameState("Menu");
             stateManager.RequestStatePush(menu);
 
-            Terrain terrain = new Terrain(new Vector2(50), textures.GetAsset("GrassTile"));
+            Terrain terrain = new Terrain(new Vector2(50), textures.GetAsset("GrassTopDown"));
             menu.CreateNewEntity(terrain);
 
             GridObject gridObject = new GridObject(textures.GetAsset("Obelisk"), Vector2.Zero, new Vector2(2));
             menu.CreateNewEntity(gridObject);
+
+            CameraController cameraController = new CameraController(menu.Camera);
+            menu.CreateNewEntity(cameraController);
         }
 
         #endregion

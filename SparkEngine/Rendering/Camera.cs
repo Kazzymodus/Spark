@@ -26,6 +26,7 @@
         public Camera(GraphicsDeviceManager graphics)
         {
             ViewportSize = new Vector2(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
+            CalculateTransform();
         }
 
         #endregion
@@ -96,7 +97,8 @@
         {
             Position += translation;
 
-            ClampCameraToBounds();
+            //ClampCameraToBounds();
+            CalculateTransform();
         }
 
         /// <summary>
@@ -114,10 +116,12 @@
         /// <returns>A rectangle containing all visible coordinates.</returns>
         internal Rectangle GetVisibleCoordinates()
         {
-            Vector2 startCoordinate = RenderHelper.PixelsToIso(Position);
-            Vector2 endCoordinate = RenderHelper.PixelsToIso(ViewportSize);
+            //Vector2 startCoordinate = Projector.PixelsToIsometric(Position);
+            //Vector2 endCoordinate = Projector.PixelsToIsometric(ViewportSize);
 
-            return new Rectangle(startCoordinate.ToPoint(), endCoordinate.ToPoint());
+            //return new Rectangle(startCoordinate.ToPoint(), endCoordinate.ToPoint());
+
+            return new Rectangle();
         }
 
         /// <summary>
@@ -138,6 +142,8 @@
 
             Rotations += modulatedRotations;
             Rotations %= 4;
+
+            CalculateTransform();
         }
         
         /// <summary>

@@ -11,7 +11,6 @@
         #region Private Fields
 
         private TerrainTile[,] tileGrid;
-        private readonly TileMode tileMode;
 
         #endregion
 
@@ -20,21 +19,15 @@
         public Terrain(Vector2 dimensions, Texture2D tileSpriteSheet)
         {
             Dimensions = dimensions;
+            TileSize = new Vector2(tileSpriteSheet.Width / 4, tileSpriteSheet.Height); // TEMP
             GenerateCellGrid(tileSpriteSheet);
         }
-
-        //public Terrain(MapTileMode tileMode, TileData tileData, Vector2 dimensions)
-        //{
-        //    this.tileMode = tileMode;
-        //    Dimensions = dimensions;
-
-        //    GenerateCellGrid(tileData);
-        //    GeneratePillarSpots();
-        //}
 
         #endregion
 
         #region Public Properties
+
+        public Vector2 Position { get; }
 
         public Vector2 Dimensions { get; }
 
@@ -42,13 +35,15 @@
 
         public Vector2 DrawPosition { get; private set; }
 
+        public LayerSortMethod LayerSortMethod { get; } = LayerSortMethod.First;
+
         #endregion
 
         #region Public Methods
 
-        public void CalculateDrawPosition(Camera camera)
+        public Vector2 GetDrawPosition(Camera camera, Vector2 unit)
         {
-            DrawPosition = Vector2.Zero;
+            return Position;
         }
 
         /// <summary>
@@ -66,7 +61,7 @@
         //    List<TerrainTile> terrainTiles;
         //}
 
-        public bool WorldObjectCanBePlaced(GridObject gameObject, Vector2 coordinates)
+        public bool IsFreeTile(Vector2 coordinates) // Remember to fix this with different sizes.
         {
             for (int xTile = 0; xTile < Dimensions.X; xTile++)
             {
@@ -100,19 +95,29 @@
             return !(tileGrid[(int)coordinates.X, (int)coordinates.Y].Occupant == null); // || !tileGrid[(int)coordinates.X, (int)coordinates.Y].Occupant.IsPathBlocker);
         }
 
-        public SpriteSortMethod SpriteSortMethod { get; } = SpriteSortMethod.First;
+        public LayerSortMethod SpriteSortMethod { get; } = LayerSortMethod.First;
 
         #endregion
 
         #region Internal Methods
 
-        public void Draw(SpriteBatch spriteBatch, Camera camera)
+        public void Draw(SpriteBatch spriteBatch, Camera camera, Vector2 tileSize)
         {
             foreach (TerrainTile cell in tileGrid)
             {
-                if (camera.GetVisibleCoordinates().Contains(cell.Coordinates))
+                if (true || camera.GetVisibleCoordinates().Contains(cell.Coordinates))
                 {
-                    cell.Draw(spriteBatch, camera);
+                    Vector2 drawPosition = Projector.CarthesianToPixels(cell.Coordinates, tileSize);
+
+                    int frameX = (int)TileSize.X * camera.Rotations;
+
+                    Rectangle drawRectangle = new Rectangle(frameX, 0, (int)tileSize.X, (int)tileSize.Y);
+
+                    Color colour = Color.White;
+
+                    spriteBatch.Draw(cell.SpriteSheet, drawPosition, drawRectangle, colour);
+
+                    //cell.Draw(spriteBatch, camera);
                 }
             }
         }
@@ -176,89 +181,5 @@
         }
 
         #endregion
-    }
-
-    /// <summary>
-    /// Determines what shape the rendererer considers the terrain tiles to be for rendering purpose.
-    /// </summary>
-    public enum TileMode
-    {
-        /// <summary>
-        /// Tiles are square.
-        /// </summary>
-        Square,
-        /// <summary>
-        /// Tiles are diamond.
-        /// </summary>
-        Diamond,
-        /// <summary>
-        /// Tiles are hexagonal. Let's not use this one yet.
-        /// </summary>
-        Hexagonal
-    }
-
-    public class TerrainTile
-    {
-        #region Private Fields
-
-        #endregion
-
-        #region Constructors
-
-        public TerrainTile(Vector2 coordinates, Texture2D spriteSheet)
-        {
-            Coordinates = coordinates;
-            SpriteSheet = spriteSheet;
-        }
-
-        #endregion
-
-        #region Public Properties
-
-        public Texture2D SpriteSheet { get; }
-
-        public Color Color { get; set; } = Color.White;
-
-        public Vector2 Coordinates { get; }
-
-        public GridObject Occupant { get; private set; }
-
-        public bool IsOccupied
-        {
-            get { return Occupant != null; }
-        }
-
-        #endregion
-
-        #region Internal Methods
-
-        internal void Occupy(GridObject occupant)
-        {
-            Occupant = occupant;
-        }
-
-        internal void Unoccupy()
-        {
-            Occupant = null;
-        }
-
-        internal void Draw(SpriteBatch spriteBatch, Camera camera)
-        {
-            Vector2 correctedCoords = Coordinates;
-            correctedCoords.X -= RenderHelper.TerrainSize.X;
-
-            Vector2 rotatedCoords = RenderHelper.RotateCoordsInMap(Coordinates, camera.Rotations);
-            Vector2 drawPosition = RenderHelper.CoordsToPixels(rotatedCoords);
-
-            int frameX = RenderHelper.DefaultTileWidth * camera.Rotations;
-
-            Rectangle drawRectangle = new Rectangle(frameX, 0, RenderHelper.DefaultTileWidth, RenderHelper.DefaultTileHeight);
-
-            Color colour = Color.White;
-
-            spriteBatch.Draw(SpriteSheet, drawPosition, drawRectangle, colour);
-        }
-
-        #endregion
-    }
+    }   
 }

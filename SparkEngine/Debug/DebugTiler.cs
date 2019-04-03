@@ -1,55 +1,55 @@
-﻿namespace SparkEngine.Debug
-{
-    using System.Collections.Generic;
-    using Microsoft.Xna.Framework;
-    using Microsoft.Xna.Framework.Graphics;
+﻿//namespace SparkEngine.Debug
+//{
+//    using System.Collections.Generic;
+//    using Microsoft.Xna.Framework;
+//    using Microsoft.Xna.Framework.Graphics;
 
-    public class DebugTiler
-    {
-        #region Fields
+//    public class DebugTiler
+//    {
+//        #region Fields
 
-        private List<DebugTile> debugTiles = new List<DebugTile>();
+//        private List<DebugTile> debugTiles = new List<DebugTile>();
 
-        #endregion
+//        #endregion
 
-        #region Constructors
+//        #region Constructors
 
-        public DebugTiler(Texture2D tileSprite)
-        {
-            TileSprite = tileSprite;
-        }
+//        public DebugTiler(Texture2D tileSprite)
+//        {
+//            TileSprite = tileSprite;
+//        }
 
-        #endregion
+//        #endregion
 
-        #region Properties
+//        #region Properties
 
-        public Texture2D TileSprite { get; set; }
+//        public Texture2D TileSprite { get; set; }
 
-        #endregion
+//        #endregion
 
-        #region Methods
+//        #region Methods
 
-        public void AddDebugTile(Vector2 coordinates)
-        {
-            AddDebugTile(coordinates, Color.Red);
-        }
+//        public void AddDebugTile(Vector2 coordinates)
+//        {
+//            AddDebugTile(coordinates, Color.Red);
+//        }
 
-        public void AddDebugTile(Vector2 coordinates, Color colour)
-        {
-            DebugTile tile = new DebugTile(TileSprite, coordinates, colour);
-            debugTiles.Add(tile);
-        }
+//        public void AddDebugTile(Vector2 coordinates, Color colour)
+//        {
+//            DebugTile tile = new DebugTile(TileSprite, coordinates, colour);
+//            debugTiles.Add(tile);
+//        }
 
-        internal void DrawTiles(SpriteBatch spriteBatch, int rotations)
-        {
-            foreach (DebugTile tile in debugTiles)
-            {
-                tile.Draw(spriteBatch, rotations);
-            }
+//        internal void DrawTiles(SpriteBatch spriteBatch, int rotations)
+//        {
+//            foreach (DebugTile tile in debugTiles)
+//            {
+//                tile.Draw(spriteBatch, rotations);
+//            }
 
-            debugTiles.Clear();
-        }
+//            debugTiles.Clear();
+//        }
 
-        #endregion
-    }
-}
+//        #endregion
+//    }
+//}

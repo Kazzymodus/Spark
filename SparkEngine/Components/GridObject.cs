@@ -13,26 +13,15 @@
     /// </summary>
     public class GridObject : Component, IDrawableComponent
     {
-        #region Fields
-
-        /// <summary>
-        /// Determines the rotation point of the object (relative to a single frame).
-        /// </summary>
-        private Vector2 pivot;
-
-        #endregion
-
         #region Constructors
 
-        public GridObject(Texture2D spriteSheet, Vector2 coordinates, Vector2 dimensions, int rotation = RenderHelper.RotationNone)
+        public GridObject(Texture2D spriteSheet, Vector2 coordinates, Vector2 dimensions, int rotation = Projector.RotationNone)
         {
-            SpriteSheet = spriteSheet;
+            SpriteData = SpriteData.CreateIsometricSprite(spriteSheet, new Vector2(64, 32), dimensions, 4, 1);
+
             Coordinates = coordinates;
             Dimensions = dimensions;
             Rotation = rotation;
-
-            pivot.X = Dimensions.X * (RenderHelper.DefaultTileWidth * 0.5f);
-            pivot.Y = SpriteSheet.Height - (Dimensions.X * RenderHelper.DefaultTileHeight * 0.5f);
         }
 
         #endregion
@@ -40,17 +29,7 @@
         #region Public Properties
 
         /// <summary>
-        /// The spritesheet used for rendering the object.
-        /// </summary>
-        public Texture2D SpriteSheet { get; }
-        
-        /// <summary>
-        /// The dimensions in tiles of the object.
-        /// </summary>
-        public Vector2 Dimensions { get; }
-
-        /// <summary>
-        /// The tile of the map the object occupies, where 0.0 is the upper left corner.
+        /// The position of the object in coordinates, where 0.0 is the upper left corner.
         /// </summary>
         public Vector2 Coordinates { get; private set; }
 
@@ -65,50 +44,46 @@
         /// </summary>
         public int Rotation { get; private set; }
 
-        public SpriteSortMethod SpriteSortMethod { get; } = SpriteSortMethod.HeightAsDistance;
+        /// <summary>
+        /// The dimensions in tiles of the object.
+        /// </summary>
+        public Vector2 Dimensions { get; }
 
-        public Vector2 DrawPosition { get; private set; }
+        /// <summary>
+        /// The sprite data used for rendering the object.
+        /// </summary>
+        public SpriteData SpriteData { get; }
+
+        public LayerSortMethod LayerSortMethod { get; private set; } = LayerSortMethod.HeightAsDistance;
 
         #endregion
 
         #region Methods
 
         /// <summary>
-        /// Calculates the draw position.
-        /// Should be called whenever anything affecting the drawposition is changed (position, camera rotation).
+        /// Returns the draw position.
         /// </summary>
         /// <param name="camera">The camera this component will be rendered to.</param>
-        public void CalculateDrawPosition(Camera camera)
+        /// <param name="tileSize">The dimensions (in pixels) of a single tile.</param>
+        public Vector2 GetDrawPosition(Camera camera, Vector2 tileSize)
         {
             int rotations = camera.Rotations;
+            Vector2 cornerPixels = Projector.CarthesianToPixels(GetRootCoordinates(rotations), tileSize);
+            Vector2 drawPosition = (cornerPixels - SpriteData.Anchor) + TileOffset;
 
-            Vector2 cornerPixels = RenderHelper.CoordsToPixels(GetLowerCorner(rotations));
-            Vector2 drawPosition = (cornerPixels - pivot) + TileOffset;
+            //// Correction, as we need to draw in the X center of the tile, not the origin.
 
-            // Correction, as we need to draw in the X center of the tile, not the origin.
+            //drawPosition.X += Projector.DefaultTileWidth / 2;
+            //if (Dimensions == Projector.Dimension1X1)
+            //{
+            //    drawPosition.Y += Projector.DefaultTileHeight / 2;
+            //}
 
-            drawPosition.X += RenderHelper.DefaultTileWidth / 2;
-            if (Dimensions == RenderHelper.Dimension1X1)
-            {
-                drawPosition.Y += RenderHelper.DefaultTileHeight / 2;
-            }
-
-            DrawPosition = drawPosition;
+            return drawPosition;
         }
 
         /// <summary>
-        /// Get the bounds of the sprite in pixels.
-        /// </summary>
-        /// <param name="camera"></param>
-        /// <returns></returns>
-        public Rectangle GetPixelBounds(Camera camera)
-        {
-            int width = RenderHelper.DefaultTileWidth * (int)Dimensions.X;
-            return new Rectangle(DrawPosition.ToPoint(), new Point(width, SpriteSheet.Height));
-        }
-
-        /// <summary>
-        /// Sets the position of the WorldObject to the given coordinates.
+        /// Sets the position of the WorldObject to the given coordinates. Discards any offset.
         /// </summary>
         /// <param name="coordinates"></param>
         public void SetPosition(Vector2 coordinates)
@@ -123,8 +98,11 @@
         /// <param name="offset"></param>
         public void SetPosition(Vector2 coordinates, Vector2 offset)
         {
-            Coordinates = coordinates;
+            float coordX = (float)Math.Truncate(coordinates.X);
+            float coordY = (float)Math.Truncate(coordinates.Y);
+            Coordinates = new Vector2(coordX, coordY);
             TileOffset = offset;
+            ProcessOffset();
         }
 
         /// <summary>
@@ -140,7 +118,7 @@
 
             if (y != 0 && x != 0)
             {
-                float clamp = RenderHelper.SqrtTwoReciprocal;
+                float clamp = Projector.SqrtTwoReciprocal;
                 x *= clamp;
                 y *= clamp;
             }
@@ -168,101 +146,16 @@
             ProcessOffset();
         }
 
-        //public T GetClosestWorldObject<T>(List<T> objects) where T : WorldObject
-        //{
-        //    T closestObject = null;
-        //    float closestDistance = float.PositiveInfinity;
-
-        //    for (int i = 0; i < objects.Count; i++)
-        //    {
-        //        Vector2 currentDirection = objects[i].Coordinates - Coordinates;
-        //        float currentDistance = (currentDirection.X * currentDirection.X) + (currentDirection.Y * currentDirection.Y);
-
-        //        if (currentDistance < closestDistance)
-        //        {
-        //            closestDistance = currentDistance;
-        //            closestObject = objects[i];
-        //        }
-        //    }
-
-        //    return closestObject;
-        //}
-
-        //public T GetFarthestWorldObject<T>(List<T> objects) where T : WorldObject
-        //{
-        //    T farthestObject = null;
-        //    float farthestDistance = float.NegativeInfinity;
-
-        //    for (int i = 0; i < objects.Count; i++)
-        //    {
-        //        Vector2 currentDirection = objects[i].Coordinates - Coordinates;
-        //        float currentDistance = (currentDirection.X * currentDirection.X) + (currentDirection.Y * currentDirection.Y);
-
-        //        if (currentDistance > farthestDistance)
-        //        {
-        //            farthestDistance = currentDistance;
-        //            farthestObject = objects[i];
-        //        }
-        //    }
-
-        //    return farthestObject;
-        //}
-
-        internal int GetDrawHeight(int worldRotations)
+        public void Draw(SpriteBatch spriteBatch, Camera camera, Vector2 unit)
         {
-            Vector2 cornerCoordinates = Coordinates;
+            Vector2 frameSize = SpriteData.FrameSize;
+            int frameX = (int)frameSize.X * (Rotation + camera.Rotations) % 4;
+            int frameY = 0; // For now;
 
-            if (Dimensions != RenderHelper.Dimension1X1)
-            {
-                cornerCoordinates.X -= worldRotations / 2 * (Dimensions.X - 1); // For rotations 2 and 3.
-                cornerCoordinates.Y -= worldRotations == 1 || worldRotations == 2 ? 1 * (Dimensions.Y - 1) : 0; // For rotations 1 and 2.
-            }      
+            Rectangle frame = new Rectangle(frameX, frameY, (int)frameSize.X, (int)frameSize.Y);
 
-            Vector2 iso = RenderHelper.CoordsToIsometric(cornerCoordinates);
-            Vector2 terrainDimensions = RenderHelper.TerrainSize;
-
-            switch (worldRotations)
-            {
-                case 0:
-                    return (int)iso.Y;
-                case 1:
-                    return (int)(iso.X + (terrainDimensions.X - 1));
-                case 2:
-                    return (int)(((terrainDimensions.Y - 1) * 2) - iso.Y);
-                case 3:
-                    return (int)(((terrainDimensions.X - 1) * 2) - (iso.X + (terrainDimensions.X - 1)));
-            }
-
-            return 0;
+            spriteBatch.Draw(SpriteData.Texture, GetDrawPosition(camera, unit), frame, Color.White);
         }
-
-        public void Draw(SpriteBatch spriteBatch, Camera camera)
-        {
-            //if(directionalLighting != null)
-            //{
-            //    directionalLighting.Parameters["imageSize"].SetValue(new Vector2(DrawData.Texture.Width, DrawData.Texture.Height));
-            //    directionalLighting.Parameters["sourceRectangle"].SetValue(new Vector4(sourceRectangle.X, sourceRectangle.Y, sourceRectangle.Width, sourceRectangle.Height));
-            //    //directionalLighting.CurrentTechnique.Passes["DirectionalLighting"].Apply();
-            //}
-
-            spriteBatch.Draw(SpriteSheet, DrawPosition, GetSourceRectangle(camera.Rotations), Color.White);
-        }
-
-        //internal void DrawOutline(SpriteBatch spriteBatch, Matrix transform, int worldRotations, Color colour)
-        //{
-        //    Rectangle sourceRectangle = GetSourceRectangle(worldRotations);
-
-        //    Effect outlineShader = EffectDictionary.GetEffect(EffectIDs.PixelShaders);
-        //    outlineShader.Parameters["imageSize"].SetValue(new Vector2(DrawData.Texture.Width, DrawData.Texture.Height));
-        //    outlineShader.Parameters["sourceRectangle"].SetValue(new Vector4(sourceRectangle.X, sourceRectangle.Y, sourceRectangle.Width, sourceRectangle.Height));
-        //    outlineShader.Parameters["colour"].SetValue(colour.ToVector3());
-        //    //outlineShader.CurrentTechnique.Passes["Outline"].Apply();
-
-        //    spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, outlineShader, transform);
-        //    spriteBatch.Draw(DrawData.Texture, GetDrawPosition(worldRotations), sourceRectangle, colour);
-        //    spriteBatch.End();
-        //}
-
 
         /// <summary>
         /// Processes excessive offset. Should be called every time offset is modified.
@@ -305,89 +198,25 @@
         }
 
         /// <summary>
-        /// Gets the lowest corner's coordinates from an isometric sprite.
+        /// Gets the root coordinates. I'll explain this better later. Doesn't do anything at this stage anyway.
         /// </summary>
         /// <param name="worldRotations"></param>
         /// <returns></returns>
-        private Vector2 GetLowerCorner(int worldRotations)
+        private Vector2 GetRootCoordinates(int worldRotations)
         {
-            Vector2 rotatedCoords = RenderHelper.RotateCoordsInMap(Coordinates + TileOffset, worldRotations);
+            return Coordinates;
 
-            if (Dimensions != RenderHelper.Dimension1X1)
-            {
-                rotatedCoords.X += worldRotations == 1 || worldRotations == 2 ? Dimensions.X - 1 : 0;
-                rotatedCoords.Y += worldRotations / 2 * (Dimensions.Y - 1);
-            }
+            //Vector2 rotatedCoords = Projector.RotateCoordsInMap(Coordinates + TileOffset, worldRotations);
 
-            return rotatedCoords;
-        }
+            //if (Dimensions != Projector.Dimension1X1)
+            //{
+            //    rotatedCoords.X += worldRotations == 1 || worldRotations == 2 ? Dimensions.X - 1 : 0;
+            //    rotatedCoords.Y += worldRotations / 2 * (Dimensions.Y - 1);
+            //}
 
-        /// <summary>
-        /// Gets the source rectangle for drawing the correct frame of the spritesheet.
-        /// </summary>
-        /// <param name="worldRotations"></param>
-        /// <returns></returns>
-        private Rectangle GetSourceRectangle(int worldRotations)
-        {
-            int totalRotations = (worldRotations + Rotation) % 4;
-            int frameX = RenderHelper.DefaultTileWidth * (int)Dimensions.X * totalRotations;
-            return new Rectangle(frameX, 0, RenderHelper.DefaultTileWidth * (int)Dimensions.X, SpriteSheet.Height);
+            //return rotatedCoords;
         }
 
         #endregion
     }
-
-    //public abstract class WorldRenderer
-    //{
-    //    public abstract void GetDrawPosition();
-
-    //    public virtual void Draw(SpriteBatch spriteBatch)
-    //    {
-
-    //    }
-    //}
-
-    //public class CarthesianRenderer : WorldRenderer
-    //{
-    //    public override void GetDrawPosition()
-    //    {
-    //        Vector2 cornerPixels = RenderHelper.CoordsToPixels(GetLowerCorner(worldRotations));
-    //        Vector2 drawPosition = (cornerPixels - pivot) + TileOffset;
-
-    //        // Correction, as we need to draw in the X center of the tile, not the origin.
-
-    //        drawPosition.X += RenderHelper.DefaultTileWidth / 2;
-    //        if (Dimensions == RenderHelper.Dimension1X1)
-    //        {
-    //            drawPosition.Y += RenderHelper.DefaultTileHeight / 2;
-    //        }
-
-    //        return drawPosition;
-    //    }
-    //}
-
-    //public class IsometricRenderer : WorldRenderer
-    //{
-    //    public override void Draw(SpriteBatch spriteBatch)
-    //    {
-    //        base.Draw(spriteBatch);
-    //    }
-
-    //    public override void GetDrawPosition()
-    //    {
-    //        Vector2 cornerPixels = RenderHelper.CoordsToPixels(GetLowerCorner(worldRotations));
-    //        Vector2 drawPosition = (cornerPixels - pivot) + TileOffset;
-
-    //        // Correction, as we need to draw in the X center of the tile, not the origin.
-
-    //        drawPosition.X += RenderHelper.DefaultTileWidth / 2;
-
-    //        if (Dimensions == RenderHelper.Dimension1X1)
-    //        {
-    //            drawPosition.Y += RenderHelper.DefaultTileHeight / 2;
-    //        }
-
-    //        return drawPosition;
-    //    }
-    //}
 }

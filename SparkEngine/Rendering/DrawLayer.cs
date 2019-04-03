@@ -12,16 +12,26 @@
     public class DrawLayer
     {
         private List<IDrawableComponent> components = new List<IDrawableComponent>();
+        private bool isScreenLayer;
 
-        internal void RegisterComponent(IDrawableComponent component)
+        public DrawLayer(bool isScreenLayer = false)
         {
-            switch(component.SpriteSortMethod)
+            this.isScreenLayer = isScreenLayer;
+        }
+
+        public TileMode TileMode { get; private set; }
+
+        public Vector2 Unit { get; }
+
+        internal void RegisterComponent(IDrawableComponent component, Camera camera)
+        {
+            switch(component.LayerSortMethod)
             {
-                case SpriteSortMethod.First:
-                    FirstAdd(component, components);
+                case LayerSortMethod.First:
+                    FirstModeInsert(component, components, camera);
                     return;
-                case SpriteSortMethod.HeightAsDistance:
-                    HeightAsDistanceAdd(component, components);
+                case LayerSortMethod.HeightAsDistance:
+                    HeightAsDistanceModeInsert(component, components, camera);
                     return;
                 default:
                     throw new NotImplementedException();
@@ -31,29 +41,31 @@
 
         internal void Draw(SpriteBatch spriteBatch, Camera camera)
         {
-            spriteBatch.Begin();
+            Matrix transform = isScreenLayer ? Matrix.Identity : camera.Transform;
+
+            spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, transform);
             
             foreach(IDrawableComponent component in components)
             {
-                component.Draw(spriteBatch, camera);
+                component.Draw(spriteBatch, camera, Unit);
             }
 
             spriteBatch.End();
         }
 
-        private void Sort()
+        private void Sort(Camera camera)
         {
             List<IDrawableComponent> drawOrder = new List<IDrawableComponent>();
 
             foreach (IDrawableComponent component in components)
             {
-                switch (component.SpriteSortMethod)
+                switch (component.LayerSortMethod)
                 {
-                    case SpriteSortMethod.First:
-                        FirstAdd(component, drawOrder);
+                    case LayerSortMethod.First:
+                        FirstModeInsert(component, drawOrder, camera);
                         break;
-                    case SpriteSortMethod.HeightAsDistance:
-                        HeightAsDistanceAdd(component, drawOrder);
+                    case LayerSortMethod.HeightAsDistance:
+                        HeightAsDistanceModeInsert(component, drawOrder, camera);
                         break;
                 }
             }
@@ -61,15 +73,15 @@
             components = drawOrder;
         }
 
-        private void HeightAsDistanceAdd(IDrawableComponent component, List<IDrawableComponent> destination)
+        private void HeightAsDistanceModeInsert(IDrawableComponent component, List<IDrawableComponent> destination, Camera camera)
         {
-            float drawHeight = component.DrawPosition.Y;
+            float drawHeight = component.GetDrawPosition(camera, Unit).Y;
             int index = 0;
             bool inserted = false;
 
             for (int i = 0; i < destination.Count; i++)
             {
-                if (destination[i].DrawPosition.Y > drawHeight)
+                if (destination[i].GetDrawPosition(camera, Unit).Y > drawHeight)
                 {
                     destination.Insert(index, component);
                     inserted = true;
@@ -85,7 +97,7 @@
             }
         }
 
-        private void FirstAdd(IDrawableComponent component, List<IDrawableComponent> destination)
+        private void FirstModeInsert(IDrawableComponent component, List<IDrawableComponent> destination, Camera camera)
         {
             destination.Insert(0, component);
         }
