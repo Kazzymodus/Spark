@@ -32,7 +32,7 @@
 //            //Vector2 rotatedCoords = Projector.RotateCoordsInMap(coordinates, rotations);
 //            //Vector2 drawPosition = Projector.CoordsToPixels(rotatedCoords);
 
-//            Vector2 drawPosition = Projector.CarthesianToPixels(coordinates);
+//            Vector2 drawPosition = Projector.CartesianToPixels(coordinates);
 
 //            int frameX = Projector.DefaultTileWidth * rotations;
 //            Rectangle drawRectangle = new Rectangle(frameX, 0, Projector.DefaultTileWidth, Projector.DefaultTileHeight);

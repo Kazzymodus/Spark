@@ -23,6 +23,7 @@
         private StateManager stateManager = new StateManager();
 
         private AssetDictionary<Texture2D> textures;
+        private AssetDictionary<SpriteFont> fonts;
 
         #endregion
 
@@ -70,6 +71,12 @@
             textures.TryAddAsset("Obelisk");
             textures.TryAddAsset("GrassTile");
             textures.TryAddAsset("GrassTopDown");
+            textures.TryAddAsset("GridTile");
+
+            fonts = new AssetDictionary<SpriteFont>("Fonts", Content);
+            fonts.TryAddAsset("CourierNew");
+
+            InitialiseContentDependents();
 
             BuildStates();
 
@@ -126,25 +133,45 @@
                 // TODO: Add your drawing code here
 
                 stateManager.DrawStates(spriteBatch);
+
+                spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied);
+
+                Component.DrawMessages(spriteBatch); // Very much temp, gonna combine this into a manager some day.
+                Camera.DrawMessages(spriteBatch);
+
+                spriteBatch.End();
+
                 // StateManager.DrawScreenStates(spriteBatch);
             }
 
             base.Draw(gameTime);
         }
 
+        private void InitialiseContentDependents()
+        {
+            Log.SetMessageFont(fonts.GetAsset("CourierNew"));
+            GameState.SetDefaultCamera(new Camera(graphics));
+        }
+
         private void BuildStates()
         {
-            GameState.SetDefaultCamera(new Camera(graphics));
-
             GameState menu = new GameState("Menu");
             stateManager.RequestStatePush(menu);
 
-            Terrain terrain = new Terrain(new Vector2(50), textures.GetAsset("GrassTopDown"));
-            menu.CreateNewEntity(terrain);
+            DrawLayer terrainLayer = menu.CreateNewDrawLayer("Terrain", false, new Vector2(64, 32));
+            DrawLayer structureLayer = menu.CreateNewDrawLayer("Structures", false, new Vector2(64, 32));
 
-            GridObject gridObject = new GridObject(textures.GetAsset("Obelisk"), Vector2.Zero, new Vector2(2));
-            menu.CreateNewEntity(gridObject);
+            Terrain terrain = new Terrain(new Vector2(100), textures.GetAsset("GrassTile"), textures.GetAsset("GridTile"));
+            menu.CreateNewEntity("Terrain", terrain);
 
+            System.Random rand = new System.Random();
+
+            for (int i = 0; i < 500; i++)
+            {
+                Vector2 pos = new Vector2(rand.Next(100), rand.Next(100));
+                GridObject gridObject = GridObject.CreateIsometricGridObject(textures.GetAsset("Obelisk"), structureLayer, pos, new Vector2(2));
+                menu.CreateNewEntity("Structures", gridObject);
+            }
             CameraController cameraController = new CameraController(menu.Camera);
             menu.CreateNewEntity(cameraController);
         }

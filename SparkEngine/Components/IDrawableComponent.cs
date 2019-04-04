@@ -9,7 +9,7 @@
     {
         LayerSortMethod LayerSortMethod { get; }
 
-        void Draw(SpriteBatch spriteBatch, Camera camera, Vector2 unit);
+        void Draw(SpriteBatch spriteBatch, Camera camera, DrawLayer layer);
 
         /// <summary>
         /// Returns the draw position.

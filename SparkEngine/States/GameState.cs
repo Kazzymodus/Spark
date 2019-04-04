@@ -15,6 +15,8 @@
     /// </summary>
     public class GameState
     {
+        private const string DefaultDrawLayerName = "Default";
+
         #region Constructors
 
         /// <summary>
@@ -61,19 +63,32 @@
 
         private readonly Dictionary<string, DrawLayer> drawLayers = new Dictionary<string, DrawLayer>
         {
-            { "Default", new DrawLayer() }
+            { DefaultDrawLayerName, new DrawLayer(true, Vector2.One) }
         };
 
         #endregion
 
         #region Methods
 
+        public DrawLayer CreateNewDrawLayer(string name, bool isScreenLayer, Vector2 unit)
+        {
+            DrawLayer layer = new DrawLayer(isScreenLayer, unit);
+            drawLayers.Add(name, layer);
+
+            return layer;
+        }
+
         public int CreateNewEntity(params Component[] components)
         {
-            return CreateNewEntity("Default", components);
+            return CreateNewEntity(drawLayers[DefaultDrawLayerName], components);
         }
 
         public int CreateNewEntity(string drawLayerName, params Component[] components)
+        {
+            return CreateNewEntity(drawLayers[drawLayerName], components);
+        }
+
+        public int CreateNewEntity(DrawLayer drawLayer, params Component[] components)
         {
             int id = GetAvailableEntityID(out bool usedIdFromPool);
             Entity entity = new Entity(id);
@@ -89,7 +104,7 @@
 
             foreach (Component component in components)
             {
-                AddComponentToEntity(entity, component);
+                AddComponentToEntity(entity, component, drawLayer);
             }
 
             entities.Add(entity);
@@ -126,7 +141,7 @@
             }
         }
 
-        private void AddComponentToEntity<TComponent>(Entity entity, TComponent component, string drawLayerName = "Default") where TComponent : Component
+        private void AddComponentToEntity<TComponent>(Entity entity, TComponent component, DrawLayer drawLayer) where TComponent : Component
         {
             component.SetOwner(entity);
 
@@ -141,7 +156,7 @@
 
             if (component is IDrawableComponent)
             {
-                drawLayers[drawLayerName].RegisterComponent((IDrawableComponent)component, Camera);
+                drawLayer.RegisterComponent((IDrawableComponent)component, Camera);
             }
         }
 

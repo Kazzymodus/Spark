@@ -58,7 +58,7 @@
 
         private static Vector2 GetIsometricSpriteAnchor(Vector2 frameSize, Vector2 dimensions, Vector2 unit)
         {
-            float anchorX = unit.X * dimensions.X * 0.5f;
+            float anchorX = unit.X * (dimensions.X * 0.5f - 0.5f);
             float anchorY = frameSize.Y - unit.Y;
 
             return new Vector2(anchorX, anchorY);

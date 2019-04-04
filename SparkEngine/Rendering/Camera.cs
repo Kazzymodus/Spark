@@ -2,18 +2,22 @@
 {
     using System;
     using Microsoft.Xna.Framework;
+    using Microsoft.Xna.Framework.Graphics;
     using Microsoft.Xna.Framework.Input;
+    using SparkEngine.Debug;
     using SparkEngine.Input;
     using SparkEngine.States;
 
     public class Camera
     {
-        #region Public Fields
+        #region Fields
 
         /// <summary>
         /// The region in which the camera can move.
         /// </summary>
         private Rectangle constraints;
+
+        private static Log Log { get; } = new Log();
 
         #endregion
 
@@ -79,6 +83,11 @@
 
         #region Methods
 
+        public static void DrawMessages(SpriteBatch spriteBatch) // Bad coupling is bad but this is not a priority right now.
+        {
+            Log.DrawMessages(spriteBatch);
+        }
+
         /// <summary>
         /// Moves the camera a set amount of pixels.
         /// </summary>
@@ -114,14 +123,20 @@
         /// Gets the range of coordinates currently in camera view.
         /// </summary>
         /// <returns>A rectangle containing all visible coordinates.</returns>
-        internal Rectangle GetVisibleCoordinates()
+        internal Rectangle GetVisibleCoordinates(Vector2 unit)
         {
-            //Vector2 startCoordinate = Projector.PixelsToIsometric(Position);
-            //Vector2 endCoordinate = Projector.PixelsToIsometric(ViewportSize);
+            Vector2 startCoordinate = Projector.PixelsToCoordinates(Position, unit);
+            Vector2 endCoordinate = Projector.PixelsToCoordinates(ViewportSize, unit);
 
-            //return new Rectangle(startCoordinate.ToPoint(), endCoordinate.ToPoint());
+            return new Rectangle(startCoordinate.ToPoint(), endCoordinate.ToPoint());
+        }
 
-            return new Rectangle();
+        internal Rectangle GetVisibleIsometricCoordinates(Vector2 unit, int padding = 0)
+        {
+            Vector2 location = Projector.PixelsToIsometric(Position, unit) - new Vector2(padding);
+            Vector2 size = Projector.PixelsToIsometric(ViewportSize, unit) + new Vector2(padding * 2);
+
+            return new Rectangle(location.ToPoint(), size.ToPoint());
         }
 
         /// <summary>

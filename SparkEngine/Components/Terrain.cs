@@ -11,14 +11,16 @@
         #region Private Fields
 
         private TerrainTile[,] tileGrid;
+        private Texture2D gridTileTexture;
 
         #endregion
 
         #region Constructors
 
-        public Terrain(Vector2 dimensions, Texture2D tileSpriteSheet)
+        public Terrain(Vector2 dimensions, Texture2D tileSpriteSheet, Texture2D gridTileTexture)
         {
             Dimensions = dimensions;
+            this.gridTileTexture = gridTileTexture;
             TileSize = new Vector2(tileSpriteSheet.Width / 4, tileSpriteSheet.Height); // TEMP
             GenerateCellGrid(tileSpriteSheet);
         }
@@ -101,23 +103,37 @@
 
         #region Internal Methods
 
-        public void Draw(SpriteBatch spriteBatch, Camera camera, Vector2 tileSize)
+        public void Draw(SpriteBatch spriteBatch, Camera camera, DrawLayer layer)
         {
-            foreach (TerrainTile cell in tileGrid)
+            Vector2 tileSize = layer.Unit;
+            Rectangle visibleCoordinates = camera.GetVisibleIsometricCoordinates(layer.Unit, 2);
+
+            Point startCoordinate = visibleCoordinates.Location;
+            Point endCoordinate = startCoordinate + visibleCoordinates.Size;
+
+            for (int x = startCoordinate.X; x < endCoordinate.X; x++)
             {
-                if (true || camera.GetVisibleCoordinates().Contains(cell.Coordinates))
+                for (int y = startCoordinate.Y; y < endCoordinate.Y; y++)
                 {
-                    Vector2 drawPosition = Projector.CarthesianToPixels(cell.Coordinates, tileSize);
+                    Point coordinate = Projector.IsometricToCartesian(new Point(x, y));
+
+                    if ((x + y) % 2 != 0 || coordinate.X < 0 || coordinate.X >= tileGrid.GetLength(0) || coordinate.Y < 0 || coordinate.Y >= tileGrid.GetLength(1))
+                    {
+                        continue;
+                    }
+
+                    TerrainTile tile = tileGrid[coordinate.X, coordinate.Y];
+                    Vector2 drawPosition = Projector.CartesianToIsometricPixels(tile.Coordinates, tileSize);
 
                     int frameX = (int)TileSize.X * camera.Rotations;
-
                     Rectangle drawRectangle = new Rectangle(frameX, 0, (int)tileSize.X, (int)tileSize.Y);
-
                     Color colour = Color.White;
 
-                    spriteBatch.Draw(cell.SpriteSheet, drawPosition, drawRectangle, colour);
+                    spriteBatch.Draw(tile.SpriteSheet, drawPosition, drawRectangle, colour);
+                    spriteBatch.Draw(gridTileTexture, drawPosition, colour);
 
-                    //cell.Draw(spriteBatch, camera);
+                    Vector2 iso = Projector.CartesianToIsometric(tile.Coordinates);
+                    Log.AddWorldMessage("C:" + coordinate.X + "," + coordinate.Y, drawPosition + new Vector2(8), camera);
                 }
             }
         }

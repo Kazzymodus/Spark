@@ -5,6 +5,7 @@
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using SparkEngine.Rendering;
+    using SparkEngine.Debug;
 
     public class StateManager
     {

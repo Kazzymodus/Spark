@@ -15,10 +15,9 @@
     {
         #region Constructors
 
-        public GridObject(Texture2D spriteSheet, Vector2 coordinates, Vector2 dimensions, int rotation = Projector.RotationNone)
+        private GridObject(SpriteData spriteData, Vector2 coordinates, Vector2 dimensions, int rotation)
         {
-            SpriteData = SpriteData.CreateIsometricSprite(spriteSheet, new Vector2(64, 32), dimensions, 4, 1);
-
+            SpriteData = spriteData;
             Coordinates = coordinates;
             Dimensions = dimensions;
             Rotation = rotation;
@@ -60,6 +59,14 @@
 
         #region Methods
 
+        public static GridObject CreateIsometricGridObject(Texture2D spriteSheet, DrawLayer drawLayer, Vector2 coordinates, Vector2 dimensions, int rotation = Projector.RotationNone)
+        {
+            SpriteData spriteData = SpriteData.CreateIsometricSprite(spriteSheet, drawLayer.Unit, dimensions, 4, 1);
+
+            GridObject gridObject = new GridObject(spriteData, coordinates, dimensions, rotation);
+            return gridObject;
+        }
+
         /// <summary>
         /// Returns the draw position.
         /// </summary>
@@ -68,7 +75,7 @@
         public Vector2 GetDrawPosition(Camera camera, Vector2 tileSize)
         {
             int rotations = camera.Rotations;
-            Vector2 cornerPixels = Projector.CarthesianToPixels(GetRootCoordinates(rotations), tileSize);
+            Vector2 cornerPixels = Projector.CartesianToIsometricPixels(GetRootCoordinates(rotations), tileSize);
             Vector2 drawPosition = (cornerPixels - SpriteData.Anchor) + TileOffset;
 
             //// Correction, as we need to draw in the X center of the tile, not the origin.
@@ -146,15 +153,19 @@
             ProcessOffset();
         }
 
-        public void Draw(SpriteBatch spriteBatch, Camera camera, Vector2 unit)
+        public void Draw(SpriteBatch spriteBatch, Camera camera, DrawLayer layer)
         {
             Vector2 frameSize = SpriteData.FrameSize;
             int frameX = (int)frameSize.X * (Rotation + camera.Rotations) % 4;
             int frameY = 0; // For now;
 
             Rectangle frame = new Rectangle(frameX, frameY, (int)frameSize.X, (int)frameSize.Y);
+            Vector2 drawPosition = GetDrawPosition(camera, layer.Unit);
 
-            spriteBatch.Draw(SpriteData.Texture, GetDrawPosition(camera, unit), frame, Color.White);
+            //Log.AddWorldMessage("DP: " + drawPosition.X + "," + drawPosition.Y, drawPosition, camera, Color.Red);
+            //Log.AddWorldMessage("A: " + SpriteData.Anchor.X + "," + SpriteData.Anchor.Y, drawPosition + SpriteData.Anchor, camera, Color.Red);
+
+            spriteBatch.Draw(SpriteData.Texture, drawPosition, frame, new Color(Color.White, 0.5f));
         }
 
         /// <summary>

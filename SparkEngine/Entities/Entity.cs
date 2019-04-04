@@ -8,11 +8,19 @@
 
     public class Entity
     {
+        #region Constructors
+
         public Entity(int id)
         {
             ID = id;
         }
 
+        #endregion
+
+        #region Properties
+
         public int ID { get; }
+
+        #endregion
     }
 }

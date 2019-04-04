@@ -14,9 +14,10 @@
         private List<IDrawableComponent> components = new List<IDrawableComponent>();
         private bool isScreenLayer;
 
-        public DrawLayer(bool isScreenLayer = false)
+        public DrawLayer(bool isScreenLayer, Vector2 unit)
         {
             this.isScreenLayer = isScreenLayer;
+            Unit = unit;
         }
 
         public TileMode TileMode { get; private set; }
@@ -47,7 +48,7 @@
             
             foreach(IDrawableComponent component in components)
             {
-                component.Draw(spriteBatch, camera, Unit);
+                component.Draw(spriteBatch, camera, this);
             }
 
             spriteBatch.End();

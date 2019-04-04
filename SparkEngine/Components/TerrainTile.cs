@@ -62,7 +62,7 @@
             //Vector2 rotatedCoords = Projector.RotateCoordsInMap(Coordinates, camera.Rotations);
             //Vector2 drawPosition = Projector.CoordsToPixels(rotatedCoords);
 
-            Vector2 drawPosition = Projector.CarthesianToPixels(Coordinates, tileSize);
+            Vector2 drawPosition = Projector.CartesianToIsometricPixels(Coordinates, tileSize);
 
             int frameX = (int)tileSize.X * camera.Rotations;
 

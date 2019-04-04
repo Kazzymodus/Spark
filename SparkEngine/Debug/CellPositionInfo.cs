@@ -2,9 +2,9 @@
 {
     public enum CellPositionInfo
     {
-        StaticCarthesian,
+        StaticCartesian,
         StaticIsometric,
-        RotatedCarthesian,
+        RotatedCartesian,
         RotatedIsometric
     }
 }

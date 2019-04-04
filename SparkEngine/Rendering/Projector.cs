@@ -22,7 +22,7 @@
 
         static Projector()
         {
-            ToPixelConversions.Add(TileMode.None.ToString(), CarthesianToPixels);
+            ToPixelConversions.Add(TileMode.None.ToString(), CartesianToIsometricPixels);
             ToPixelConversions.Add(TileMode.Isometric.ToString(), IsometricToPixels);
         }
 
@@ -48,11 +48,11 @@
         #region Methods
 
         /// <summary>
-        /// Converts carthesian coordinates to isometric coordinates.
+        /// Converts cartesian coordinates to isometric coordinates.
         /// </summary>
         /// <param name="coordinates"></param>
         /// <returns></returns>
-        public static Vector2 CarthesianToIsometric(Vector2 coordinates)
+        public static Vector2 CartesianToIsometric(Vector2 coordinates)
         {
             float xIso = coordinates.X - coordinates.Y;
             float yIso = coordinates.X + coordinates.Y;
@@ -60,12 +60,33 @@
             return new Vector2(xIso, yIso);
         }
 
+        public static Point CartesianToIsometric(Point coordinates)
+        {
+            int xIso = coordinates.X - coordinates.Y;
+            int yIso = coordinates.X + coordinates.Y;
+
+            return new Point(xIso, yIso);
+        }
+
         /// <summary>
-        /// Converts isometric coordinates to carthesian coordinates.
+        /// Converts isometric coordinates to cartesian coordinates.
         /// </summary>
         /// <param name="coordinates"></param>
         /// <returns></returns>
-        public static Vector2 IsometricToCarthesian(Vector2 coordinates)
+        public static Point IsometricToCartesian(Point coordinates)
+        {
+            int xCoord = (coordinates.X + coordinates.Y) / 2;
+            int yCoord = (coordinates.Y - coordinates.X) / 2;
+
+            return new Point(xCoord, yCoord);
+        }
+
+        /// <summary>
+        /// Converts isometric coordinates to cartesian coordinates.
+        /// </summary>
+        /// <param name="coordinates"></param>
+        /// <returns></returns>
+        public static Vector2 IsometricToCartesian(Vector2 coordinates)
         {
             float xCoord = (coordinates.X + coordinates.Y) * 0.5f;
             float yCoord = (coordinates.Y - coordinates.X) * 0.5f;
@@ -73,13 +94,29 @@
             return new Vector2(xCoord, yCoord);
         }
 
+        public static Vector2 CoordinatesToPixels(Vector2 coordinates, Vector2 tileSize)
+        {
+            float xPixel = coordinates.X * tileSize.X * 0.5f;
+            float yPixel = coordinates.Y * tileSize.Y * 0.5f;
+
+            return new Vector2(xPixel, yPixel);
+        }
+
+        public static Vector2 PixelsToCoordinates(Vector2 pixels, Vector2 tileSize)
+        {
+            float xIso = (float)Math.Round(pixels.X / (tileSize.X * 0.5f));
+            float yIso = (float)Math.Round(pixels.Y / (tileSize.Y * 0.5f));
+
+            return new Vector2(xIso, yIso);
+        }
+
         /// <summary>
-        /// Converts carthesian coordinates to pixel coordinates.
+        /// Converts cartesian coordinates to pixel coordinates.
         /// </summary>
         /// <param name="coordinates"></param>
         /// <param name="tileSize"></param>
         /// <returns></returns>
-        public static Vector2 CarthesianToPixels(Vector2 coordinates, Vector2 tileSize)
+        public static Vector2 CartesianToIsometricPixels(Vector2 coordinates, Vector2 tileSize)
         {
             float xPixel = (coordinates.X - coordinates.Y) * tileSize.X * 0.5f;
             float yPixel = (coordinates.X + coordinates.Y) * tileSize.Y * 0.5f;
@@ -88,11 +125,11 @@
         }
 
         /// <summary>
-        /// Converts pixel coordinates to carthesian coordinates.
+        /// Converts pixel coordinates to cartesian coordinates.
         /// </summary>
         /// <param name="pixels"></param>
         /// <returns></returns>
-        public static Vector2 PixelsToCarthesian(Vector2 pixels, Vector2 tileSize)
+        public static Vector2 IsometricPixelsToCartesian(Vector2 pixels, Vector2 tileSize)
         {
             float xCoord = ((pixels.X / (tileSize.X * 0.5f)) + (pixels.Y / (tileSize.Y * 0.5f))) * 0.5f;
             float yCoord = ((pixels.Y / (tileSize.Y * 0.5f)) - (pixels.X / (tileSize.X * 0.5f))) * 0.5f;
@@ -133,7 +170,7 @@
 
         public static Vector2 DrawPositionAtCoords(Vector2 coordinates, Vector2 anchor, Vector2 unit)
         {
-            Vector2 drawPosition = CarthesianToPixels(coordinates, unit);
+            Vector2 drawPosition = CartesianToIsometricPixels(coordinates, unit);
             drawPosition -= anchor;
 
             return drawPosition;
