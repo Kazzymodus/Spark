@@ -69,6 +69,7 @@
 
             textures = new AssetDictionary<Texture2D>("Textures", Content);
             textures.TryAddAsset("Obelisk");
+            textures.TryAddAsset("House");
             textures.TryAddAsset("GrassTile");
             textures.TryAddAsset("GrassTopDown");
             textures.TryAddAsset("GridTile");
@@ -169,7 +170,11 @@
             for (int i = 0; i < 500; i++)
             {
                 Vector2 pos = new Vector2(rand.Next(100), rand.Next(100));
-                GridObject gridObject = GridObject.CreateIsometricGridObject(textures.GetAsset("Obelisk"), structureLayer, pos, new Vector2(2));
+                GridObject gridObject = GridObject.CreateIsometricGridObject(textures.GetAsset("Obelisk"), structureLayer, pos, new Vector2(2), 0);
+                menu.CreateNewEntity("Structures", gridObject);
+
+                pos = new Vector2(rand.Next(100), rand.Next(100));
+                gridObject = GridObject.CreateIsometricGridObject(textures.GetAsset("House"), structureLayer, pos, new Vector2(1), 0);
                 menu.CreateNewEntity("Structures", gridObject);
             }
             CameraController cameraController = new CameraController(menu.Camera);

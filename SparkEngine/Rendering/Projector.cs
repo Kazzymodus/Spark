@@ -5,6 +5,9 @@
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
 
+    /// <summary>
+    /// The Projector class supplies methods for projecting world elements to the screen.
+    /// </summary>
     public static class Projector
     {
         #region Fields
@@ -16,15 +19,7 @@
         public const int Rotation180 = 2;
         public const int RotationCounterClockwise = 3;
 
-        public static Dictionary<string, Func<Vector2, Vector2, Vector2>> ToPixelConversions = new Dictionary<string, Func<Vector2, Vector2, Vector2>>();
-
         #endregion
-
-        static Projector()
-        {
-            ToPixelConversions.Add(TileMode.None.ToString(), CartesianToIsometricPixels);
-            ToPixelConversions.Add(TileMode.Isometric.ToString(), IsometricToPixels);
-        }
 
         #region Properties
 
@@ -48,18 +43,10 @@
         #region Methods
 
         /// <summary>
-        /// Converts cartesian coordinates to isometric coordinates.
+        /// Converts cartesian coordinates to isometric coordinates (integer).
         /// </summary>
-        /// <param name="coordinates"></param>
-        /// <returns></returns>
-        public static Vector2 CartesianToIsometric(Vector2 coordinates)
-        {
-            float xIso = coordinates.X - coordinates.Y;
-            float yIso = coordinates.X + coordinates.Y;
-
-            return new Vector2(xIso, yIso);
-        }
-
+        /// <param name="coordinates">The cartesian coordinates to convert.</param>
+        /// <returns>A set of isometric coordinates.</returns>
         public static Point CartesianToIsometric(Point coordinates)
         {
             int xIso = coordinates.X - coordinates.Y;
@@ -69,10 +56,23 @@
         }
 
         /// <summary>
-        /// Converts isometric coordinates to cartesian coordinates.
+        /// Converts cartesian coordinates to isometric coordinates (non-integer).
         /// </summary>
-        /// <param name="coordinates"></param>
-        /// <returns></returns>
+        /// <param name="coordinates">The cartesian coordinates to convert.</param>
+        /// <returns>A set of isometric coordinates.</returns>
+        public static Vector2 CartesianToIsometric(Vector2 coordinates)
+        {
+            float xIso = coordinates.X - coordinates.Y;
+            float yIso = coordinates.X + coordinates.Y;
+
+            return new Vector2(xIso, yIso);
+        }
+
+        /// <summary>
+        /// Converts isometric coordinates to cartesian coordinates (integer).
+        /// </summary>
+        /// <param name="coordinates">The isometric coordinates to convert.</param>
+        /// <returns>A set of cartesian coordinates.</returns>
         public static Point IsometricToCartesian(Point coordinates)
         {
             int xCoord = (coordinates.X + coordinates.Y) / 2;
@@ -82,10 +82,10 @@
         }
 
         /// <summary>
-        /// Converts isometric coordinates to cartesian coordinates.
+        /// Converts isometric coordinates to cartesian coordinates (non-integer).
         /// </summary>
-        /// <param name="coordinates"></param>
-        /// <returns></returns>
+        /// <param name="coordinates">The isometric coordinates to convert.</param>
+        /// <returns>A set of cartesian coordinates.</returns>
         public static Vector2 IsometricToCartesian(Vector2 coordinates)
         {
             float xCoord = (coordinates.X + coordinates.Y) * 0.5f;
@@ -94,87 +94,156 @@
             return new Vector2(xCoord, yCoord);
         }
 
-        public static Vector2 CoordinatesToPixels(Vector2 coordinates, Vector2 tileSize)
+        /// <summary>
+        /// Converts cartesian coordinates to pixel coordinates (integer).
+        /// </summary>
+        /// <param name="coordinates">The coordinates to convert.</param>
+        /// <param name="cellSize">The size of a single cell.</param>
+        /// <returns>A set of pixel coordinates.</returns>
+        public static Point CartesianToPixels(Point coordinates, Vector2 cellSize)
         {
-            float xPixel = coordinates.X * tileSize.X * 0.5f;
-            float yPixel = coordinates.Y * tileSize.Y * 0.5f;
+            int xPixel = (int)(coordinates.X * cellSize.X);
+            int yPixel = (int)(coordinates.Y * cellSize.Y);
+
+            return new Point(xPixel, yPixel);
+        }
+
+        /// <summary>
+        /// Converts cartesian coordinates to pixel coordinates (non-integer).
+        /// </summary>
+        /// <param name="coordinates">The coordinates to convert.</param>
+        /// <param name="cellSize">The size of a single cell.</param>
+        /// <returns>A set of pixel coordinates.</returns>
+        public static Vector2 CartesianToPixels(Vector2 coordinates, Vector2 cellSize)
+        {
+            float xPixel = coordinates.X * cellSize.X;
+            float yPixel = coordinates.Y * cellSize.Y;
 
             return new Vector2(xPixel, yPixel);
         }
 
-        public static Vector2 PixelsToCoordinates(Vector2 pixels, Vector2 tileSize)
+        /// <summary>
+        /// Converts pixel coordinates to cartesian coordinates (integer).
+        /// </summary>
+        /// <param name="pixels">The coordinates to convert.</param>
+        /// <param name="cellSize">The size of a cartesian cell.</param>
+        /// <returns>A set of cartesian coordinates.</returns>
+        public static Point PixelsToCartesian(Point pixels, Vector2 cellSize)
         {
-            float xIso = (float)Math.Round(pixels.X / (tileSize.X * 0.5f));
-            float yIso = (float)Math.Round(pixels.Y / (tileSize.Y * 0.5f));
+            int xIso = pixels.X / (int)cellSize.X;
+            int yIso = pixels.Y / (int)cellSize.Y;
+
+            return new Point(xIso, yIso);
+        }
+
+        /// <summary>
+        /// Converts pixel coordinates to cartesian coordinates (non-integer).
+        /// </summary>
+        /// <param name="pixels">The coordinates to convert.</param>
+        /// <param name="cellSize">The size of a cartesian cell.</param>
+        /// <returns>A set of cartesian coordinates.</returns>
+        public static Vector2 PixelsToCartesian(Vector2 pixels, Vector2 cellSize)
+        {
+            float xIso = pixels.X / cellSize.X;
+            float yIso = pixels.Y / cellSize.Y;
 
             return new Vector2(xIso, yIso);
         }
 
         /// <summary>
-        /// Converts cartesian coordinates to pixel coordinates.
+        /// Converts isometric coordinates to pixel coordinates (integer).
         /// </summary>
-        /// <param name="coordinates"></param>
-        /// <param name="tileSize"></param>
-        /// <returns></returns>
-        public static Vector2 CartesianToIsometricPixels(Vector2 coordinates, Vector2 tileSize)
+        /// <param name="coordinates">The coordinates to convert.</param>
+        /// <param name="cellSize">The size of an isometric cell.</param>
+        /// <returns>A set of pixel coordinates.</returns>
+        public static Point IsometricToPixels(Point coordinates, Vector2 cellSize)
         {
-            float xPixel = (coordinates.X - coordinates.Y) * tileSize.X * 0.5f;
-            float yPixel = (coordinates.X + coordinates.Y) * tileSize.Y * 0.5f;
+            int xPixel = (int)(coordinates.X * cellSize.X) / 2;
+            int yPixel = (int)(coordinates.Y * cellSize.Y) / 2;
+
+            return new Point(xPixel, yPixel);
+        }
+
+        /// <summary>
+        /// Converts isometric coordinates to pixel coordinates (non-integer).
+        /// </summary>
+        /// <param name="coordinates">The coordinates to convert.</param>
+        /// <param name="cellSize">The size of an isometric cell.</param>
+        /// <returns>A set of pixel coordinates.</returns>
+        public static Vector2 IsometricToPixels(Vector2 coordinates, Vector2 cellSize)
+        {
+            float xPixel = coordinates.X * cellSize.X * 0.5f;
+            float yPixel = coordinates.Y * cellSize.Y * 0.5f;
 
             return new Vector2(xPixel, yPixel);
         }
 
         /// <summary>
-        /// Converts pixel coordinates to cartesian coordinates.
+        /// Converts pixel coordinates to isometric coordinates (integer).
         /// </summary>
-        /// <param name="pixels"></param>
-        /// <returns></returns>
-        public static Vector2 IsometricPixelsToCartesian(Vector2 pixels, Vector2 tileSize)
+        /// <param name="pixels">The coordinates to convert.</param>
+        /// <param name="cellSize">The size of an isometric cell.</param>
+        /// <returns>A set of isometric coordinates.</returns>
+        public static Point PixelsToIsometric(Point pixels, Vector2 tileSize)
         {
-            float xCoord = ((pixels.X / (tileSize.X * 0.5f)) + (pixels.Y / (tileSize.Y * 0.5f))) * 0.5f;
-            float yCoord = ((pixels.Y / (tileSize.Y * 0.5f)) - (pixels.X / (tileSize.X * 0.5f))) * 0.5f;
+            int xIso = pixels.X / ((int)tileSize.X / 2);
+            int yIso = pixels.Y / ((int)tileSize.Y / 2);
 
-            xCoord = (float)Math.Floor(xCoord - 0.5f);
-            yCoord = (float)Math.Floor(yCoord + 0.5f);
-
-            return new Vector2(xCoord, yCoord);
-        }
-
-
-        /// <summary>
-        /// Converts isometric coordinates to pixel coordinates.
-        /// </summary>
-        /// <param name="coordinates"></param>
-        /// <param name="tileSize"></param>
-        /// <returns></returns>
-        public static Vector2 IsometricToPixels(Vector2 coordinates, Vector2 tileSize)
-        {
-            float xPixel = coordinates.X * tileSize.X * 0.5f;
-            float yPixel = coordinates.Y * tileSize.Y * 0.5f;
-
-            return new Vector2(xPixel, yPixel);
+            return new Point(xIso, yIso);
         }
 
         /// <summary>
-        /// Converts pixel coordinates to isometric coordinates.
+        /// Converts pixel coordinates to isometric coordinates (non-integer).
         /// </summary>
-        /// <param name="pixels"></param>
-        /// <returns></returns>
-        public static Vector2 PixelsToIsometric(Vector2 pixels, Vector2 tileSize)
+        /// <param name="pixels">The coordinates to convert.</param>
+        /// <param name="cellSize">The size of an isometric cell.</param>
+        /// <returns>A set of isometric coordinates.</returns>
+        public static Vector2 PixelsToIsometric(Vector2 pixels, Vector2 cellSize)
         {
-            float xIso = (float)Math.Round(pixels.X / (tileSize.X * 0.5f));
-            float yIso = (float)Math.Round(pixels.Y / (tileSize.Y * 0.5f));
+            float xIso = pixels.X / (cellSize.X * 0.5f);
+            float yIso = pixels.Y / (cellSize.Y * 0.5f);
 
             return new Vector2(xIso, yIso);
         }
 
-        public static Vector2 DrawPositionAtCoords(Vector2 coordinates, Vector2 anchor, Vector2 unit)
+        /// <summary>
+        /// Converts cartesian coordinates to isometric coordinates, then convert those to pixels.
+        /// </summary>
+        /// <param name="coordinates">The coordinates to convert.</param>
+        /// <param name="cellSize">The size of an isometric cell.</param>
+        /// <returns>A set of pixel coordinates.</returns>
+        public static Point CartesianToIsometricToPixels(Point coordinates, Vector2 cellSize)
         {
-            Vector2 drawPosition = CartesianToIsometricPixels(coordinates, unit);
-            drawPosition -= anchor;
+            int xPixel = (coordinates.X - coordinates.Y) * ((int)cellSize.X / 2);
+            int yPixel = (coordinates.X + coordinates.Y) * ((int)cellSize.Y / 2);
 
-            return drawPosition;
+            return new Point(xPixel, yPixel);
         }
+
+        /// <summary>
+        /// Converts cartesian coordinates to isometric coordinates, then convert those to pixels.
+        /// </summary>
+        /// <param name="coordinates">The coordinates to convert.</param>
+        /// <param name="cellSize">The size of an isometric cell.</param>
+        /// <returns>A set of pixel coordinates.</returns>
+        public static Vector2 CartesianToIsometricToPixels(Vector2 coordinates, Vector2 cellSize)
+        {
+            float xPixel = (coordinates.X - coordinates.Y) * cellSize.X * 0.5f;
+            float yPixel = (coordinates.X + coordinates.Y) * cellSize.Y * 0.5f;
+
+            return new Vector2(xPixel, yPixel);
+        }
+
+        //public static Vector2 IsometricPixelsToCartesian(Vector2 pixels, Vector2 tileSize)
+        //{
+        //    float xCoord = ((pixels.X / (tileSize.X * 0.5f)) + (pixels.Y / (tileSize.Y * 0.5f))) * 0.5f;
+        //    float yCoord = ((pixels.Y / (tileSize.Y * 0.5f)) - (pixels.X / (tileSize.X * 0.5f))) * 0.5f;
+
+        //    xCoord = (float)Math.Floor(xCoord - 0.5f);
+        //    yCoord = (float)Math.Floor(yCoord + 0.5f);
+
+        //    return new Vector2(xCoord, yCoord);
+        //}
 
         //public static Vector2 RotateCoordsInMap(Vector2 coords, int rotations)
         //{

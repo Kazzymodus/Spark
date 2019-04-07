@@ -35,7 +35,10 @@
 
         public static SpriteData CreateIsometricSprite(Texture2D texture, Vector2 tileSize, Vector2 dimensions, int rotations = 1, int animationLength = 1)
         {
-            System.Diagnostics.Debug.Assert(rotations > 0 && animationLength > 0, "rotations and animationLength can not be zero or negative!");
+            if (rotations <= 0 || animationLength <= 0)
+            {
+                throw new ArgumentException("rotations and animationLength must be larger than 0.");
+            }
 
             int frameX = texture.Width / rotations;
             int frameY = texture.Height / animationLength;

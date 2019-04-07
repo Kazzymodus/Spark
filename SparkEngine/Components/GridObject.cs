@@ -33,12 +33,6 @@
         public Vector2 Coordinates { get; private set; }
 
         /// <summary>
-        /// The offset in tiles a tile is drawn from its root coordinates.
-        /// Offset ranges from -0.5 to 0.5 (half a tile), at which point the coordinate rolls over.
-        /// </summary>
-        public Vector2 TileOffset { get; private set; }
-
-        /// <summary>
         /// The (clockwise) rotations of the object. Each rotation signifies 90 degrees.
         /// </summary>
         public int Rotation { get; private set; }
@@ -75,8 +69,8 @@
         public Vector2 GetDrawPosition(Camera camera, Vector2 tileSize)
         {
             int rotations = camera.Rotations;
-            Vector2 cornerPixels = Projector.CartesianToIsometricPixels(GetRootCoordinates(rotations), tileSize);
-            Vector2 drawPosition = (cornerPixels - SpriteData.Anchor) + TileOffset;
+            Vector2 cornerPixels = Projector.CartesianToIsometricToPixels(GetRootCoordinates(rotations), tileSize);
+            Vector2 drawPosition = (cornerPixels - SpriteData.Anchor);
 
             //// Correction, as we need to draw in the X center of the tile, not the origin.
 
@@ -90,67 +84,22 @@
         }
 
         /// <summary>
-        /// Sets the position of the WorldObject to the given coordinates. Discards any offset.
-        /// </summary>
-        /// <param name="coordinates"></param>
-        public void SetPosition(Vector2 coordinates)
-        {
-            SetPosition(coordinates, Vector2.Zero);
-        }
-
-        /// <summary>
-        /// Sets the position of the WorldObject to the given coordinates and tile offset.
+        /// Sets the position of the WorldObject to the given coordinates.
         /// </summary>
         /// <param name="coordinates"></param>
         /// <param name="offset"></param>
-        public void SetPosition(Vector2 coordinates, Vector2 offset)
+        public void SetPosition(Vector2 coordinates)
         {
-            float coordX = (float)Math.Truncate(coordinates.X);
-            float coordY = (float)Math.Truncate(coordinates.Y);
-            Coordinates = new Vector2(coordX, coordY);
-            TileOffset = offset;
-            ProcessOffset();
+            Coordinates = coordinates;
         }
 
         /// <summary>
         /// Translate the object.
         /// </summary>
-        /// <param name="amount">The amount of tiles to translate.</param>
+        /// <param name="amount">The amount of units to translate.</param>
         public void Translate(Vector2 amount)
         {
-            float x = amount.X;
-            float y = amount.Y;
-
-            Vector2 offset = TileOffset;
-
-            if (y != 0 && x != 0)
-            {
-                float clamp = Projector.SqrtTwoReciprocal;
-                x *= clamp;
-                y *= clamp;
-            }
-
-            if ((offset.X < 0 && offset.X + x > 0) || (offset.X > 0 && offset.X + x < 0))
-            {
-                offset.X = 0;
-            }
-            else
-            {
-                offset.X += x;
-            }
-
-            if ((offset.Y < 0 && offset.Y + y > 0) || (offset.Y > 0 && offset.Y + y < 0))
-            {
-                offset.Y = 0;
-            }
-            else
-            {
-                offset.Y += y;
-            }
-
-            TileOffset = offset;
-
-            ProcessOffset();
+            Coordinates += amount;
         }
 
         public void Draw(SpriteBatch spriteBatch, Camera camera, DrawLayer layer)
@@ -165,47 +114,9 @@
             //Log.AddWorldMessage("DP: " + drawPosition.X + "," + drawPosition.Y, drawPosition, camera, Color.Red);
             //Log.AddWorldMessage("A: " + SpriteData.Anchor.X + "," + SpriteData.Anchor.Y, drawPosition + SpriteData.Anchor, camera, Color.Red);
 
+            Log.AddWorldMessage(Coordinates.ToString(), drawPosition, camera, Color.Red);
+
             spriteBatch.Draw(SpriteData.Texture, drawPosition, frame, new Color(Color.White, 0.5f));
-        }
-
-        /// <summary>
-        /// Processes excessive offset. Should be called every time offset is modified.
-        /// </summary>
-        private void ProcessOffset()
-        {
-            Vector2 offset = TileOffset;
-            Vector2 coordinates = Coordinates;
-
-            while (offset.X >= 0.5f)
-            {
-                offset.X--;
-
-                coordinates.X++;
-            }
-
-            while (offset.X <= -0.5f)
-            {
-                offset.X++;
-
-                coordinates.X--;
-            }
-
-            while (offset.Y >= 0.5f)
-            {
-                offset.Y--;
-
-                coordinates.Y++;
-            }
-
-            while (offset.Y <= -0.5f)
-            {
-                offset.Y++;
-
-                coordinates.Y--;
-            }
-
-            TileOffset = offset;
-            Coordinates = coordinates;
         }
 
         /// <summary>

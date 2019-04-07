@@ -29,7 +29,7 @@
         /// <param name="viewportHeight">The height of the viewport.</param>
         public Camera(GraphicsDeviceManager graphics)
         {
-            ViewportSize = new Vector2(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
+            ViewportSize = new Point(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
             CalculateTransform();
         }
 
@@ -55,7 +55,7 @@
         /// <summary>
         /// The size of the viewport.
         /// </summary>
-        public Vector2 ViewportSize { get; private set; }
+        public Point ViewportSize { get; private set; }
         
         /// <summary>
         /// The position of the mouse in the world in pixels.
@@ -75,7 +75,7 @@
         {
             get
             {
-                return new Rectangle(Position.ToPoint(), ViewportSize.ToPoint());
+                return new Rectangle(Position.ToPoint(), ViewportSize);
             }
         }
 
@@ -123,20 +123,20 @@
         /// Gets the range of coordinates currently in camera view.
         /// </summary>
         /// <returns>A rectangle containing all visible coordinates.</returns>
-        internal Rectangle GetVisibleCoordinates(Vector2 unit)
+        internal Rectangle GetVisibleCoordinates(Vector2 unit, int padding)
         {
-            Vector2 startCoordinate = Projector.PixelsToCoordinates(Position, unit);
-            Vector2 endCoordinate = Projector.PixelsToCoordinates(ViewportSize, unit);
+            Point startCoordinate = Projector.PixelsToCartesian(Position.ToPoint(), unit) - new Point(padding);
+            Point endCoordinate = Projector.PixelsToCartesian(ViewportSize, unit) + new Point(padding);
 
-            return new Rectangle(startCoordinate.ToPoint(), endCoordinate.ToPoint());
+            return new Rectangle(startCoordinate, endCoordinate);
         }
 
         internal Rectangle GetVisibleIsometricCoordinates(Vector2 unit, int padding = 0)
         {
-            Vector2 location = Projector.PixelsToIsometric(Position, unit) - new Vector2(padding);
-            Vector2 size = Projector.PixelsToIsometric(ViewportSize, unit) + new Vector2(padding * 2);
+            Point location = Projector.PixelsToIsometric(Position, unit).ToPoint() - new Point(padding);
+            Point size = Projector.PixelsToIsometric(ViewportSize, unit) + new Point(padding * 2);
 
-            return new Rectangle(location.ToPoint(), size.ToPoint());
+            return new Rectangle(location, size);
         }
 
         /// <summary>
