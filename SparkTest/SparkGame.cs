@@ -159,11 +159,15 @@
             GameState menu = new GameState("Menu");
             stateManager.RequestStatePush(menu);
 
-            DrawLayer terrainLayer = menu.CreateNewDrawLayer("Terrain", false, new Vector2(64, 32));
+            DrawLayer terrainLayer = menu.CreateNewDrawLayer("IsoTerrain", false, new Vector2(64, 32));
+            //DrawLayer cartTerrainLayer = menu.CreateNewDrawLayer("CartTerrain", false, new Vector2(32), new Vector2(400, 0));
             DrawLayer structureLayer = menu.CreateNewDrawLayer("Structures", false, new Vector2(64, 32));
 
-            Terrain terrain = new Terrain(new Vector2(100), textures.GetAsset("GrassTile"), textures.GetAsset("GridTile"));
-            menu.CreateNewEntity("Terrain", terrain);
+            Terrain isoTerrain = Terrain.CreateIsometricTerrain(new Vector2(0, 0), new Vector2(100), textures.GetAsset("GridTile"), textures.GetAsset("GrassTile"));
+            menu.CreateNewEntity("IsoTerrain", isoTerrain);
+
+            //Terrain cartTerrain = Terrain.CreateSquareTerrain(new Vector2(4, 0), new Vector2(10), textures.GetAsset("GridTile"), textures.GetAsset("GrassTopDown"));
+            //menu.CreateNewEntity("CartTerrain", cartTerrain);
 
             System.Random rand = new System.Random();
 

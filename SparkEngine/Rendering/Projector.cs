@@ -130,10 +130,10 @@
         /// <returns>A set of cartesian coordinates.</returns>
         public static Point PixelsToCartesian(Point pixels, Vector2 cellSize)
         {
-            int xIso = pixels.X / (int)cellSize.X;
-            int yIso = pixels.Y / (int)cellSize.Y;
+            int xCart = pixels.X / (int)cellSize.X;
+            int yCart = pixels.Y / (int)cellSize.Y;
 
-            return new Point(xIso, yIso);
+            return new Point(xCart, yCart);
         }
 
         /// <summary>
@@ -144,10 +144,10 @@
         /// <returns>A set of cartesian coordinates.</returns>
         public static Vector2 PixelsToCartesian(Vector2 pixels, Vector2 cellSize)
         {
-            float xIso = pixels.X / cellSize.X;
-            float yIso = pixels.Y / cellSize.Y;
+            float xCart = pixels.X / cellSize.X;
+            float yCart = pixels.Y / cellSize.Y;
 
-            return new Vector2(xIso, yIso);
+            return new Vector2(xCart, yCart);
         }
 
         /// <summary>

@@ -5,7 +5,7 @@
     using Microsoft.Xna.Framework.Graphics;
     using SparkEngine.Rendering;
 
-    interface IDrawableComponent
+    public interface IDrawableComponent
     {
         LayerSortMethod LayerSortMethod { get; }
 
@@ -15,6 +15,6 @@
         /// Returns the draw position.
         /// </summary>
         /// <param name="camera">The camera this component will be rendered to.</param>
-        Vector2 GetDrawPosition(Camera camera, Vector2 unit);
+        Vector2 GetDrawPosition(Camera camera, DrawLayer drawLayer);
     }
 }

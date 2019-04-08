@@ -66,11 +66,11 @@
         /// </summary>
         /// <param name="camera">The camera this component will be rendered to.</param>
         /// <param name="tileSize">The dimensions (in pixels) of a single tile.</param>
-        public Vector2 GetDrawPosition(Camera camera, Vector2 tileSize)
+        public Vector2 GetDrawPosition(Camera camera, DrawLayer drawLayer)
         {
             int rotations = camera.Rotations;
-            Vector2 cornerPixels = Projector.CartesianToIsometricToPixels(GetRootCoordinates(rotations), tileSize);
-            Vector2 drawPosition = (cornerPixels - SpriteData.Anchor);
+            Vector2 cornerPixels = Projector.CartesianToIsometricToPixels(GetRootCoordinates(rotations), drawLayer.Unit);
+            Vector2 drawPosition = drawLayer.Position + (cornerPixels - SpriteData.Anchor);
 
             //// Correction, as we need to draw in the X center of the tile, not the origin.
 
@@ -109,7 +109,7 @@
             int frameY = 0; // For now;
 
             Rectangle frame = new Rectangle(frameX, frameY, (int)frameSize.X, (int)frameSize.Y);
-            Vector2 drawPosition = GetDrawPosition(camera, layer.Unit);
+            Vector2 drawPosition = GetDrawPosition(camera, layer);
 
             //Log.AddWorldMessage("DP: " + drawPosition.X + "," + drawPosition.Y, drawPosition, camera, Color.Red);
             //Log.AddWorldMessage("A: " + SpriteData.Anchor.X + "," + SpriteData.Anchor.Y, drawPosition + SpriteData.Anchor, camera, Color.Red);

@@ -63,16 +63,31 @@
 
         private readonly Dictionary<string, DrawLayer> drawLayers = new Dictionary<string, DrawLayer>
         {
-            { DefaultDrawLayerName, new DrawLayer(true, Vector2.One) }
+            { DefaultDrawLayerName, new DrawLayer(true, Vector2.One, Vector2.Zero) }
         };
 
         #endregion
 
         #region Methods
 
+        public void AddComponentToDrawLayer(IDrawableComponent component, string drawLayerName)
+        {
+            AddComponentToDrawLayer(component, drawLayers[drawLayerName]);
+        }
+
+        public void AddComponentToDrawLayer(IDrawableComponent component, DrawLayer drawLayer)
+        {
+            drawLayer.RegisterComponent(component, Camera);
+        }
+
         public DrawLayer CreateNewDrawLayer(string name, bool isScreenLayer, Vector2 unit)
         {
-            DrawLayer layer = new DrawLayer(isScreenLayer, unit);
+            return CreateNewDrawLayer(name, isScreenLayer, unit, Vector2.Zero);
+        }
+
+        public DrawLayer CreateNewDrawLayer(string name, bool isScreenLayer, Vector2 unit, Vector2 position)
+        {
+            DrawLayer layer = new DrawLayer(isScreenLayer, unit, position);
             drawLayers.Add(name, layer);
 
             return layer;

@@ -14,11 +14,14 @@
         private List<IDrawableComponent> components = new List<IDrawableComponent>();
         private bool isScreenLayer;
 
-        public DrawLayer(bool isScreenLayer, Vector2 unit)
+        public DrawLayer(bool isScreenLayer, Vector2 unit, Vector2 position)
         {
             this.isScreenLayer = isScreenLayer;
             Unit = unit;
+            Position = position;
         }
+
+        public Vector2 Position { get; private set; }
 
         public TileMode TileMode { get; private set; }
 
@@ -76,13 +79,13 @@
 
         private void HeightAsDistanceModeInsert(IDrawableComponent component, List<IDrawableComponent> destination, Camera camera)
         {
-            float drawHeight = component.GetDrawPosition(camera, Unit).Y;
+            float drawHeight = component.GetDrawPosition(camera, this).Y;
             int index = 0;
             bool inserted = false;
 
             for (int i = 0; i < destination.Count; i++)
             {
-                if (destination[i].GetDrawPosition(camera, Unit).Y > drawHeight)
+                if (destination[i].GetDrawPosition(camera, this).Y > drawHeight)
                 {
                     destination.Insert(index, component);
                     inserted = true;

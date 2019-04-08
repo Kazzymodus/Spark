@@ -8,48 +8,78 @@
 
     public class Terrain : Component, IDrawableComponent
     {
-        #region Private Fields
+        #region Fields
 
+        private const int TileDrawPadding = 2;
         private const int MaxTextures = 256;
 
         private TerrainTile[,] tileGrid;
-        private Texture2D gridTileTexture;
-        private Texture2D[] tileTextures = new Texture2D[MaxTextures];
+        private Texture2D[] tileTextures;
+
+        private Action<SpriteBatch, Camera, DrawLayer> DrawMethod;
 
         #endregion
 
         #region Constructors
 
-        public Terrain(Vector2 dimensions, Texture2D tileSpriteSheet, Texture2D gridTileTexture)
+        private Terrain(TileMode tileMode, Vector2 position, Vector2 dimensions, params Texture2D[] tileTextures)
         {
+            Position = position;
             Dimensions = dimensions;
-            this.gridTileTexture = gridTileTexture;
-            tileTextures[0] = tileSpriteSheet;
-            TileSize = new Vector2(tileSpriteSheet.Width / 4, tileSpriteSheet.Height); // TEMP
-            GenerateCellGrid();
+            this.tileTextures = tileTextures;
+            tileGrid = new TerrainTile[(int)Dimensions.X, (int)Dimensions.Y];
+            GenerateCells();
+
+            switch (tileMode)
+            {
+                case TileMode.Square:
+                    DrawMethod = SquareDraw;
+                    break;
+                case TileMode.Isometric:
+                    DrawMethod = IsometricDraw;
+                    break;
+            }
         }
 
         #endregion
 
-        #region Public Properties
+        #region Properties
 
         public Vector2 Position { get; }
 
         public Vector2 Dimensions { get; }
-
-        public Vector2 TileSize { get; }
-
-        public Vector2 DrawPosition { get; private set; }
-
+        
         public LayerSortMethod LayerSortMethod { get; } = LayerSortMethod.First;
 
         #endregion
 
-        #region Public Methods
+        #region Methods
 
-        public Vector2 GetDrawPosition(Camera camera, Vector2 unit)
+        public static Terrain CreateSquareTerrain(Vector2 position, Vector2 dimensions, params Texture2D[] textures)
         {
-            return Position;
+            Terrain terrain = new Terrain(TileMode.Square, position, dimensions, textures);
+            return terrain;
+        }
+        
+        public static Terrain CreateIsometricTerrain(Vector2 position, Vector2 dimensions, params Texture2D[] textures)
+        {
+            Terrain terrain = new Terrain(TileMode.Isometric, position, dimensions, textures);
+            return terrain;
+        }
+
+        public Vector2 GetDrawPosition(Camera camera, DrawLayer drawLayer)
+        {
+            return drawLayer.Position + Position * drawLayer.Unit;
+        }
+
+        /// <summary>
+        /// Get the tile corresponding to the passed coordinates.
+        /// </summary>
+        /// <param name="coordinates">The coordinates of the tile.</param>
+        /// <returns></returns>
+        public TerrainTile GetTile(Point coordinates)
+        {
+            return tileGrid[coordinates.X, coordinates.Y];
         }
 
         /// <summary>
@@ -86,7 +116,7 @@
         //    return true;
         //}
 
-        public bool IsWithinTerrainBounds(Point coordinate)
+        public bool IsWithinBounds(Point coordinate)
         {
             return !(coordinate.X < 0 || coordinate.X >= Dimensions.X || coordinate.Y < 0 || coordinate.Y >= Dimensions.Y);
         }
@@ -103,17 +133,28 @@
 
         public LayerSortMethod SpriteSortMethod { get; } = LayerSortMethod.First;
 
-        #endregion
-
-        #region Internal Methods
-
-        public void Draw(SpriteBatch spriteBatch, Camera camera, DrawLayer layer)
+        public void Draw(SpriteBatch spriteBatch, Camera camera, DrawLayer drawLayer)
         {
-            Vector2 tileSize = layer.Unit;
-            Rectangle visibleCoordinates = camera.GetVisibleIsometricCoordinates(tileSize, 0);
+            DrawMethod(spriteBatch, camera, drawLayer);            
+        }
 
-            Point startCoordinate = visibleCoordinates.Location;
+        public void SquareDraw(SpriteBatch spriteBatch, Camera camera, DrawLayer drawLayer)
+        {
+            Vector2 tileSize = drawLayer.Unit;
+            Vector2 terrainPosition = GetDrawPosition(camera, drawLayer);
+            Rectangle visibleCoordinates = camera.GetVisibleCartesianCoordinates(tileSize, TileDrawPadding);
+
+            Point offset = Projector.PixelsToCartesian(terrainPosition, tileSize).ToPoint();
+            Point startCoordinate = visibleCoordinates.Location - offset;
             Point endCoordinate = startCoordinate + visibleCoordinates.Size;
+
+            Log.AddListMessage(startCoordinate.ToString());
+            Log.AddListMessage(endCoordinate.ToString());
+
+            startCoordinate.X = MathHelper.Clamp(startCoordinate.X, 0, (int)Dimensions.X);
+            startCoordinate.Y = MathHelper.Clamp(startCoordinate.Y, 0, (int)Dimensions.Y);
+            endCoordinate.X = MathHelper.Clamp(endCoordinate.X, 0, (int)Dimensions.X);
+            endCoordinate.Y = MathHelper.Clamp(endCoordinate.Y, 0, (int)Dimensions.Y);
 
             int frameX = (int)tileSize.X * camera.Rotations;
             Rectangle drawRectangle = new Rectangle(frameX, 0, (int)tileSize.X, (int)tileSize.Y);
@@ -122,33 +163,28 @@
             {
                 for (int y = startCoordinate.Y; y < endCoordinate.Y; y++)
                 {
-                    Point coordinate = Projector.IsometricToCartesian(new Point(x, y));
-
-                    if ((x + y) % 2 != 0 || coordinate.X < 0 || coordinate.X >= tileGrid.GetLength(0) || coordinate.Y < 0 || coordinate.Y >= tileGrid.GetLength(1))
-                    {
-                        continue;
-                    }
-
-                    TerrainTile tile = tileGrid[coordinate.X, coordinate.Y];
-                    Vector2 drawPosition = new Vector2(x * tileSize.X * 0.5f, y * tileSize.Y * 0.5f);
+                    TerrainTile tile = tileGrid[x, y];
+                    Vector2 drawPosition = terrainPosition + new Vector2(x * tileSize.X, y * tileSize.Y);
 
                     Texture2D texture = tileTextures[tile.TextureId];
                     Color colour = tile.Colour;
 
                     spriteBatch.Draw(texture, drawPosition, drawRectangle, colour);
-                    spriteBatch.Draw(gridTileTexture, drawPosition, colour);
 
-                    Log.AddWorldMessage("C:" + x + "," + y, drawPosition + new Vector2(8), camera);
+                    Log.AddWorldMessage(x + "\n" + y, drawPosition, camera);
                 }
             }
         }
 
-        public void CartesianTest(SpriteBatch spriteBatch, Camera camera, DrawLayer layer)
+        public void IsometricDraw(SpriteBatch spriteBatch, Camera camera, DrawLayer drawLayer)
         {
-            Vector2 tileSize = layer.Unit;
-            Rectangle visibleCoordinates = camera.GetVisibleIsometricCoordinates(tileSize, 2);
+            Vector2 tileSize = drawLayer.Unit;
+            Vector2 terrainPosition = GetDrawPosition(camera, drawLayer);
 
-            Point startCoordinate = visibleCoordinates.Location;
+            Rectangle visibleCoordinates = camera.GetVisibleIsometricCoordinates(tileSize, TileDrawPadding);
+
+            Point offset = Projector.PixelsToIsometric(terrainPosition, tileSize).ToPoint();
+            Point startCoordinate = visibleCoordinates.Location - offset;
             Point endCoordinate = startCoordinate + visibleCoordinates.Size;
 
             int frameX = (int)tileSize.X * camera.Rotations;
@@ -160,22 +196,21 @@
                 {
                     Point coordinate = Projector.IsometricToCartesian(new Point(x, y));
 
-                    if ((x + y) % 2 != 0 || coordinate.X < 0 || coordinate.X >= tileGrid.GetLength(0) || coordinate.Y < 0 || coordinate.Y >= tileGrid.GetLength(1))
+                    if ((x + y) % 2 != 0 || !IsWithinBounds(coordinate))
                     {
                         continue;
                     }
 
                     TerrainTile tile = tileGrid[coordinate.X, coordinate.Y];
-                    Vector2 drawPosition = new Vector2(x * tileSize.X * 0.5f, y * tileSize.Y * 0.5f);
+                    Vector2 drawPosition = terrainPosition + new Vector2(x * tileSize.X * 0.5f, y * tileSize.Y * 0.5f);
 
                     Texture2D texture = tileTextures[tile.TextureId];
                     Color colour = tile.Colour;
 
                     spriteBatch.Draw(texture, drawPosition, drawRectangle, colour);
-                    spriteBatch.Draw(gridTileTexture, drawPosition, colour);
+                    spriteBatch.Draw(tileTextures[0], drawPosition, colour);
 
-                    Point iso = Projector.CartesianToIsometric(new Point(startCoordinate.X, startCoordinate.Y));
-                    Log.AddWorldMessage("C:" + coordinate.X + "," + coordinate.Y, drawPosition + new Vector2(8), camera);
+                    Log.AddWorldMessage("C:" + x + "," + y, drawPosition + new Vector2(8), camera);
                 }
             }
         }
@@ -215,28 +250,17 @@
         //    }
         //}
 
-        #endregion
-
-        #region Private Fields
-
-        private void GenerateCellGrid()
+        private void GenerateCells()
         {
-            tileGrid = new TerrainTile[(int)Dimensions.X, (int)Dimensions.Y];
-
             for (int i = 0; i < Dimensions.X; i++)
             {
                 for (int j = 0; j < Dimensions.Y; j++)
                 {
-                    tileGrid[i, j] = new TerrainTile(0);
+                    tileGrid[i, j] = new TerrainTile(1);
                 }
             }
         }
-
-        private bool TileExists(Vector2 coordinates)
-        {
-            return !(coordinates.X < 0 || coordinates.X >= tileGrid.GetLength(0) || coordinates.Y < 0 || coordinates.Y >= tileGrid.GetLength(1));
-        }
-
+        
         #endregion
     }   
 }

@@ -123,12 +123,12 @@
         /// Gets the range of coordinates currently in camera view.
         /// </summary>
         /// <returns>A rectangle containing all visible coordinates.</returns>
-        internal Rectangle GetVisibleCoordinates(Vector2 unit, int padding)
+        internal Rectangle GetVisibleCartesianCoordinates(Vector2 unit, int padding)
         {
-            Point startCoordinate = Projector.PixelsToCartesian(Position.ToPoint(), unit) - new Point(padding);
-            Point endCoordinate = Projector.PixelsToCartesian(ViewportSize, unit) + new Point(padding);
+            Point location = Projector.PixelsToCartesian(Position.ToPoint(), unit) - new Point(padding);
+            Point size = Projector.PixelsToCartesian(ViewportSize, unit) + new Point(padding * 2);
 
-            return new Rectangle(startCoordinate, endCoordinate);
+            return new Rectangle(location, size);
         }
 
         internal Rectangle GetVisibleIsometricCoordinates(Vector2 unit, int padding = 0)
