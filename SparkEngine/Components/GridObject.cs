@@ -5,8 +5,6 @@
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using SparkEngine.Rendering;
-    using SparkEngine.States;
-    using SparkEngine.UI;
 
     /// <summary>
     /// A GridObject is an object that can occupy a coordinate on a grid, like a tile based terrain.

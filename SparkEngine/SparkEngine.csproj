@@ -63,6 +63,7 @@
   <ItemGroup>
     <Compile Include="Components\Component.cs" />
     <Compile Include="Components\IDrawableComponent.cs" />
+    <Compile Include="Components\IInputListener.cs" />
     <Compile Include="Components\TerrainTile.cs" />
     <Compile Include="Debug\CellPositionInfo.cs" />
     <Compile Include="Debug\Log.cs" />
@@ -72,8 +73,6 @@
     <Compile Include="Debug\DebugTiler.cs" />
     <Compile Include="Assets\AssetDictionary.cs" />
     <Compile Include="Entities\Entity.cs" />
-    <Compile Include="Input\IClickable.cs" />
-    <Compile Include="Input\IHoverable.cs" />
     <Compile Include="Input\InputHandler.cs" />
     <Compile Include="Input\MouseButtons.cs" />
     <Compile Include="Level\Map.cs" />
@@ -96,15 +95,9 @@
     <Compile Include="Time\TemporaryTicker.cs" />
     <Compile Include="Time\Ticker.cs" />
     <Compile Include="Time\TimeManager.cs" />
-    <Compile Include="UI\Buttons\Button.cs" />
-    <Compile Include="UI\Pivot.cs" />
-    <Compile Include="UI\StateUI.cs" />
-    <Compile Include="UI\Tooltip.cs" />
-    <Compile Include="UI\UIElement.cs" />
-    <Compile Include="UI\UIManager.cs" />
-    <Compile Include="UI\UIPanel.cs" />
     <Compile Include="Components\Terrain.cs" />
     <Compile Include="Components\GridObject.cs" />
+    <Compile Include="Components\Button.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="MonoGame.Framework">

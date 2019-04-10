@@ -22,8 +22,9 @@
 
         #region Method
 
-        public virtual void ProcessInput(GameTime gameTime)
+        public virtual void ProcessInput(GameTime gameTime, out bool gotUsableInput)
         {
+            gotUsableInput = true;
         }
 
         public virtual void Update(GameTime gameTime)

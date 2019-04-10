@@ -39,7 +39,12 @@
         {
             foreach(Component component in components)
             {
-                component.ProcessInput(gameTime);
+                component.ProcessInput(gameTime, out bool gotUsableInput);
+
+                if (!gotUsableInput)
+                {
+                    break;
+                }
             }
         }
 

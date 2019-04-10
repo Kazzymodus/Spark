@@ -21,21 +21,21 @@
 
         public Camera Camera { get; private set; }
 
-        public override void ProcessInput(GameTime gameTime)
+        public override void ProcessInput(GameTime gameTime, out bool gotUsableInput)
         {
-            if (InputHandler.IsKeyDown(Keys.Down))
+            if (gotUsableInput = InputHandler.IsKeyDown(Keys.Down))
             {
                 Camera.MoveCamera(new Vector2(0, 10));
             }
-            if (InputHandler.IsKeyDown(Keys.Up))
+            if (gotUsableInput = InputHandler.IsKeyDown(Keys.Up))
             {
                 Camera.MoveCamera(new Vector2(0, -10));
             }
-            if (InputHandler.IsKeyDown(Keys.Right))
+            if (gotUsableInput = InputHandler.IsKeyDown(Keys.Right))
             {
                 Camera.MoveCamera(new Vector2(10, 0));
             }
-            if (InputHandler.IsKeyDown(Keys.Left))
+            if (gotUsableInput = InputHandler.IsKeyDown(Keys.Left))
             {
                 Camera.MoveCamera(new Vector2(-10, 0));
             }

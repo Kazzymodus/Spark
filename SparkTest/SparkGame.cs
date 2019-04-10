@@ -1,5 +1,6 @@
 ﻿namespace SparkTest
 {
+    using System;
     using System.Collections.Generic;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
@@ -24,6 +25,7 @@
 
         private AssetDictionary<Texture2D> textures;
         private AssetDictionary<SpriteFont> fonts;
+        private AssetDictionary<Texture2D> uiTextures;
 
         #endregion
 
@@ -76,6 +78,9 @@
 
             fonts = new AssetDictionary<SpriteFont>("Fonts", Content);
             fonts.TryAddAsset("CourierNew");
+
+            uiTextures = new AssetDictionary<Texture2D>("UI", Content);
+            uiTextures.TryAddAsset("Button");
 
             InitialiseContentDependents();
 
@@ -159,12 +164,18 @@
             GameState menu = new GameState("Menu");
             stateManager.RequestStatePush(menu);
 
-            DrawLayer terrainLayer = menu.CreateNewDrawLayer("IsoTerrain", false, new Vector2(64, 32));
+            Button button = new Button(uiTextures.GetAsset("Button"), new Vector2(200));
+            menu.CreateNewEntity(button);
+
+            GameState level = new GameState("Level");
+            stateManager.RequestStatePush(level);
+
+            DrawLayer terrainLayer = level.CreateNewDrawLayer("IsoTerrain", false, new Vector2(64, 32));
             //DrawLayer cartTerrainLayer = menu.CreateNewDrawLayer("CartTerrain", false, new Vector2(32), new Vector2(400, 0));
-            DrawLayer structureLayer = menu.CreateNewDrawLayer("Structures", false, new Vector2(64, 32));
+            DrawLayer structureLayer = level.CreateNewDrawLayer("Structures", false, new Vector2(64, 32));
 
             Terrain isoTerrain = Terrain.CreateIsometricTerrain(new Vector2(0, 0), new Vector2(100), textures.GetAsset("GridTile"), textures.GetAsset("GrassTile"));
-            menu.CreateNewEntity("IsoTerrain", isoTerrain);
+            level.CreateNewEntity("IsoTerrain", isoTerrain);
 
             //Terrain cartTerrain = Terrain.CreateSquareTerrain(new Vector2(4, 0), new Vector2(10), textures.GetAsset("GridTile"), textures.GetAsset("GrassTopDown"));
             //menu.CreateNewEntity("CartTerrain", cartTerrain);
@@ -175,14 +186,14 @@
             {
                 Vector2 pos = new Vector2(rand.Next(100), rand.Next(100));
                 GridObject gridObject = GridObject.CreateIsometricGridObject(textures.GetAsset("Obelisk"), structureLayer, pos, new Vector2(2), 0);
-                menu.CreateNewEntity("Structures", gridObject);
+                level.CreateNewEntity("Structures", gridObject);
 
                 pos = new Vector2(rand.Next(100), rand.Next(100));
                 gridObject = GridObject.CreateIsometricGridObject(textures.GetAsset("House"), structureLayer, pos, new Vector2(1), 0);
-                menu.CreateNewEntity("Structures", gridObject);
+                level.CreateNewEntity("Structures", gridObject);
             }
             CameraController cameraController = new CameraController(menu.Camera);
-            menu.CreateNewEntity(cameraController);
+            level.CreateNewEntity(cameraController);
         }
 
         #endregion

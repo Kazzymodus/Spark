@@ -37,6 +37,9 @@
                 case LayerSortMethod.HeightAsDistance:
                     HeightAsDistanceModeInsert(component, components, camera);
                     return;
+                case LayerSortMethod.Last:
+                    LastModeInsert(component, components, camera);
+                    return;
                 default:
                     throw new NotImplementedException();
             }
@@ -104,6 +107,11 @@
         private void FirstModeInsert(IDrawableComponent component, List<IDrawableComponent> destination, Camera camera)
         {
             destination.Insert(0, component);
+        }
+
+        private void LastModeInsert(IDrawableComponent component, List<IDrawableComponent> destination, Camera camera)
+        {
+            destination.Add(component);
         }
     }
 }

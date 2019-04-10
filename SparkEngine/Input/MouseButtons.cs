@@ -1,9 +1,13 @@
 ﻿namespace SparkEngine.Input
 {
+    using System;
+
+    [Flags]
     public enum MouseButtons
     {
-        LMB,
-        RMB,
-        MMB
+        None = 0,
+        LMB = 1,
+        RMB = 2,
+        MMB = 4,
     }
 }

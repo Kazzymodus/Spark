@@ -8,7 +8,6 @@
     using SparkEngine.Components;
     using SparkEngine.Entities;
     using SparkEngine.Rendering;
-    using SparkEngine.UI;
 
     /// <summary>
     /// Describes a part of your game with its own entities.
