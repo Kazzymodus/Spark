@@ -57,7 +57,7 @@
         {
             Rectangle bounds = new Rectangle(Position.ToPoint(), Size);
 
-            if (InputHandler.IsMousePressed(MouseButtons.LMB))
+            if (InputHandler.IsMousePressed(validInput))
             {
                 gotUsableInput = true;
 
@@ -68,16 +68,19 @@
 
                 return;
             }
-            else if (InputHandler.IsMouseReleased(MouseButtons.LMB) && isHeldDown)
+            else if (InputHandler.IsMouseReleased(validInput))
             {
                 gotUsableInput = true;
 
-                if (bounds.Contains(InputHandler.MousePosition))
+                if (isHeldDown)
                 {
-                    OnClickEvent?.Invoke(this, new EventArgs());
-                }
+                    if (bounds.Contains(InputHandler.MousePosition))
+                    {
+                        OnClickEvent?.Invoke(this, new EventArgs());
+                    }
 
-                isHeldDown = false;
+                    isHeldDown = false;
+                }
 
                 return;
             }
@@ -96,7 +99,9 @@
 
         public void Draw(SpriteBatch spriteBatch, Camera camera, DrawLayer drawLayer)
         {
-            spriteBatch.Draw(texture, GetDrawPosition(camera, drawLayer), Color.White);
+
+            Color color = isHeldDown ? Color.Gray : Color.White; //temp
+            spriteBatch.Draw(texture, GetDrawPosition(camera, drawLayer), color);
         }
 
         #endregion

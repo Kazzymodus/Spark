@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using SparkEngine.Rendering;
@@ -34,11 +35,13 @@
 
         public void UpdateStates(GameTime gameTime)
         {
-            foreach (GameState state in states)
+            IEnumerable<GameState> reversedStates = states.Reverse();
+
+            foreach(GameState state in reversedStates)
             {
                 StateActivityLevel activityLevel = state.ActivityLevel;
 
-                if (activityLevel != StateActivityLevel.Paused && activityLevel != StateActivityLevel.Stopped)
+                if (activityLevel != StateActivityLevel.Paused && activityLevel != StateActivityLevel.Inactive)
                 {
                     state.ProcessInput(gameTime);
                     state.Update(gameTime);
@@ -53,11 +56,13 @@
 
         public void DrawStates(SpriteBatch spriteBatch)
         {
-            foreach (GameState state in states)
+            IEnumerable<GameState> reversedStates = states.Reverse();
+
+            foreach (GameState state in reversedStates)
             {
                 StateActivityLevel activityLevel = state.ActivityLevel;
 
-                if (activityLevel != StateActivityLevel.Hidden && activityLevel != StateActivityLevel.Stopped)
+                if (activityLevel != StateActivityLevel.Hidden && activityLevel != StateActivityLevel.Inactive)
                 {
                     state.Draw(spriteBatch);
                 }

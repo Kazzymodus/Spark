@@ -63,7 +63,6 @@
   <ItemGroup>
     <Compile Include="Components\Component.cs" />
     <Compile Include="Components\IDrawableComponent.cs" />
-    <Compile Include="Components\IInputListener.cs" />
     <Compile Include="Components\TerrainTile.cs" />
     <Compile Include="Debug\CellPositionInfo.cs" />
     <Compile Include="Debug\Log.cs" />
@@ -78,6 +77,7 @@
     <Compile Include="Level\Map.cs" />
     <Compile Include="Level\ObjectManager.cs" />
     <Compile Include="Rendering\DrawLayer.cs" />
+    <Compile Include="Rendering\DrawLayerCollection.cs" />
     <Compile Include="Rendering\LayerSortMethod.cs" />
     <Compile Include="Pathfinding\PathFinder.cs" />
     <Compile Include="Pathfinding\PathFinderTest.cs" />

@@ -12,14 +12,17 @@
     public class DrawLayer
     {
         private List<IDrawableComponent> components = new List<IDrawableComponent>();
-        private bool isScreenLayer;
+        private readonly bool isScreenLayer;
 
-        public DrawLayer(bool isScreenLayer, Vector2 unit, Vector2 position)
+        public DrawLayer(string name, bool isScreenLayer, Vector2 unit, Vector2 position)
         {
+            Name = name;
             this.isScreenLayer = isScreenLayer;
             Unit = unit;
             Position = position;
         }
+
+        public string Name { get; }
 
         public Vector2 Position { get; private set; }
 
@@ -74,6 +77,9 @@
                     case LayerSortMethod.HeightAsDistance:
                         HeightAsDistanceModeInsert(component, drawOrder, camera);
                         break;
+                    case LayerSortMethod.Last:
+                        LastModeInsert(component, components, camera);
+                        return;
                 }
             }
 

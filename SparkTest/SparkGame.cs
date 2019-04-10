@@ -27,6 +27,10 @@
         private AssetDictionary<SpriteFont> fonts;
         private AssetDictionary<Texture2D> uiTextures;
 
+        GameState menu;
+        GameState level;
+        GameState options;
+
         #endregion
 
         #region Constructors
@@ -109,7 +113,10 @@
 
             if (InputHandler.IsKeyPressed(Keys.Escape))
             {
-                quitFlag = true;
+                //quitFlag = true;
+
+                level.ActivityLevel = StateActivityLevel.Paused;
+                options.ActivityLevel = StateActivityLevel.Active;
             }
 
             if (IsActive)
@@ -159,15 +166,31 @@
             GameState.SetDefaultCamera(new Camera(graphics));
         }
 
+        private void ActivateLevel(object sender, EventArgs args)
+        {
+            menu.ActivityLevel = StateActivityLevel.Inactive;
+            level.ActivityLevel = StateActivityLevel.Active;
+        }
+
+        private void Quit(object sender, EventArgs args)
+        {
+            QuitApplication();
+        }
+
         private void BuildStates()
         {
-            GameState menu = new GameState("Menu");
+            menu = new GameState("Menu");
             stateManager.RequestStatePush(menu);
 
-            Button button = new Button(uiTextures.GetAsset("Button"), new Vector2(200));
+            Button button = new Button(uiTextures.GetAsset("Button"), new Vector2(200), MouseButtons.LMB);
             menu.CreateNewEntity(button);
+            button.OnClickEvent += ActivateLevel;
 
-            GameState level = new GameState("Level");
+            button = new Button(uiTextures.GetAsset("Button"), new Vector2(400), MouseButtons.LMB);
+            menu.CreateNewEntity(button);
+            button.OnClickEvent += ActivateLevel;
+
+            level = new GameState("Level", StateActivityLevel.Inactive);
             stateManager.RequestStatePush(level);
 
             DrawLayer terrainLayer = level.CreateNewDrawLayer("IsoTerrain", false, new Vector2(64, 32));
@@ -180,7 +203,7 @@
             //Terrain cartTerrain = Terrain.CreateSquareTerrain(new Vector2(4, 0), new Vector2(10), textures.GetAsset("GridTile"), textures.GetAsset("GrassTopDown"));
             //menu.CreateNewEntity("CartTerrain", cartTerrain);
 
-            System.Random rand = new System.Random();
+            Random rand = new Random();
 
             for (int i = 0; i < 500; i++)
             {
@@ -194,6 +217,12 @@
             }
             CameraController cameraController = new CameraController(menu.Camera);
             level.CreateNewEntity(cameraController);
+
+            options = new GameState("Options", StateActivityLevel.Inactive);
+            stateManager.RequestStatePush(options);
+            Button exitButton = new Button(uiTextures.GetAsset("Button"), new Vector2(0));
+            exitButton.OnClickEvent += Quit;
+            options.CreateNewEntity(exitButton);
         }
 
         #endregion

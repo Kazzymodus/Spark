@@ -60,9 +60,9 @@
 
         private List<Entity> entities = new List<Entity>();
 
-        private readonly Dictionary<string, DrawLayer> drawLayers = new Dictionary<string, DrawLayer>
+        private readonly DrawLayerCollection drawLayers = new DrawLayerCollection()
         {
-            { DefaultDrawLayerName, new DrawLayer(true, Vector2.One, Vector2.Zero) }
+            new DrawLayer(DefaultDrawLayerName, true, Vector2.One, Vector2.Zero)
         };
 
         #endregion
@@ -86,15 +86,15 @@
 
         public DrawLayer CreateNewDrawLayer(string name, bool isScreenLayer, Vector2 unit, Vector2 position)
         {
-            DrawLayer layer = new DrawLayer(isScreenLayer, unit, position);
-            drawLayers.Add(name, layer);
+            DrawLayer layer = new DrawLayer(name, isScreenLayer, unit, position);
+            drawLayers.Add(layer);
 
             return layer;
         }
 
         public int CreateNewEntity(params Component[] components)
         {
-            return CreateNewEntity(drawLayers[DefaultDrawLayerName], components);
+            return CreateNewEntity(drawLayers[0], components);
         }
 
         public int CreateNewEntity(string drawLayerName, params Component[] components)
@@ -149,9 +149,12 @@
 
         internal void Draw(SpriteBatch spriteBatch)
         {
-            foreach (KeyValuePair<string, DrawLayer> entries in drawLayers)
+            int i = 0;
+
+            foreach (DrawLayer layer in drawLayers)
             {
-                entries.Value.Draw(spriteBatch, Camera);
+                i++;
+                layer.Draw(spriteBatch, Camera);
             }
         }
 
