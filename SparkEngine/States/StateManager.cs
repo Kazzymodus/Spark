@@ -7,6 +7,7 @@
     using Microsoft.Xna.Framework.Graphics;
     using SparkEngine.Rendering;
     using SparkEngine.Debug;
+    using SparkEngine.Input;
 
     public class StateManager
     {
@@ -14,6 +15,8 @@
 
         private Stack<GameState> states = new Stack<GameState>();
         private List<GameState> pushRequests = new List<GameState>();
+
+        private InputHandler inputHandler = new InputHandler();
 
         #endregion
 
@@ -35,6 +38,8 @@
 
         public void UpdateStates(GameTime gameTime)
         {
+            inputHandler.Update();
+
             IEnumerable<GameState> reversedStates = states.Reverse();
 
             foreach(GameState state in reversedStates)
@@ -43,8 +48,7 @@
 
                 if (activityLevel != StateActivityLevel.Paused && activityLevel != StateActivityLevel.Inactive)
                 {
-                    state.ProcessInput(gameTime);
-                    state.Update(gameTime);
+                    state.Update(gameTime, inputHandler);
                 }
             }
 

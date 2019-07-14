@@ -9,11 +9,11 @@
     /// <summary>
     /// A GridObject is an object that can occupy a coordinate on a grid, like a tile based terrain.
     /// </summary>
-    public class GridObject : Component, IDrawableComponent
+    public class GridObject : Component
     {
         #region Constructors
 
-        private GridObject(SpriteData spriteData, Vector2 coordinates, Vector2 dimensions, int rotation)
+        private GridObject(Sprite spriteData, Vector2 coordinates, Vector2 dimensions, int rotation)
         {
             SpriteData = spriteData;
             Coordinates = coordinates;
@@ -43,7 +43,7 @@
         /// <summary>
         /// The sprite data used for rendering the object.
         /// </summary>
-        public SpriteData SpriteData { get; }
+        public Sprite SpriteData { get; }
 
         public LayerSortMethod LayerSortMethod { get; private set; } = LayerSortMethod.HeightAsDistance;
 
@@ -53,89 +53,96 @@
 
         public static GridObject CreateIsometricGridObject(Texture2D spriteSheet, DrawLayer drawLayer, Vector2 coordinates, Vector2 dimensions, int rotation = Projector.RotationNone)
         {
-            SpriteData spriteData = SpriteData.CreateIsometricSprite(spriteSheet, drawLayer.Unit, dimensions, 4, 1);
+            Sprite spriteData = Sprite.CreateIsometricSprite(spriteSheet, drawLayer.Unit, dimensions, 4, 1);
 
             GridObject gridObject = new GridObject(spriteData, coordinates, dimensions, rotation);
             return gridObject;
         }
 
-        /// <summary>
-        /// Returns the draw position.
-        /// </summary>
-        /// <param name="camera">The camera this component will be rendered to.</param>
-        /// <param name="tileSize">The dimensions (in pixels) of a single tile.</param>
-        public Vector2 GetDrawPosition(Camera camera, DrawLayer drawLayer)
-        {
-            int rotations = camera.Rotations;
-            Vector2 cornerPixels = Projector.CartesianToIsometricToPixels(GetRootCoordinates(rotations), drawLayer.Unit);
-            Vector2 drawPosition = drawLayer.Position + (cornerPixels - SpriteData.Anchor);
+        ///// <summary>
+        ///// Returns the draw position.
+        ///// </summary>
+        ///// <param name="camera">The camera this component will be rendered to.</param>
+        ///// <param name="tileSize">The dimensions (in pixels) of a single tile.</param>
+        //public Vector2 GetDrawPosition(Camera camera, DrawLayer drawLayer)
+        //{
+        //    int rotations = camera.Rotations;
+        //    Vector2 cornerPixels = Projector.CartesianToIsometricToPixels(GetRootCoordinates(rotations), drawLayer.Unit);
+        //    Vector2 drawPosition = drawLayer.Position + (cornerPixels - SpriteData.Anchor);
 
-            //// Correction, as we need to draw in the X center of the tile, not the origin.
+        //    //// Correction, as we need to draw in the X center of the tile, not the origin.
 
-            //drawPosition.X += Projector.DefaultTileWidth / 2;
-            //if (Dimensions == Projector.Dimension1X1)
-            //{
-            //    drawPosition.Y += Projector.DefaultTileHeight / 2;
-            //}
+        //    //drawPosition.X += Projector.DefaultTileWidth / 2;
+        //    //if (Dimensions == Projector.Dimension1X1)
+        //    //{
+        //    //    drawPosition.Y += Projector.DefaultTileHeight / 2;
+        //    //}
 
-            return drawPosition;
-        }
+        //    return drawPosition;
+        //}
 
-        /// <summary>
-        /// Sets the position of the WorldObject to the given coordinates.
-        /// </summary>
-        /// <param name="coordinates"></param>
-        /// <param name="offset"></param>
-        public void SetPosition(Vector2 coordinates)
-        {
-            Coordinates = coordinates;
-        }
+        //public Rectangle GetBounds(Camera camera, DrawLayer drawLayer)
+        //{
+        //    Rectangle bounds = SpriteData.Texture.Bounds;
+        //    bounds.Location = GetDrawPosition(camera, drawLayer).ToPoint();
+        //    return bounds;
+        //}
 
-        /// <summary>
-        /// Translate the object.
-        /// </summary>
-        /// <param name="amount">The amount of units to translate.</param>
-        public void Translate(Vector2 amount)
-        {
-            Coordinates += amount;
-        }
+        ///// <summary>
+        ///// Sets the position of the WorldObject to the given coordinates.
+        ///// </summary>
+        ///// <param name="coordinates"></param>
+        ///// <param name="offset"></param>
+        //public void SetPosition(Vector2 coordinates)
+        //{
+        //    Coordinates = coordinates;
+        //}
 
-        public void Draw(SpriteBatch spriteBatch, Camera camera, DrawLayer layer)
-        {
-            Vector2 frameSize = SpriteData.FrameSize;
-            int frameX = (int)frameSize.X * (Rotation + camera.Rotations) % 4;
-            int frameY = 0; // For now;
+        ///// <summary>
+        ///// Translate the object.
+        ///// </summary>
+        ///// <param name="amount">The amount of units to translate.</param>
+        //public void Translate(Vector2 amount)
+        //{
+        //    Coordinates += amount;
+        //}
 
-            Rectangle frame = new Rectangle(frameX, frameY, (int)frameSize.X, (int)frameSize.Y);
-            Vector2 drawPosition = GetDrawPosition(camera, layer);
+        //public void Draw(SpriteBatch spriteBatch, Camera camera, DrawLayer layer)
+        //{
+        //    Vector2 frameSize = SpriteData.FrameSize;
+        //    int frameX = (int)frameSize.X * (Rotation + camera.Rotations) % 4;
+        //    int frameY = 0; // For now;
 
-            //Log.AddWorldMessage("DP: " + drawPosition.X + "," + drawPosition.Y, drawPosition, camera, Color.Red);
-            //Log.AddWorldMessage("A: " + SpriteData.Anchor.X + "," + SpriteData.Anchor.Y, drawPosition + SpriteData.Anchor, camera, Color.Red);
+        //    Rectangle frame = new Rectangle(frameX, frameY, (int)frameSize.X, (int)frameSize.Y);
+        //    Vector2 drawPosition = GetDrawPosition(camera, layer);
 
-            Log.AddWorldMessage(Coordinates.ToString(), drawPosition, camera, Color.Red);
+        //    //Log.AddWorldMessage("DP: " + drawPosition.X + "," + drawPosition.Y, drawPosition, camera, Color.Red);
+        //    //Log.AddWorldMessage("A: " + SpriteData.Anchor.X + "," + SpriteData.Anchor.Y, drawPosition + SpriteData.Anchor, camera, Color.Red);
 
-            spriteBatch.Draw(SpriteData.Texture, drawPosition, frame, new Color(Color.White, 0.5f));
-        }
+        //    Log.AddWorldMessage(Coordinates.ToString(), drawPosition, camera, Color.Red);
 
-        /// <summary>
-        /// Gets the root coordinates. I'll explain this better later. Doesn't do anything at this stage anyway.
-        /// </summary>
-        /// <param name="worldRotations"></param>
-        /// <returns></returns>
-        private Vector2 GetRootCoordinates(int worldRotations)
-        {
-            return Coordinates;
+        //    spriteBatch.Draw(SpriteData.Texture, drawPosition, frame, new Color(Color.White, 0.5f));
+        //}
 
-            //Vector2 rotatedCoords = Projector.RotateCoordsInMap(Coordinates + TileOffset, worldRotations);
+        ///// <summary>
+        ///// Gets the root coordinates. I'll explain this better later. Doesn't do anything at this stage anyway.
+        ///// </summary>
+        ///// <param name="worldRotations"></param>
+        ///// <returns></returns>
+        //private Vector2 GetRootCoordinates(int worldRotations)
+        //{
+        //    return Coordinates;
 
-            //if (Dimensions != Projector.Dimension1X1)
-            //{
-            //    rotatedCoords.X += worldRotations == 1 || worldRotations == 2 ? Dimensions.X - 1 : 0;
-            //    rotatedCoords.Y += worldRotations / 2 * (Dimensions.Y - 1);
-            //}
+        //    //Vector2 rotatedCoords = Projector.RotateCoordsInMap(Coordinates + TileOffset, worldRotations);
 
-            //return rotatedCoords;
-        }
+        //    //if (Dimensions != Projector.Dimension1X1)
+        //    //{
+        //    //    rotatedCoords.X += worldRotations == 1 || worldRotations == 2 ? Dimensions.X - 1 : 0;
+        //    //    rotatedCoords.Y += worldRotations / 2 * (Dimensions.Y - 1);
+        //    //}
+
+        //    //return rotatedCoords;
+        //}
 
         #endregion
     }

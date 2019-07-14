@@ -3,30 +3,43 @@
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Input;
 
-    public static class InputHandler
+    public class InputHandler
     {
         #region Fields
 
-        private static MouseState mouseState = Mouse.GetState();
-        private static MouseState oldMouseState = mouseState;
+        private MouseState mouseState = Mouse.GetState();
+        private MouseState oldMouseState;
 
-        private static KeyboardState keyboardState = Keyboard.GetState();
-        private static KeyboardState oldKeyboardState = keyboardState;
+        private KeyboardState keyboardState = Keyboard.GetState();
+        private KeyboardState oldKeyboardState;
 
         #endregion
 
         #region Properties
 
-        public static Point MousePosition
+
+        /// <summary>
+        /// Gets the screen position of the mouse.
+        /// </summary>
+        public Point MouseScreenPosition
         {
             get { return Mouse.GetState().Position; }
+        }
+
+
+        /// <summary>
+        /// Gets the screen position of the mouse.
+        /// </summary>
+        public Vector2 MouseScreenPositionVector
+        {
+            get { return Mouse.GetState().Position.ToVector2(); }
         }
 
         #endregion
 
         #region Methods
 
-        public static bool IsMouseDown(MouseButtons button)
+        public bool IsMouseDown(MouseButtons button)
         {
             bool isMouseDown = false;
 
@@ -46,7 +59,7 @@
             return isMouseDown;
         }
 
-        public static bool IsMousePressed(MouseButtons button)
+        public bool IsMousePressed(MouseButtons button)
         {
             bool isMousePressed = false;
 
@@ -66,7 +79,7 @@
             return isMousePressed;
         }
 
-        public static bool IsMouseReleased(MouseButtons button)
+        public bool IsMouseReleased(MouseButtons button)
         {
             bool isMouseReleased = false;
 
@@ -86,22 +99,22 @@
             return isMouseReleased;
         }
 
-        public static bool IsKeyDown(Keys key)
+        public bool IsKeyDown(Keys key)
         {
             return keyboardState.IsKeyDown(key);
         }
 
-        public static bool IsKeyPressed(Keys key)
+        public bool IsKeyPressed(Keys key)
         {
             return keyboardState.IsKeyDown(key) && oldKeyboardState.IsKeyUp(key);
         }
 
-        public static bool IsKeyReleased(Keys key)
+        public bool IsKeyReleased(Keys key)
         {
             return keyboardState.IsKeyUp(key) && oldKeyboardState.IsKeyDown(key);
         }
 
-        public static void Update()
+        internal void Update()
         {
             oldMouseState = mouseState;
             mouseState = Mouse.GetState();

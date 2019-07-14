@@ -6,6 +6,7 @@
     using System.Text;
     using System.Threading.Tasks;
     using System.Collections.ObjectModel;
+    using Microsoft.Xna.Framework.Graphics;
 
     class DrawLayerCollection : KeyedCollection<string, DrawLayer>
     {

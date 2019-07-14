@@ -1,7 +1,7 @@
 ﻿namespace SparkEngine.Rendering
 {
     /// <summary>
-    /// Determines what shape the rendererer considers the terrain tiles to be for rendering purpose.
+    /// Determines what shape the rendererer considers the grid tiles to be for rendering purpose.
     /// </summary>
     public enum TileMode
     {

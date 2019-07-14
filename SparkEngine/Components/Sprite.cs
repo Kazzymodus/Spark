@@ -1,4 +1,4 @@
-﻿namespace SparkEngine.Rendering
+﻿namespace SparkEngine.Components
 {
     using System;
     using System.Collections.Generic;
@@ -8,11 +8,11 @@
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     
-    public class SpriteData
+    public class Sprite : Component
     {
         #region Constructors
 
-        private SpriteData(Texture2D texture, Vector2 frameSize, Vector2 anchor)
+        private Sprite(Texture2D texture, Vector2 frameSize, Vector2 anchor)
         {
             Texture = texture;
             FrameSize = frameSize;
@@ -22,6 +22,8 @@
         #endregion
 
         #region Properties
+
+        public Vector2 DrawPosition { get; }
 
         public Texture2D Texture { get; }
 
@@ -33,7 +35,7 @@
 
         #region Methods
 
-        public static SpriteData CreateIsometricSprite(Texture2D texture, Vector2 tileSize, Vector2 dimensions, int rotations = 1, int animationLength = 1)
+        public static Sprite CreateIsometricSprite(Texture2D texture, Vector2 tileSize, Vector2 dimensions, int rotations = 1, int animationLength = 1)
         {
             if (rotations <= 0 || animationLength <= 0)
             {
@@ -45,10 +47,10 @@
             Vector2 frameSize = new Vector2(frameX, frameY);
             Vector2 anchor = GetIsometricSpriteAnchor(frameSize, dimensions, tileSize);
 
-            return new SpriteData(texture, frameSize, anchor);
+            return new Sprite(texture, frameSize, anchor);
         }
 
-        public static SpriteData CreateTileSprite()
+        public static Sprite CreateTileSprite()
         {
             throw new NotImplementedException();
         }

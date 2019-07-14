@@ -10,8 +10,9 @@
     using SparkEngine.Components;
     using SparkEngine.Input;
     using SparkEngine.Rendering;
+    using SparkEngine.States;
 
-    public class Button : Component, IDrawableComponent
+    public class Clickable : Component
     {
         #region Fields
 
@@ -19,17 +20,14 @@
 
         private MouseButtons validInput;
 
-        private Texture2D texture;
-
         #endregion
 
         #region Constructors
 
-        public Button(Texture2D texture, Vector2 position, MouseButtons validInput = MouseButtons.LMB)
+        public Clickable(Texture2D texture, Vector2 position, MouseButtons validInput = MouseButtons.LMB)
         {
             Position = position;
             this.validInput = validInput;
-            this.texture = texture;
             Size = texture.Bounds.Size;
         }
 
@@ -53,28 +51,22 @@
 
         #region Methods
 
-        public override void ProcessInput(GameTime gameTime, out bool gotUsableInput)
+        public override void ProcessInput(InputHandler input, GameState state, GameTime gameTime, bool underCursor)
         {
-            Rectangle bounds = new Rectangle(Position.ToPoint(), Size);
-
-            if (InputHandler.IsMousePressed(validInput))
+            if (input.IsMousePressed(validInput))
             {
-                gotUsableInput = true;
-
-                if (bounds.Contains(InputHandler.MousePosition))
+                if (underCursor)
                 {
                     isHeldDown = true;
                 }
 
                 return;
             }
-            else if (InputHandler.IsMouseReleased(validInput))
+            else if (input.IsMouseReleased(validInput))
             {
-                gotUsableInput = true;
-
                 if (isHeldDown)
                 {
-                    if (bounds.Contains(InputHandler.MousePosition))
+                    if (underCursor)
                     {
                         OnClickEvent?.Invoke(this, new EventArgs());
                     }
@@ -85,16 +77,21 @@
                 return;
             }
 
-            gotUsableInput = false;
+            SkipInputProcessing = true;
         }
 
-        public override void Update(GameTime gameTime)
+        public override void Update(GameState state, GameTime gameTime)
         {
         }
 
         public Vector2 GetDrawPosition(Camera camera, DrawLayer drawLayer)
         {
             return drawLayer.Position + Position;
+        }
+
+        public Rectangle GetBounds(Camera camera, DrawLayer drawLayer)
+        {
+            return new Rectangle(Position.ToPoint(), Size);
         }
 
         public void Draw(SpriteBatch spriteBatch, Camera camera, DrawLayer drawLayer)

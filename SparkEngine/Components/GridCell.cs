@@ -9,7 +9,7 @@
     using Microsoft.Xna.Framework.Graphics;
     using SparkEngine.Rendering;
 
-    public class TerrainTile
+    public class GridCell
     {
         #region Fields
 
@@ -19,13 +19,13 @@
 
         #region Constructors
 
-        public TerrainTile(byte textureId)
+        public GridCell(byte textureId)
         {
             TextureId = textureId;
             r = g = b = 0xFF;
         }
 
-        public TerrainTile(byte textureId, Color color)
+        public GridCell(byte textureId, Color color)
         {
             TextureId = textureId;
             r = color.R;
@@ -40,6 +40,17 @@
         public byte TextureId { get; }
 
         public Color Colour => new Color(r, g, b, (byte)0xFF);
+
+        #endregion
+
+        #region Methods
+
+        public void SetColour(Color colour)
+        {
+            r = colour.R;
+            g = colour.G;
+            b = colour.B;
+        }
 
         #endregion
 

@@ -182,11 +182,11 @@
             menu = new GameState("Menu");
             stateManager.RequestStatePush(menu);
 
-            Button button = new Button(uiTextures.GetAsset("Button"), new Vector2(200), MouseButtons.LMB);
+            Clickable button = new Clickable(uiTextures.GetAsset("Button"), new Vector2(200), MouseButtons.LMB);
             menu.CreateNewEntity(button);
             button.OnClickEvent += ActivateLevel;
 
-            button = new Button(uiTextures.GetAsset("Button"), new Vector2(400), MouseButtons.LMB);
+            button = new Clickable(uiTextures.GetAsset("Button"), new Vector2(400), MouseButtons.LMB);
             menu.CreateNewEntity(button);
             button.OnClickEvent += ActivateLevel;
 
@@ -197,7 +197,7 @@
             //DrawLayer cartTerrainLayer = menu.CreateNewDrawLayer("CartTerrain", false, new Vector2(32), new Vector2(400, 0));
             DrawLayer structureLayer = level.CreateNewDrawLayer("Structures", false, new Vector2(64, 32));
 
-            Terrain isoTerrain = Terrain.CreateIsometricTerrain(new Vector2(0, 0), new Vector2(100), textures.GetAsset("GridTile"), textures.GetAsset("GrassTile"));
+            Grid <GridCell> isoTerrain = Grid<GridCell>.CreateIsometricGrid(new Vector2(0, 0), false, textures.GetAsset("GridTile"), textures.GetAsset("GrassTile"));
             level.CreateNewEntity("IsoTerrain", isoTerrain);
 
             //Terrain cartTerrain = Terrain.CreateSquareTerrain(new Vector2(4, 0), new Vector2(10), textures.GetAsset("GridTile"), textures.GetAsset("GrassTopDown"));
@@ -220,7 +220,7 @@
 
             options = new GameState("Options", StateActivityLevel.Inactive);
             stateManager.RequestStatePush(options);
-            Button exitButton = new Button(uiTextures.GetAsset("Button"), new Vector2(0));
+            Clickable exitButton = new Clickable(uiTextures.GetAsset("Button"), new Vector2(0));
             exitButton.OnClickEvent += Quit;
             options.CreateNewEntity(exitButton);
         }

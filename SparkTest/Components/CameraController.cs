@@ -9,6 +9,7 @@
     using Microsoft.Xna.Framework.Input;
     using SparkEngine.Components;
     using SparkEngine.Rendering;
+    using SparkEngine.States;
     using SparkEngine.Input;
 
     class CameraController : Component
@@ -21,24 +22,28 @@
 
         public Camera Camera { get; private set; }
 
-        public override void ProcessInput(GameTime gameTime, out bool gotUsableInput)
+        public override void ProcessInput(GameState state, GameTime gameTime)
         {
-            if (gotUsableInput = InputHandler.IsKeyDown(Keys.Down))
+            bool inputReceived = false;
+
+            if (inputReceived |= InputHandler.IsKeyDown(Keys.Down))
             {
                 Camera.MoveCamera(new Vector2(0, 10));
             }
-            if (gotUsableInput = InputHandler.IsKeyDown(Keys.Up))
+            if (inputReceived |= InputHandler.IsKeyDown(Keys.Up))
             {
                 Camera.MoveCamera(new Vector2(0, -10));
             }
-            if (gotUsableInput = InputHandler.IsKeyDown(Keys.Right))
+            if (inputReceived |= InputHandler.IsKeyDown(Keys.Right))
             {
                 Camera.MoveCamera(new Vector2(10, 0));
             }
-            if (gotUsableInput = InputHandler.IsKeyDown(Keys.Left))
+            if (inputReceived |= InputHandler.IsKeyDown(Keys.Left))
             {
                 Camera.MoveCamera(new Vector2(-10, 0));
             }
+
+            SkipInputProcessing = !inputReceived;
         }
 
     }

@@ -61,9 +61,13 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Components\CellBatch.cs" />
+    <Compile Include="Components\CellData.cs" />
     <Compile Include="Components\Component.cs" />
-    <Compile Include="Components\IDrawableComponent.cs" />
-    <Compile Include="Components\TerrainTile.cs" />
+    <Compile Include="Components\Drawable.cs" />
+    <Compile Include="Components\GridCell.cs" />
+    <Compile Include="Components\ScreenPosition.cs" />
+    <Compile Include="Components\WorldCoordinate.cs" />
     <Compile Include="Debug\CellPositionInfo.cs" />
     <Compile Include="Debug\Log.cs" />
     <Compile Include="Debug\LogManager.cs" />
@@ -76,6 +80,7 @@
     <Compile Include="Input\MouseButtons.cs" />
     <Compile Include="Level\Map.cs" />
     <Compile Include="Level\ObjectManager.cs" />
+    <Compile Include="Rendering\CameraConstraints.cs" />
     <Compile Include="Rendering\DrawLayer.cs" />
     <Compile Include="Rendering\DrawLayerCollection.cs" />
     <Compile Include="Rendering\LayerSortMethod.cs" />
@@ -85,19 +90,22 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rendering\Camera.cs" />
     <Compile Include="Rendering\Projector.cs" />
-    <Compile Include="Rendering\SpriteData.cs" />
+    <Compile Include="Components\Sprite.cs" />
     <Compile Include="Rendering\TileMode.cs" />
-    <Compile Include="States\ComponentManager.cs" />
+    <Compile Include="Systems\ClickableSystem.cs" />
+    <Compile Include="Systems\ComponentSystem.cs" />
     <Compile Include="States\GameState.cs" />
     <Compile Include="States\StateActivityLevel.cs" />
     <Compile Include="States\StateManager.cs" />
+    <Compile Include="Systems\DrawSystem.cs" />
+    <Compile Include="Systems\SpriteDrawSystem.cs" />
     <Compile Include="Time\OnTickEventArgs.cs" />
     <Compile Include="Time\TemporaryTicker.cs" />
     <Compile Include="Time\Ticker.cs" />
     <Compile Include="Time\TimeManager.cs" />
-    <Compile Include="Components\Terrain.cs" />
+    <Compile Include="Components\Grid.cs" />
     <Compile Include="Components\GridObject.cs" />
-    <Compile Include="Components\Button.cs" />
+    <Compile Include="Components\Clickable.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="MonoGame.Framework">

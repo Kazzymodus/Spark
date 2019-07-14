@@ -26,9 +26,11 @@
 
         public TAsset GetAsset(string key)
         {
-            assetDictionary.TryGetValue(key, out TAsset value);
-
-            return value;
+            if (assetDictionary.TryGetValue(key, out TAsset value))
+            {
+                return value;
+            }
+            else throw new Exception("No asset with key \"" + key + "\" was found.");
         }
 
         public void AddAsset(string key, TAsset asset)

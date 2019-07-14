@@ -31,6 +31,16 @@
         {
             ViewportSize = new Point(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
             CalculateTransform();
+            ConstraintMode = CameraConstraints.Unconstrained;
+            constraints = default(Rectangle);
+        }
+
+        public Camera(GraphicsDeviceManager graphics, CameraConstraints constraintsMode, Rectangle constraints)
+        {
+            ViewportSize = new Point(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
+            CalculateTransform();
+            ConstraintMode = constraintsMode;
+            this.constraints = constraints;
         }
 
         #endregion
@@ -57,15 +67,17 @@
         /// </summary>
         public Point ViewportSize { get; private set; }
         
+        public Vector2 GetMouseWorldPosition(Vector2 mouseScreenPosition)
+        {
+            return mouseScreenPosition + Position;
+        }
+        
         /// <summary>
         /// The position of the mouse in the world in pixels.
         /// </summary>
-        public Vector2 MouseWorldPosition
+        public Point GetMouseWorldPosition(Point mouseScreenPosition)
         {
-            get
-            {
-                return InputHandler.MousePosition.ToVector2() + Position;
-            }
+            return mouseScreenPosition + Position.ToPoint();
         }
         
         /// <summary>
@@ -78,6 +90,8 @@
                 return new Rectangle(Position.ToPoint(), ViewportSize);
             }
         }
+
+        public CameraConstraints ConstraintMode { get; }
 
         #endregion
 
@@ -106,7 +120,14 @@
         {
             Position += translation;
 
-            //ClampCameraToBounds();
+            if (ConstraintMode == CameraConstraints.Constrained)
+            {
+                ClampCamera();
+            }
+            else if (ConstraintMode == CameraConstraints.WrapAround)
+            {
+                WrapCamera();
+            }
             CalculateTransform();
         }
 
@@ -164,7 +185,7 @@
         /// <summary>
         /// Clamps the camera to its constraints.
         /// </summary>
-        private void ClampCameraToBounds()
+        private void ClampCamera()
         {
             if (Position.X < constraints.Left)
             {
@@ -182,6 +203,33 @@
             else if (Position.Y > constraints.Bottom)
             {
                 SetCameraPosition(new Vector2(Position.X, constraints.Bottom));
+            }
+        }
+
+        private void WrapCamera()
+        {
+            int overshoot = 0;
+
+            if (Position.X < constraints.Left)
+            {
+                overshoot = constraints.Left - (int)Position.X;
+                SetCameraPosition(new Vector2(constraints.Right + overshoot, Position.Y));
+            }
+            else if (Position.X > constraints.Right)
+            {
+                overshoot = (int)Position.X - constraints.Right;
+                SetCameraPosition(new Vector2(constraints.Left + overshoot, Position.Y));
+            }
+
+            if (Position.Y < constraints.Top)
+            {
+                overshoot = constraints.Top - (int)Position.Y;
+                SetCameraPosition(new Vector2(constraints.Bottom + overshoot, constraints.Top));
+            }
+            else if (Position.Y > constraints.Bottom)
+            {
+                overshoot = (int)Position.Y - constraints.Bottom;
+                SetCameraPosition(new Vector2(constraints.Top + overshoot, constraints.Bottom));
             }
         }
 

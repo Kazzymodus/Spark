@@ -1,26 +1,14 @@
 ﻿namespace SparkEngine.Rendering
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     using SparkEngine.Components;
+    using System;
+    using System.Collections.Generic;
 
-    public class DrawLayer
+    public class DrawLayer : Component
     {
-        private List<IDrawableComponent> components = new List<IDrawableComponent>();
-        private readonly bool isScreenLayer;
-
-        public DrawLayer(string name, bool isScreenLayer, Vector2 unit, Vector2 position)
-        {
-            Name = name;
-            this.isScreenLayer = isScreenLayer;
-            Unit = unit;
-            Position = position;
-        }
+        public int ID { get; }
 
         public string Name { get; }
 
@@ -30,9 +18,67 @@
 
         public Vector2 Unit { get; }
 
-        internal void RegisterComponent(IDrawableComponent component, Camera camera)
+        public List<Drawable> Drawables { get; } = new List<Drawable>();
+        
+        /*
+
+        public Rectangle GetBounds(Camera camera)
         {
-            switch(component.LayerSortMethod)
+            if (components.Count == 0)
+            {
+                return new Rectangle();
+            }
+
+            Vector2 boundsPosition = components[0].GetDrawPosition(camera, this);
+            Vector2 boundsEnd = boundsPosition;
+            
+            for (int i = 1; i < components.Count; i++)
+            {
+                Vector2 drawPosition = components[i].GetDrawPosition(camera, this);
+                Point size = components[i].GetBounds(camera, this).Size;
+
+                if (drawPosition.X < boundsPosition.X)
+                {
+                    boundsPosition.X = drawPosition.X;
+                }
+                else if (drawPosition.X + size.X > boundsEnd.X)
+                {
+                    boundsEnd.X = drawPosition.X;
+                }
+
+                if (drawPosition.Y < boundsPosition.Y)
+                {
+                    boundsPosition.Y = drawPosition.Y;
+                }
+                else if (drawPosition.Y + size.Y > boundsEnd.Y)
+                {
+                    boundsEnd.Y = drawPosition.Y;
+                }
+            }
+
+            Vector2 boundsSize = boundsEnd - boundsPosition;
+
+            return new Rectangle(boundsPosition.ToPoint(), boundsSize.ToPoint());
+        }
+        
+        public Drawable GetComponentAtPosition(Point position, Camera camera)
+        {
+            foreach (Drawable component in components)
+            {
+                if (component.GetBounds(camera, this).Contains(position))
+                {
+                    return component;
+                }
+            }
+
+            return null;
+        }
+
+        internal void RegisterComponent(Drawable component, Camera camera)
+        {
+            component.DestroyEvent += OnComponentDestroy;
+
+            switch (component.LayerSortMethod)
             {
                 case LayerSortMethod.First:
                     FirstModeInsert(component, components, camera);
@@ -46,7 +92,6 @@
                 default:
                     throw new NotImplementedException();
             }
-
         }
 
         internal void Draw(SpriteBatch spriteBatch, Camera camera)
@@ -55,7 +100,7 @@
 
             spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, transform);
             
-            foreach(IDrawableComponent component in components)
+            foreach(Drawable component in components)
             {
                 component.Draw(spriteBatch, camera, this);
             }
@@ -65,9 +110,9 @@
 
         private void Sort(Camera camera)
         {
-            List<IDrawableComponent> drawOrder = new List<IDrawableComponent>();
+            List<Drawable> drawOrder = new List<Drawable>();
 
-            foreach (IDrawableComponent component in components)
+            foreach (Drawable component in components)
             {
                 switch (component.LayerSortMethod)
                 {
@@ -86,7 +131,7 @@
             components = drawOrder;
         }
 
-        private void HeightAsDistanceModeInsert(IDrawableComponent component, List<IDrawableComponent> destination, Camera camera)
+        private void HeightAsDistanceModeInsert(Drawable component, List<Drawable> destination, Camera camera)
         {
             float drawHeight = component.GetDrawPosition(camera, this).Y;
             int index = 0;
@@ -110,14 +155,21 @@
             }
         }
 
-        private void FirstModeInsert(IDrawableComponent component, List<IDrawableComponent> destination, Camera camera)
+        private void FirstModeInsert(Drawable component, List<Drawable> destination, Camera camera)
         {
             destination.Insert(0, component);
         }
 
-        private void LastModeInsert(IDrawableComponent component, List<IDrawableComponent> destination, Camera camera)
+        private void LastModeInsert(Drawable component, List<Drawable> destination, Camera camera)
         {
             destination.Add(component);
         }
+
+        private void OnComponentDestroy(object sender, EventArgs args)
+        {
+            components.Remove((Drawable)sender);
+        }
+
+        */
     }
 }

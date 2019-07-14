@@ -7,13 +7,17 @@
     using Microsoft.Xna.Framework.Graphics;
     using SparkEngine.Components;
     using SparkEngine.Entities;
+    using SparkEngine.Input;
     using SparkEngine.Rendering;
+    using SparkEngine.Systems;
 
     /// <summary>
     /// Describes a part of your game with its own entities.
     /// </summary>
     public class GameState
     {
+        private const int MaxEntities = 4096;
+
         private const string DefaultDrawLayerName = "Default";
 
         #region Constructors
@@ -48,17 +52,17 @@
 
         public StateActivityLevel ActivityLevel { get; set; }
 
-        // public StateUI StateUI { get; protected set; }
-
         public Camera Camera { get; }
 
         private static int nextEntityId = 1;
 
         private static List<int> availableEntityIdPool = new List<int>();
 
-        private List<ComponentManager> ComponentManagers { get; } = new List<ComponentManager>();
+        private static int highestEntityId = 0;
 
-        private List<Entity> entities = new List<Entity>();
+        Component[][] entityComponentTable = new Component[MaxEntities][];
+
+        List<ComponentSystem> componentSystems = new List<ComponentSystem>();
 
         private readonly DrawLayerCollection drawLayers = new DrawLayerCollection()
         {
@@ -69,15 +73,15 @@
 
         #region Methods
 
-        public void AddComponentToDrawLayer(IDrawableComponent component, string drawLayerName)
-        {
-            AddComponentToDrawLayer(component, drawLayers[drawLayerName]);
-        }
+        //public void AddComponentToDrawLayer(Drawable component, string drawLayerName)
+        //{
+        //    AddComponentToDrawLayer(component, drawLayers[drawLayerName]);
+        //}
 
-        public void AddComponentToDrawLayer(IDrawableComponent component, DrawLayer drawLayer)
-        {
-            drawLayer.RegisterComponent(component, Camera);
-        }
+        //public void AddComponentToDrawLayer(Drawable component, DrawLayer drawLayer)
+        //{
+        //    drawLayer.RegisterComponent(component, Camera);
+        //}
 
         public DrawLayer CreateNewDrawLayer(string name, bool isScreenLayer, Vector2 unit)
         {
@@ -104,26 +108,23 @@
 
         public int CreateNewEntity(DrawLayer drawLayer, params Component[] components)
         {
-            int id = GetAvailableEntityID(out bool usedIdFromPool);
-            Entity entity = new Entity(id);
-
+            int entity = GetAvailableEntityID(out bool usedIdFromPool);
+            
             if (usedIdFromPool)
             {
-                availableEntityIdPool.Remove(id);
+                availableEntityIdPool.Remove(entity);
             }
             else
             {
                 nextEntityId++;
+                highestEntityId = entity;
             }
 
-            foreach (Component component in components)
-            {
-                AddComponentToEntity(entity, component, drawLayer);
-            }
+            AddEntityToApplicableSystems(entity);
 
-            entities.Add(entity);
+            entityComponentTable[entity] = components;
 
-            return id;
+            return entity;
         }
 
         public static void SetDefaultCamera(Camera camera)
@@ -131,72 +132,75 @@
             DefaultCamera = camera;
         }
 
-        internal void ProcessInput(GameTime gameTime)
-        {     
-            foreach (ComponentManager manager in ComponentManagers)
-            {
-                manager.ProcessInput(gameTime);
-            }
-        }
-
-        internal void Update(GameTime gameTime)
+        public T GetComponentOfEntity<T>(int entity) where T : Component
         {
-            foreach (ComponentManager manager in ComponentManagers)
+            foreach (Component component in entityComponentTable[entity])
             {
-                manager.Update(gameTime);
-            }
-        }
-
-        internal void Draw(SpriteBatch spriteBatch)
-        {
-            int i = 0;
-
-            foreach (DrawLayer layer in drawLayers)
-            {
-                i++;
-                layer.Draw(spriteBatch, Camera);
-            }
-        }
-
-        private void AddComponentToEntity<TComponent>(Entity entity, TComponent component, DrawLayer drawLayer) where TComponent : Component
-        {
-            component.SetOwner(entity);
-
-            ComponentManager<TComponent> manager = GetComponentManager<TComponent>();
-
-            if (manager == null)
-            {
-                manager = CreateNewComponentManager<TComponent>();
-            }
-
-            manager.AddComponent(component);
-
-            if (component is IDrawableComponent)
-            {
-                drawLayer.RegisterComponent((IDrawableComponent)component, Camera);
-            }
-        }
-
-        private ComponentManager<TComponent> GetComponentManager<TComponent>() where TComponent : Component
-        {
-            foreach (ComponentManager manager in ComponentManagers)
-            {
-                if (manager is ComponentManager<TComponent>)
+                if (component is T)
                 {
-                    return (ComponentManager<TComponent>)manager;
+                    return (T)component;
                 }
             }
 
             return null;
         }
 
-        private ComponentManager<TComponent> CreateNewComponentManager<TComponent>() where TComponent : Component
+        public Component[] GetComponentsOfEntity(int entity)
         {
-            ComponentManager<TComponent> manager = new ComponentManager<TComponent>();
-            ComponentManagers.Add(manager);
-            return manager;
+            return entityComponentTable[entity];
+        }
+        
+        public void AddEntityToApplicableSystems(int entity)
+        {
+            foreach (ComponentSystem system in componentSystems)
+            {
+                if (DoesEntityContainComponents(entity, system.RequiredComponents))
+                {
+                    system.AddEntity(entity);
+                }
+            }
         }
 
+        public bool DoesEntityContainComponents(int entity, Type[] components)
+        {
+            Component[] componentTable = entityComponentTable[entity];
+
+            for (int i = 0; i < components.Length; i++)
+            {
+                bool containsSpecificComponent = false;
+
+                for (int j = 0; j < componentTable.Length; j++)
+                {
+                    if (componentTable[j].GetType() == components[i])
+                    {
+                        containsSpecificComponent = true;
+                        break;
+                    }
+                }
+
+                if (!containsSpecificComponent)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        internal void Update(GameTime gameTime, InputHandler input)
+        {
+            foreach (ComponentSystem system in componentSystems)
+            {
+                system.UpdateAll(this, gameTime, input);
+            }
+        }
+
+        internal void Draw(SpriteBatch spriteBatch)
+        {
+            drawLayers.Draw(spriteBatch, Camera);
+        }
+
+        
         private static int GetAvailableEntityID(out bool usedIdFromPool)
         {
             int newId = availableEntityIdPool.FirstOrDefault();
@@ -209,6 +213,23 @@
 
             return newId;
         }
+
+        //private List<Component> GetComponentsAtCursor(Point cursorPosition)
+        //{
+        //    List<Component> cursorComponents = new List<Component>();
+
+        //    foreach (DrawLayer drawLayer in drawLayers)
+        //    {
+        //        Component cursorComponent = drawLayer.GetComponentAtPosition(cursorPosition, Camera);
+
+        //        if (cursorComponent != null)
+        //        {
+        //            cursorComponents.Add(cursorComponent);
+        //        }
+        //    }
+
+        //    return cursorComponents;
+        //}
 
         #endregion
     }
