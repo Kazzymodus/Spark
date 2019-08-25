@@ -64,13 +64,13 @@
     <Compile Include="Components\CellBatch.cs" />
     <Compile Include="Components\CellData.cs" />
     <Compile Include="Components\Component.cs" />
+    <Compile Include="Components\ComponentBatch.cs" />
     <Compile Include="Components\Drawable.cs" />
     <Compile Include="Components\GridCell.cs" />
     <Compile Include="Components\ScreenPosition.cs" />
     <Compile Include="Components\WorldCoordinate.cs" />
     <Compile Include="Debug\CellPositionInfo.cs" />
     <Compile Include="Debug\Log.cs" />
-    <Compile Include="Debug\LogManager.cs" />
     <Compile Include="Debug\LogMessage.cs" />
     <Compile Include="Debug\DebugTile.cs" />
     <Compile Include="Debug\DebugTiler.cs" />
@@ -80,7 +80,7 @@
     <Compile Include="Input\MouseButtons.cs" />
     <Compile Include="Level\Map.cs" />
     <Compile Include="Level\ObjectManager.cs" />
-    <Compile Include="Rendering\CameraConstraints.cs" />
+    <Compile Include="Components\CameraConstraints.cs" />
     <Compile Include="Rendering\DrawLayer.cs" />
     <Compile Include="Rendering\DrawLayerCollection.cs" />
     <Compile Include="Rendering\LayerSortMethod.cs" />
@@ -88,10 +88,11 @@
     <Compile Include="Pathfinding\PathFinderTest.cs" />
     <Compile Include="Pathfinding\PathNode.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Rendering\Camera.cs" />
+    <Compile Include="Components\Camera.cs" />
     <Compile Include="Rendering\Projector.cs" />
     <Compile Include="Components\Sprite.cs" />
     <Compile Include="Rendering\TileMode.cs" />
+    <Compile Include="Systems\CameraSystem.cs" />
     <Compile Include="Systems\ClickableSystem.cs" />
     <Compile Include="Systems\ComponentSystem.cs" />
     <Compile Include="States\GameState.cs" />

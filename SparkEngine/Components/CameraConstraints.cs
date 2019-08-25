@@ -1,4 +1,4 @@
-﻿namespace SparkEngine.Rendering
+﻿namespace SparkEngine.Components
 {
     public enum CameraConstraints
     {

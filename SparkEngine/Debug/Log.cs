@@ -31,17 +31,17 @@
             messageFont = font;
         }
 
-        public void AddWorldMessage(string text, Vector2 worldPosition, Camera camera)
-        {
-            AddWorldMessage(text, worldPosition, camera, LogColour);
-        }
+        //public void AddWorldMessage(string text, Vector2 worldPosition, Camera camera)
+        //{
+        //    AddWorldMessage(text, worldPosition, camera, LogColour);
+        //}
 
-        public void AddWorldMessage(string text, Vector2 worldPosition, Camera camera, Color colour)
-        {
-            Vector3 inverseTranslation = -Matrix.Invert(camera.Transform).Translation;
-            Vector2 drawPosition = worldPosition + new Vector2(inverseTranslation.X, inverseTranslation.Y);
-            AddMessage(text, drawPosition, colour);
-        }
+        //public void AddWorldMessage(string text, Vector2 worldPosition, Camera camera, Color colour)
+        //{
+        //    Vector3 inverseTranslation = -Matrix.Invert(camera.Transform).Translation;
+        //    Vector2 drawPosition = worldPosition + new Vector2(inverseTranslation.X, inverseTranslation.Y);
+        //    AddMessage(text, drawPosition, colour);
+        //}
 
         public void AddScreenMessage(string text, Vector2 position)
         {

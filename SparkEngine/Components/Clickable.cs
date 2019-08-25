@@ -14,20 +14,12 @@
 
     public class Clickable : Component
     {
-        #region Fields
-
-        private bool isHeldDown;
-
-        private MouseButtons validInput;
-
-        #endregion
-
         #region Constructors
 
         public Clickable(Texture2D texture, Vector2 position, MouseButtons validInput = MouseButtons.LMB)
         {
             Position = position;
-            this.validInput = validInput;
+            ValidInput = validInput;
             Size = texture.Bounds.Size;
         }
 
@@ -45,61 +37,9 @@
 
         public Point Size;
 
-        public LayerSortMethod LayerSortMethod { get; } = LayerSortMethod.Last;
+        public bool IsHeldDown { get; set; }
 
-        #endregion
-
-        #region Methods
-
-        public override void ProcessInput(InputHandler input, GameState state, GameTime gameTime, bool underCursor)
-        {
-            if (input.IsMousePressed(validInput))
-            {
-                if (underCursor)
-                {
-                    isHeldDown = true;
-                }
-
-                return;
-            }
-            else if (input.IsMouseReleased(validInput))
-            {
-                if (isHeldDown)
-                {
-                    if (underCursor)
-                    {
-                        OnClickEvent?.Invoke(this, new EventArgs());
-                    }
-
-                    isHeldDown = false;
-                }
-
-                return;
-            }
-
-            SkipInputProcessing = true;
-        }
-
-        public override void Update(GameState state, GameTime gameTime)
-        {
-        }
-
-        public Vector2 GetDrawPosition(Camera camera, DrawLayer drawLayer)
-        {
-            return drawLayer.Position + Position;
-        }
-
-        public Rectangle GetBounds(Camera camera, DrawLayer drawLayer)
-        {
-            return new Rectangle(Position.ToPoint(), Size);
-        }
-
-        public void Draw(SpriteBatch spriteBatch, Camera camera, DrawLayer drawLayer)
-        {
-
-            Color color = isHeldDown ? Color.Gray : Color.White; //temp
-            spriteBatch.Draw(texture, GetDrawPosition(camera, drawLayer), color);
-        }
+        public MouseButtons ValidInput { get; set; }
 
         #endregion
     }

@@ -18,9 +18,11 @@
     {
         private bool isUpdating;
 
-        protected List<int> validEntities;
+        protected List<int> subbedEntities;
 
         protected List<int> pendingAdds;
+
+        protected List<int> pendingRemovals;
 
         public ComponentSystem(params Type[] requiredComponents)
         {
@@ -37,7 +39,7 @@
             }
             else
             {
-                validEntities.Add(entity);
+                subbedEntities.Add(entity);
             }
 
             OnAddEntity(entity, state);
@@ -48,28 +50,38 @@
 
         }
 
+        public virtual void RemoveEntity(int entity, GameState state)
+        {
+            if (isUpdating)
+            {
+                pendingRemovals.Add(entity);
+            }
+            else
+            {
+                subbedEntities.Remove(entity);
+            }
+
+            OnRemoveEntity(entity, state);
+        }
+
+        public virtual void OnRemoveEntity(int entity, GameState state)
+        {
+
+        }
+
         public virtual void UpdateAll(GameState state, GameTime gameTime, InputHandler input)
         {
             isUpdating = true;
 
-            foreach (int entity in validEntities)
+            foreach (int entity in subbedEntities)
             {
-                UpdateIndividual(state, gameTime, input, state.GetComponentsOfEntity(entity));
+                UpdateIndividual(state, gameTime, input, state.GetAllComponentsOfEntity(entity));
             }
 
             isUpdating = false;
         }
 
-        public virtual void DrawAll(GameState state, SpriteBatch spriteBatch, Camera camera)
-        {
-            foreach (int entity in validEntities)
-            {
-                DrawIndividual(state, spriteBatch, camera, state.GetComponentsOfEntity(entity));
-            }
-        }
+        public abstract void UpdateIndividual(GameState state, GameTime gameTime, InputHandler input, ComponentBatch components);
 
-        public abstract void UpdateIndividual(GameState state, GameTime gameTime, InputHandler input, params Component[] components);
-
-        public abstract void DrawIndividual(GameState state, SpriteBatch spriteBatch, Camera camera, params Component[] components);
     }
 }

@@ -10,16 +10,16 @@ using SparkEngine.States;
 
 namespace SparkEngine.Systems
 {
-    abstract class DrawSystem : ComponentSystem
+    abstract class DrawSystem<T> : ComponentSystem where T : Drawable
     {
         private int?[] layerSeperatingIndices;
 
         public DrawLayerCollection DrawLayers { get; }
 
-        public DrawSystem(Type drawableType)
-            : base(typeof(Drawable), drawableType)
+        public DrawSystem()
+            : base(typeof(T)) 
         {
-            // This is bad, fix this sometimes
+            // This is bad, fix this sometime
 
             layerSeperatingIndices = new int?[DrawLayers.Count];
 
@@ -31,70 +31,76 @@ namespace SparkEngine.Systems
 
         public override void AddEntity(int entity, GameState state)
         {
-            int layerIndex = state.GetComponentOfEntity<Drawable>(entity).DrawLayer;
-
-            if (layerIndex == layerSeperatingIndices.Length - 1)
+            int layerIndex = state.GetComponentOfEntity<T>(entity).DrawLayer;
+            if (layerIndex >= layerSeperatingIndices.Length)
             {
-                validEntities.Add(entity);
+                ExtendLayersToElement(layerIndex);
             }
-            else
+
+            int insertIndex = GetInsertIndex(layerIndex);
+            subbedEntities.Insert(insertIndex, entity);
+            UpdateLayerSeperatingIndices(insertIndex, layerIndex);            
+        }
+
+        public virtual void DrawAll(GameState state, SpriteBatch spriteBatch, int cameraEntity)
+        {
+            foreach (int drawable in subbedEntities)
             {
-                if (layerIndex >= layerSeperatingIndices.Length)
-                {
-                    int?[] oldArray = layerSeperatingIndices;
-                    layerSeperatingIndices = new int?[layerIndex + 1];
-
-                    for (int i = 0; i < layerSeperatingIndices.Length; i++)
-                    {
-                        layerSeperatingIndices[i] = i < oldArray.Length ? oldArray[i] : null;
-                    }
-                }
-
-                int? insertIndex = layerSeperatingIndices[layerIndex + 1];
-
-                if (insertIndex == null)
-                {
-                    for (int i = layerIndex + 2; i < layerSeperatingIndices.Length; i++) // + 2 because we've already checked + 1
-                    {
-                        if (layerSeperatingIndices[i] != null)
-                        {
-                            insertIndex = layerSeperatingIndices[i];
-                            break;
-                        }
-                    }
-                }
-
-                if (insertIndex == null)
-                {
-                    validEntities.Add(entity);
-
-                    if (layerSeperatingIndices[layerIndex] == null)
-                    {
-                        layerSeperatingIndices[layerIndex] = validEntities.Count - 1;
-                    }
-                }
-                else
-                {
-                    validEntities.Insert((int)insertIndex, entity);
-
-                    if (layerSeperatingIndices[layerIndex] == null)
-                    {
-                        layerSeperatingIndices[layerIndex] = insertIndex;
-                    }
-
-                    for (int i = layerIndex + 1; i < layerSeperatingIndices.Length; i++)
-                    {
-                        layerSeperatingIndices[i]++;
-                    }
-                }
+                DrawIndividual(state, spriteBatch, cameraEntity, state.GetAllComponentsOfEntity(drawable));
             }
         }
 
-        public override void DrawAll(GameState state, SpriteBatch spriteBatch, Camera camera)
+        public abstract void DrawIndividual(GameState state, SpriteBatch spriteBatch, int cameraEntity, ComponentBatch components);
+
+        private void ExtendLayersToElement(int lastLayerIndex)
         {
-            foreach (int drawable in validEntities)
+            int?[] oldArray = layerSeperatingIndices;
+            layerSeperatingIndices = new int?[lastLayerIndex + 1];
+
+            for (int i = 0; i < layerSeperatingIndices.Length; i++)
             {
-                DrawIndividual(state, spriteBatch, camera, state.GetComponentsOfEntity(drawable));
+                layerSeperatingIndices[i] = i < oldArray.Length ? oldArray[i] : null;
+            }
+        }
+
+        private int GetInsertIndex(int layerIndex)
+        {
+            if (layerIndex == layerSeperatingIndices.Length - 1)
+            {
+                return subbedEntities.Count;
+            }
+            else
+            {
+                for (int i = layerIndex + 1; i < layerSeperatingIndices.Length; i++)
+                {
+                    if (layerSeperatingIndices[i] != null)
+                    {
+                        return (int)layerSeperatingIndices[i];
+                    }
+                }
+
+                throw new InvalidOperationException("layerSeperatingIndices' final element is null and not the only element in the array.");
+            }
+        }
+
+        private void UpdateLayerSeperatingIndices(int insertIndex, int layerIndex)
+        {
+            if (layerSeperatingIndices[layerIndex] == null)
+            {
+                if (layerIndex == layerSeperatingIndices.Length - 1)
+                {
+                    layerSeperatingIndices[layerIndex] = subbedEntities.Count - 1;
+                    return;
+                }
+                else
+                {
+                    layerSeperatingIndices[layerIndex] = insertIndex;
+                }
+            }
+
+            for (int i = layerIndex + 1; i < layerSeperatingIndices.Length; i++)
+            {
+                layerSeperatingIndices[i]++;
             }
         }
     }

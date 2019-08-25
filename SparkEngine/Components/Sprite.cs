@@ -8,28 +8,29 @@
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
     
-    public class Sprite : Component
+    public class Sprite : Drawable
     {
         #region Constructors
 
-        private Sprite(Texture2D texture, Vector2 frameSize, Vector2 anchor)
+        private Sprite(Texture2D texture, Vector2 frameSize, Vector2 anchor, Color color = default(Color))
         {
             Texture = texture;
             FrameSize = frameSize;
             Anchor = anchor;
+            ColorMask = color;
         }
 
         #endregion
 
         #region Properties
 
-        public Vector2 DrawPosition { get; }
-
         public Texture2D Texture { get; }
 
         public Vector2 FrameSize { get; }
 
         public Vector2 Anchor { get; }
+
+        public Color ColorMask { get; }
 
         #endregion
 

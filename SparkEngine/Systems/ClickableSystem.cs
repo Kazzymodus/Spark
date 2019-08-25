@@ -10,11 +10,23 @@
     using SparkEngine.Input;
     using SparkEngine.States;
 
-    class ClickableSystem : ComponentSystem<Clickable>
+    class ClickableSystem : ComponentSystem
     {
-        internal override void Update(GameState state, GameTime gameTime, InputHandler input)
+        public override void UpdateAll(GameState state, GameTime gameTime, InputHandler input)
         {
-            
+            //MouseButtons mouseInput
+
+            base.UpdateAll(state, gameTime, input);
+        }
+
+        public override void UpdateIndividual(GameState state, GameTime gameTime, InputHandler input, ComponentBatch components)
+        {
+            Clickable clickable = components.GetComponent<Clickable>();
+
+            if (input.IsMousePressed(clickable.ValidInput))
+            {
+                clickable.OnClickEvent?.Invoke(this, new EventArgs());
+            }
         }
     }
 }

@@ -18,8 +18,6 @@
     {
         private const int MaxEntities = 4096;
 
-        private const string DefaultDrawLayerName = "Default";
-
         #region Constructors
 
         /// <summary>
@@ -27,18 +25,29 @@
         /// </summary>
         /// <param name="activityLevel">The activity level the state starts at. Active by default.</param>
         /// <param name="camera">The camera used for drawing the game state. If not provided, uses the default camera.</param>
-        public GameState(string name, StateActivityLevel activityLevel = StateActivityLevel.Active, Camera camera = null)
+        public GameState(string name, bool useDefaultCamera, StateActivityLevel activityLevel = StateActivityLevel.Active)
         {
             Name = name;
             ActivityLevel = activityLevel;
-            Camera = camera ?? DefaultCamera;
+            
+            if (useDefaultCamera)
+            {
+                SetRenderCamera(DefaultCamera);
+            }
+        }
+
+        public GameState(string name, int cameraEntity, StateActivityLevel activityLevel = StateActivityLevel.Active)
+        {
+            Name = name;
+            ActivityLevel = activityLevel;
+            SetRenderCamera(cameraEntity);
         }
 
         #endregion
 
         #region Properties
 
-        public static Camera DefaultCamera { get; private set; }
+        public static int DefaultCamera { get; private set; } = 0;
 
         public string Name { get; }
 
@@ -46,67 +55,37 @@
         {
             get
             {
-                return Camera.Equals(DefaultCamera);
+                return HasRenderCamera && RenderCamera == DefaultCamera;
+            }
+        }
+
+        public bool HasRenderCamera
+        {
+            get
+            {
+                return RenderCamera != 0;
             }
         }
 
         public StateActivityLevel ActivityLevel { get; set; }
 
-        public Camera Camera { get; }
+        public int RenderCamera { get; private set; }
 
-        private static int nextEntityId = 1;
+        private int nextEntityId = 1;
 
-        private static List<int> availableEntityIdPool = new List<int>();
+        private List<int> availableEntityIdPool = new List<int>();
 
-        private static int highestEntityId = 0;
+        private int highestEntityId = 0;
 
         Component[][] entityComponentTable = new Component[MaxEntities][];
 
         List<ComponentSystem> componentSystems = new List<ComponentSystem>();
 
-        private readonly DrawLayerCollection drawLayers = new DrawLayerCollection()
-        {
-            new DrawLayer(DefaultDrawLayerName, true, Vector2.One, Vector2.Zero)
-        };
-
         #endregion
 
         #region Methods
 
-        //public void AddComponentToDrawLayer(Drawable component, string drawLayerName)
-        //{
-        //    AddComponentToDrawLayer(component, drawLayers[drawLayerName]);
-        //}
-
-        //public void AddComponentToDrawLayer(Drawable component, DrawLayer drawLayer)
-        //{
-        //    drawLayer.RegisterComponent(component, Camera);
-        //}
-
-        public DrawLayer CreateNewDrawLayer(string name, bool isScreenLayer, Vector2 unit)
-        {
-            return CreateNewDrawLayer(name, isScreenLayer, unit, Vector2.Zero);
-        }
-
-        public DrawLayer CreateNewDrawLayer(string name, bool isScreenLayer, Vector2 unit, Vector2 position)
-        {
-            DrawLayer layer = new DrawLayer(name, isScreenLayer, unit, position);
-            drawLayers.Add(layer);
-
-            return layer;
-        }
-
         public int CreateNewEntity(params Component[] components)
-        {
-            return CreateNewEntity(drawLayers[0], components);
-        }
-
-        public int CreateNewEntity(string drawLayerName, params Component[] components)
-        {
-            return CreateNewEntity(drawLayers[drawLayerName], components);
-        }
-
-        public int CreateNewEntity(DrawLayer drawLayer, params Component[] components)
         {
             int entity = GetAvailableEntityID(out bool usedIdFromPool);
             
@@ -127,7 +106,70 @@
             return entity;
         }
 
-        public static void SetDefaultCamera(Camera camera)
+        public void DestroyEntity(int entity)
+        {
+            Component[] entityComponents = entityComponentTable[entity];
+
+            foreach (ComponentSystem system in componentSystems)
+            {
+                Type[] systemComponents = system.RequiredComponents;
+
+                bool allComponentsMatch = true;
+
+                for (int i = 0; i < systemComponents.Length; i++)
+                {
+                    bool componentsMatch = false;
+
+                    for (int j = 0; j < entityComponents.Length; j++)
+                    {
+                        if (systemComponents[i] == entityComponents[j].GetType())
+                        {
+                            componentsMatch = true;
+                            break;
+                        }
+                    }
+
+                    if (!componentsMatch)
+                    {
+                        allComponentsMatch = false;
+                        break;
+                    }
+                }
+
+                if (allComponentsMatch)
+                {
+                    system.RemoveEntity(entity, this);
+                }
+            }
+
+            entityComponentTable[entity] = null;
+
+            availableEntityIdPool.Add(entity);
+        }
+
+        public void SetRenderCamera(int cameraEntity)
+        {
+            if (cameraEntity == 0)
+            {
+                Console.WriteLine("You can not set the RenderCamera to Entity Zero using SetRenderCamera. If you wish to reset the RenderCamera, use ClearRenderCamera");
+                return;
+            }
+
+            if (!DoesEntityContainComponents(cameraEntity, typeof(Camera), typeof(ScreenPosition)))
+            {
+                Console.WriteLine("Provided entity (ID: {0}) does not contain both a ScreenPosition and Camera component.", cameraEntity);
+                return;
+            }
+
+            RenderCamera = cameraEntity;
+        }
+
+        public void ClearRenderCamera()
+        {
+            RenderCamera = 0;
+        }
+
+        public static void SetDefaultCamera(int camera)
         {
             DefaultCamera = camera;
         }
@@ -145,7 +187,14 @@
             return null;
         }
 
-        public Component[] GetComponentsOfEntity(int entity)
+        public T[] GetComponentsOfEntity<T>(int entity) where T : Component
+        {
+            ComponentBatch allComponents = entityComponentTable[entity];
+
+            return allComponents.GetComponents<T>();
+        }
+
+        public ComponentBatch GetAllComponentsOfEntity(int entity)
         {
             return entityComponentTable[entity];
         }
@@ -156,12 +205,12 @@
             {
                 if (DoesEntityContainComponents(entity, system.RequiredComponents))
                 {
-                    system.AddEntity(entity);
+                    system.AddEntity(entity, this);
                 }
             }
         }
 
-        public bool DoesEntityContainComponents(int entity, Type[] components)
+        public bool DoesEntityContainComponents(int entity, params Type[] components)
         {
             Component[] componentTable = entityComponentTable[entity];
 
@@ -197,11 +246,14 @@
 
         internal void Draw(SpriteBatch spriteBatch)
         {
-            drawLayers.Draw(spriteBatch, Camera);
+            if (RenderCamera == 0)
+            {
+                return;
+            }
         }
 
         
-        private static int GetAvailableEntityID(out bool usedIdFromPool)
+        private int GetAvailableEntityID(out bool usedIdFromPool)
         {
             int newId = availableEntityIdPool.FirstOrDefault();
             usedIdFromPool = newId > 0;

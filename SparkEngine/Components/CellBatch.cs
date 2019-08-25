@@ -9,6 +9,7 @@
 
     public class CellBatch<T> where T : GridCell
     {
+        /*
         #region Fields
 
         T stamp;
@@ -76,5 +77,6 @@
             return new CellBatch<T>(stamp, startPoint, sampleSize, clones.ToArray(), isStencil);
         }
         #endregion
+        */
     }
 }

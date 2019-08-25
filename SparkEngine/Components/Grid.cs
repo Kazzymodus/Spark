@@ -8,8 +8,9 @@
     using SparkEngine.Rendering;
     using SparkEngine.States;
 
-    public class Grid<T> : Component, Drawable where T : GridCell
+    public class Grid : Component
     {
+        /*
         #region Fields
 
         private const int TileDrawPadding = 2;
@@ -350,5 +351,6 @@
         }
         
         #endregion
+        */
     }   
 }

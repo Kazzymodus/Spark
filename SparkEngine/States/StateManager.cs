@@ -31,11 +31,6 @@
             pushRequests.Add(state);
         }
 
-        public void Initialise(GraphicsDeviceManager graphics)
-        {
-            GameState.SetDefaultCamera(new Camera(graphics));           
-        }
-
         public void UpdateStates(GameTime gameTime)
         {
             inputHandler.Update();
