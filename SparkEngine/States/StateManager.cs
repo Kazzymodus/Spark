@@ -53,7 +53,7 @@
             }
         }
 
-        public void DrawStates(SpriteBatch spriteBatch)
+        public void DrawStates(GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
         {
             IEnumerable<GameState> reversedStates = states.Reverse();
 
@@ -63,7 +63,7 @@
 
                 if (activityLevel != StateActivityLevel.Hidden && activityLevel != StateActivityLevel.Inactive)
                 {
-                    state.Draw(spriteBatch);
+                    state.Draw(graphicsDevice, spriteBatch);
                 }
             }
         }

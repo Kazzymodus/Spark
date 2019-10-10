@@ -75,7 +75,10 @@
 
             foreach (int entity in subbedEntities)
             {
-                UpdateIndividual(state, gameTime, input, state.GetAllComponentsOfEntity(entity));
+                ComponentBatch components = state.GetAllComponentsOfEntity(entity);
+                components = components.GetComponentsInTypeOrder(RequiredComponents);
+
+                UpdateIndividual(state, gameTime, input, components);
             }
 
             isUpdating = false;
@@ -83,5 +86,35 @@
 
         public abstract void UpdateIndividual(GameState state, GameTime gameTime, InputHandler input, ComponentBatch components);
 
+        public bool CanHostEntity(GameState state, int entity)
+        {
+            ComponentBatch entityComponents = state.GetAllComponentsOfEntity(entity);
+
+            return CanHostEntity(entityComponents);
+        }
+
+        public bool CanHostEntity(ComponentBatch entityComponents)
+        {
+            for (int i = 0; i < RequiredComponents.Length; i++)
+            {
+                bool containsSpecificComponent = false;
+
+                for (int j = 0; j < entityComponents.Length; j++)
+                {
+                    if (entityComponents[j].GetType() == RequiredComponents[i])
+                    {
+                        containsSpecificComponent = true;
+                        break;
+                    }
+                }
+
+                if (!containsSpecificComponent)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
     }
 }

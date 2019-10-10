@@ -7,7 +7,7 @@
     using System.Threading.Tasks;
     using SparkEngine.Components;
 
-    class MinefieldTile : GridCell
+    class MinefieldTile : ProtoEntity
     {
         private bool isMine;
 

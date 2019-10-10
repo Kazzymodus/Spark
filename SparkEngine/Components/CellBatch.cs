@@ -7,76 +7,108 @@
     using System.Threading.Tasks;
     using Microsoft.Xna.Framework;
 
-    public class CellBatch<T> where T : GridCell
+    public abstract class CellBatch
     {
-        /*
         #region Fields
 
-        T stamp;
-        private Point location;
-        private Point size;
-        private Point[] clones;
-        private bool isStencil;
+        public ProtoEntity Stamp { get; }
+        public int X { get; }
+        public int Y { get; }
+        public bool IsStencil { get; }
 
         #endregion
 
         #region Constructors
 
-        public CellBatch(T stamp, Point location, Point size, Point[] clones, bool isStencil)
+        public CellBatch(ProtoEntity stamp, int x, int y, bool isStencil)
         {
-            this.stamp = stamp;
-            this.location = location;
-            this.size = size;
-            this.clones = clones;
-            this.isStencil = isStencil;
+            Stamp = stamp;
+            X = x;
+            Y = y;
+            IsStencil = isStencil;
         }
 
         #endregion
 
         #region Properties
 
-        public Rectangle Bounds => new Rectangle(location, size);
+
 
         #endregion
+    }
 
-        #region Methods
+    public class BitMapBatch<T> : CellBatch
+    {
+        public int Dimension { get; }
+        private T[] bitMap;
 
-        private static CellBatch<T> GetBatchFromStamp(T stamp, Grid<T> sampleGrid)
+        public BitMapBatch(ProtoEntity stamp, int x, int y, bool isStencil)
+            : base(stamp, x, y, isStencil)
         {
-            return GetBatchFromStamp(stamp, sampleGrid, Point.Zero, sampleGrid.Dimensions);
-        }
+            TypeCode typeCode = Type.GetTypeCode(typeof(T));
 
-        private static CellBatch<T> GetBatchFromStamp(T stamp, Grid<T> sampleGrid, Point startPoint, Point sampleSize)
-        {
-            List<Point> clones = new List<Point>();
-
-            for (int i = startPoint.X; i < sampleSize.X; i++)
+            switch(typeCode)
             {
-                for (int j = startPoint.Y; j < startPoint.Y; j++)
-                {
-                    if (sampleGrid.GetTile(i, j).Equals(stamp))
-                    {
-                        clones.Add(new Point(i, j));
-                    }
-                }
+                case TypeCode.SByte:
+                case TypeCode.Byte:
+                    Dimension = 8;
+                    break;
+                case TypeCode.Int16:
+                case TypeCode.UInt16:
+                    Dimension = 16;
+                    break;
+                case TypeCode.Int32:
+                case TypeCode.UInt32:
+                    Dimension = 32;
+                    break;
+                case TypeCode.Int64:
+                case TypeCode.UInt64:
+                    Dimension = 64;
+                    break;
+                default:
+                    throw new ArgumentException("BitMapBatch can only support the following types: sbyte, byte, short, ushort, int, uint, long, ulong");
             }
 
-            int cloneAmount = clones.Count;
-            int totalCells = sampleSize.X * sampleSize.Y;
-
-            bool isStencil = false;
-
-            if (cloneAmount > totalCells / 2)
-            {
-                isStencil = true;
-
-                
-
-            }
-
-            return new CellBatch<T>(stamp, startPoint, sampleSize, clones.ToArray(), isStencil);
+            bitMap = new T[Dimension];
         }
-        #endregion
-        */
+    }
+
+    public class RectangularBatch : CellBatch
+    {
+        public int Width { get; }
+        public int Height { get; }
+
+        public RectangularBatch(ProtoEntity stamp, int x, int y, int width, int height, bool isStencil)
+            : base(stamp, x, y, isStencil)
+        {
+            Width = width;
+            Height = height;
+        }
+
+        public Rectangle Bounds => new Rectangle(X, Y, Width, Height);
+    }
+
+    public class SquareBatch : CellBatch
+    {
+        public int Size { get; }
+
+        public SquareBatch(ProtoEntity stamp, int x, int y, int size, bool isStencil)
+            : base(stamp, x, y, isStencil)
+        {
+            Size = size;
+        }
+    }
+
+    public class LineBatch : CellBatch
+    {
+        public int Direction { get; }
+        public int Length { get; }
+
+        public LineBatch(ProtoEntity stamp, int x, int y, int direction, int length, bool isStencil)
+            : base(stamp, x, y, isStencil)
+        {
+            Direction = direction;
+            Length = length;
+        }
     }
 }

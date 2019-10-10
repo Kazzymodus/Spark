@@ -197,7 +197,7 @@
             //DrawLayer cartTerrainLayer = menu.CreateNewDrawLayer("CartTerrain", false, new Vector2(32), new Vector2(400, 0));
             DrawLayer structureLayer = level.CreateNewDrawLayer("Structures", false, new Vector2(64, 32));
 
-            Grid <GridCell> isoTerrain = Grid<GridCell>.CreateIsometricGrid(new Vector2(0, 0), false, textures.GetAsset("GridTile"), textures.GetAsset("GrassTile"));
+            BatchedGrid <ProtoEntity> isoTerrain = BatchedGrid<ProtoEntity>.CreateIsometricGrid(new Vector2(0, 0), false, textures.GetAsset("GridTile"), textures.GetAsset("GrassTile"));
             level.CreateNewEntity("IsoTerrain", isoTerrain);
 
             //Terrain cartTerrain = Terrain.CreateSquareTerrain(new Vector2(4, 0), new Vector2(10), textures.GetAsset("GridTile"), textures.GetAsset("GrassTopDown"));

@@ -29,7 +29,7 @@
         {
             Name = name;
             ActivityLevel = activityLevel;
-            
+
             if (useDefaultCamera)
             {
                 SetRenderCamera(DefaultCamera);
@@ -71,15 +71,22 @@
 
         public int RenderCamera { get; private set; }
 
+        public ScreenPosition CameraPosition
+        {
+            get => GetComponentOfEntity<ScreenPosition>(RenderCamera);
+        }
+
         private int nextEntityId = 1;
 
         private List<int> availableEntityIdPool = new List<int>();
 
         private int highestEntityId = 0;
 
-        Component[][] entityComponentTable = new Component[MaxEntities][];
+        private Component[][] entityComponentTable = new Component[MaxEntities][];
 
-        List<ComponentSystem> componentSystems = new List<ComponentSystem>();
+        private List<ComponentSystem> componentSystems = new List<ComponentSystem>();
+
+        public DrawLayerCollection DrawLayers { get; }
 
         #endregion
 
@@ -191,7 +198,7 @@
         {
             ComponentBatch allComponents = entityComponentTable[entity];
 
-            return allComponents.GetComponents<T>();
+            return allComponents.GetComponentsSingleType<T>();
         }
 
         public ComponentBatch GetAllComponentsOfEntity(int entity)
@@ -201,9 +208,11 @@
         
         public void AddEntityToApplicableSystems(int entity)
         {
+            ComponentBatch entityComponents = GetAllComponentsOfEntity(entity);
+
             foreach (ComponentSystem system in componentSystems)
             {
-                if (DoesEntityContainComponents(entity, system.RequiredComponents))
+                if (system.CanHostEntity(entityComponents))
                 {
                     system.AddEntity(entity, this);
                 }
@@ -244,11 +253,16 @@
             }
         }
 
-        internal void Draw(SpriteBatch spriteBatch)
+        internal void Draw(GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
         {
             if (RenderCamera == 0)
             {
                 return;
+            }
+
+            foreach (DrawSystem system in componentSystems)
+            {
+                system.DrawAll(this, graphicsDevice, spriteBatch);
             }
         }
 

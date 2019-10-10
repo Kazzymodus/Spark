@@ -3,36 +3,29 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using SparkEngine.Components;
 using SparkEngine.Rendering;
 using SparkEngine.States;
+using SparkEngine.Utilities;
 
 namespace SparkEngine.Systems
 {
-    abstract class DrawSystem<T> : ComponentSystem where T : Drawable
+    abstract class DrawSystem : ComponentSystem
     {
         private int?[] layerSeperatingIndices;
 
-        public DrawLayerCollection DrawLayers { get; }
-
-        public DrawSystem()
-            : base(typeof(T)) 
+        public DrawSystem(params Type[] requiredComponents)
+            : base(requiredComponents) 
         {
-            // This is bad, fix this sometime
 
-            layerSeperatingIndices = new int?[DrawLayers.Count];
-
-            for (int i = 0; i < layerSeperatingIndices.Length; i++)
-            {
-                layerSeperatingIndices[i] = null;
-            }
         }
 
         public override void AddEntity(int entity, GameState state)
         {
-            int layerIndex = state.GetComponentOfEntity<T>(entity).DrawLayer;
-            if (layerIndex >= layerSeperatingIndices.Length)
+            int layerIndex = state.GetComponentOfEntity<Drawable>(entity).DrawLayer;
+            if (layerSeperatingIndices == null || layerIndex >= layerSeperatingIndices.Length)
             {
                 ExtendLayersToElement(layerIndex);
             }
@@ -42,19 +35,49 @@ namespace SparkEngine.Systems
             UpdateLayerSeperatingIndices(insertIndex, layerIndex);            
         }
 
-        public virtual void DrawAll(GameState state, SpriteBatch spriteBatch, int cameraEntity)
+        public virtual void DrawAll(GameState state, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
         {
+            Vector2 cameraPosition = state.CameraPosition;
+
             foreach (int drawable in subbedEntities)
             {
-                DrawIndividual(state, spriteBatch, cameraEntity, state.GetAllComponentsOfEntity(drawable));
+                DrawIndividual(state, graphicsDevice, spriteBatch, cameraPosition, state.GetAllComponentsOfEntity(drawable));
             }
         }
 
-        public abstract void DrawIndividual(GameState state, SpriteBatch spriteBatch, int cameraEntity, ComponentBatch components);
+        public abstract void DrawIndividual(GameState state, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch, Vector2 cameraPosition, ComponentBatch components);
+
+        protected Vector2 GetDrawPosition(DrawLayer layer, Drawable drawable)
+        {
+
+            // Does the Unit affect both drawable.position AND layer.position? Need to make a decision on that someday.
+
+            return layer.Position + layer.UnitSize * drawable.DrawPosition;
+        }
+
+        /// <summary>
+        /// Gets the range of coordinates currently in camera view.
+        /// </summary>
+        /// <returns>A rectangle containing all visible coordinates.</returns>
+        protected Rectangle GetVisibleCartesianCoordinates(Vector2 cameraPosition, Point viewportSize, Vector2 unit, int padding = 0)
+        {
+            Point location = Projector.PixelsToCartesian(cameraPosition.ToPoint(), unit) - new Point(padding);
+            Point size = Projector.PixelsToCartesian(viewportSize, unit) + new Point(padding * 2);
+
+            return new Rectangle(location, size);
+        }
+
+        protected Rectangle GetVisibleIsometricCoordinates(Vector2 cameraPosition, Point viewportSize, Vector2 unit, int padding = 0)
+        {
+            Point location = Projector.PixelsToIsometric(cameraPosition, unit).ToPoint() - new Point(padding);
+            Point size = Projector.PixelsToIsometric(viewportSize, unit) + new Point(padding * 2);
+
+            return new Rectangle(location, size);
+        }
 
         private void ExtendLayersToElement(int lastLayerIndex)
         {
-            int?[] oldArray = layerSeperatingIndices;
+            int?[] oldArray = layerSeperatingIndices ?? new int?[0];
             layerSeperatingIndices = new int?[lastLayerIndex + 1];
 
             for (int i = 0; i < layerSeperatingIndices.Length; i++)

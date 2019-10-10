@@ -20,8 +20,10 @@ namespace SparkEngine.Systems
 
         public override void UpdateIndividual(GameState state, GameTime gameTime, InputHandler input, ComponentBatch components)
         {
-            Camera camera = components.GetComponent<Camera>();
-            ScreenPosition position = components.GetComponent<ScreenPosition>();
+            components.GetComponentsMultiType(out Camera camera, out ScreenPosition position);
+
+            //Camera camera = components.GetComponent<Camera>();
+            //ScreenPosition position = components.GetComponent<ScreenPosition>();
 
             if (camera.ConstraintMode == CameraConstraints.Constrained)
             {

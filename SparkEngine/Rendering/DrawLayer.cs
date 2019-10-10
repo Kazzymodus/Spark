@@ -6,7 +6,7 @@
     using System;
     using System.Collections.Generic;
 
-    public class DrawLayer : Component
+    public class DrawLayer
     {
         public int ID { get; }
 
@@ -14,11 +14,7 @@
 
         public Vector2 Position { get; private set; }
 
-        public TileMode TileMode { get; private set; }
-
-        public Vector2 Unit { get; }
-
-        public List<Drawable> Drawables { get; } = new List<Drawable>();
+        public Vector2 UnitSize { get; }
         
         /*
 

@@ -8,7 +8,7 @@
     using System.Collections.ObjectModel;
     using Microsoft.Xna.Framework.Graphics;
 
-    class DrawLayerCollection : KeyedCollection<string, DrawLayer>
+    public class DrawLayerCollection : KeyedCollection<string, DrawLayer>
     {
         protected override string GetKeyForItem(DrawLayer item)
         {

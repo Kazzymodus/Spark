@@ -12,10 +12,10 @@
     using Microsoft.Xna.Framework.Graphics;
     using SparkEngine.Rendering;
 
-    class SpriteDrawSystem : DrawSystem<Sprite>
+    class SpriteDrawSystem : DrawSystem
     {
         public SpriteDrawSystem()
-            : base()
+            : base(typeof(Sprite))
         {
 
         }
@@ -25,25 +25,23 @@
 
         }
 
-        public override void DrawIndividual(GameState state, SpriteBatch spriteBatch, int cameraEntity, ComponentBatch components)
+        public override void DrawIndividual(GameState state, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch, Vector2 cameraPosition, ComponentBatch components)
         {
-            Sprite[] sprites = components.GetComponents<Sprite>();
+            Sprite[] sprites = components.GetComponentsSingleType<Sprite>();
 
             foreach (Sprite sprite in sprites)
             {
-                DrawSprite(spriteBatch, sprite);
+                DrawSprite(state, spriteBatch, cameraPosition, sprite);
             }
         }
 
-        public void DrawSprite(SpriteBatch spriteBatch, Sprite sprite)
+        public void DrawSprite(GameState state, SpriteBatch spriteBatch, Vector2 cameraPosition, Sprite sprite)
         {
-            Vector2 drawPosition = GetDrawPosition(sprite);
-
-            spriteBatch.Draw(sprite.Texture, drawPosition, sprite.ColorMask);
+            spriteBatch.Draw(sprite.Texture, cameraPosition + GetDrawPosition(state, sprite), sprite.ColorMask);
         }
 
-        public Vector2 GetDrawPosition(Sprite sprite)
-        {
+        //public Vector2 GetDrawPosition(Sprite sprite)
+        //{
             //int rotations = camera.Rotations;
 
             // This is what it used to do, prolly not relevant anymore
@@ -59,8 +57,8 @@
             //    drawPosition.Y += Projector.DefaultTileHeight / 2;
             //}
 
-            return DrawLayers[sprite.DrawLayer].Position + sprite.DrawPosition;
-        }
+            //return DrawLayers[sprite.DrawLayer].Position + sprite.DrawPosition;
+        //}
 
         //public Rectangle GetBounds(Camera camera, DrawLayer drawLayer)
         //{

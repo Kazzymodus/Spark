@@ -1,4 +1,4 @@
-﻿namespace SparkEngine.Rendering
+﻿namespace SparkEngine.Utilities
 {
     using System;
     using System.Collections.Generic;
