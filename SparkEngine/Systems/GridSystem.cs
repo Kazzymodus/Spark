@@ -12,34 +12,97 @@
     using SparkEngine.Rendering;
     using SparkEngine.States;
     using SparkEngine.Utilities;
-
-    class GridSystem : DrawSystem
+    using SparkEngine.Systems.Batching;
+    
+    public class GridSystem : DrawSystem
     {
-        private ComponentSystem[] subSystems;
+        private readonly List<ComponentUpdateMethod> updateMethods;
+        private readonly List<ComponentDrawMethod> drawMethods;
 
-        public GridSystem(params ComponentSystem[] subSystems)
-            : base(typeof(Grid), typeof(Unit))
+        public GridSystem(params ComponentSystem[] systems)
+            : base(false, typeof(Grid), typeof(Unit))
         {
-            this.subSystems = subSystems;
+            updateMethods = new List<ComponentUpdateMethod>();
+            drawMethods = new List<ComponentDrawMethod>();
+
+            for (int i = 0; i < systems.Length; i++)
+            {
+                if (systems[i] is DrawSystem drawSystem)
+                {
+                    drawMethods.Add(drawSystem.ExtractDraw());
+
+                    if (drawSystem.NoUpdate)
+                    {
+                        continue;
+                    }
+                }
+
+                updateMethods.Add(ExtractUpdate());                
+            }
         }
 
         public override void OnAddEntity(int entity, GameState state)
         {
-            ComponentBatch components = state.GetAllComponentsOfEntity(entity);
+            ComponentBatch components = state.GetComponentsOfEntity<Grid>(entity);
 
             foreach (Grid grid in components)
             {
-                
+                if (grid is ArrayGrid arrayGrid && arrayGrid.IsHomogenous == null)
+                {
+                    List<Type> requiredTypes = new List<Type>();
+
+                    for (int i = 0; i < updateMethods.Count + drawMethods.Count; i++)
+                    {
+                        Type[] requiredComponents;
+                        
+                        if (updateMethods.Count == 0)
+                        {
+                            requiredComponents = drawMethods[i].RequiredComponents;
+                        }
+                        else
+                        {
+                            requiredComponents = i < updateMethods.Count ? updateMethods[i].RequiredComponents : drawMethods[i % updateMethods.Count].RequiredComponents;
+                        }                    
+
+                        for (int j = 0; j < requiredComponents.Length; j++)
+                        {
+                            if (!requiredTypes.Contains(requiredComponents[j]))
+                            {
+                                requiredTypes.Add(requiredComponents[j]);
+                            }
+                        }
+                    
+                    }
+
+                    arrayGrid.DetermineHomogenity(requiredTypes.ToArray());
+                }
             }
+        }
+
+        public override void UpdateAll(GameState state, GameTime gameTime, InputHandler input)
+        {
+            if (updateMethods.Count == 0)
+            {
+                return;
+            }
+
+            base.UpdateAll(state, gameTime, input);
         }
 
         public override void UpdateIndividual(GameState state, GameTime gameTime, InputHandler input, ComponentBatch components)
         {
             Grid grid = components.GetComponent<Grid>();
 
-            if (grid is ArrayGrid)
+            if (grid is ArrayGrid arrayGrid)
             {
-                UpdateArrayGrid((ArrayGrid)grid, state, gameTime, input);
+                if (arrayGrid.IsHomogenous == true)
+                {
+                    UpdateArrayGridUnsafe(arrayGrid, state, gameTime, input);
+                }
+                else
+                {
+                    UpdateArrayGridSafe(arrayGrid, state, gameTime, input);
+                }
             }
             else if (grid is BatchedGrid)
             {
@@ -47,18 +110,44 @@
             }
         }
 
-        private void UpdateArrayGrid(ArrayGrid grid, GameState state, GameTime gameTime, InputHandler input)
+        private void UpdateArrayGridUnsafe(ArrayGrid grid, GameState state, GameTime gameTime, InputHandler input)
         {
-            ProtoEntity stamp = grid.Cells[0, 0];
-            ComponentBatch stampComponents = stamp.Components;
+            ProtoEntity sampleCell = grid.Cells[0, 0];
+            ComponentBatch stampComponents = sampleCell.Components;
 
-            foreach (ComponentSystem system in subSystems)
+            try
             {
-                if (!system.CanHostEntity(stampComponents))
+                foreach (ComponentUpdateMethod method in updateMethods)
                 {
-                    continue;
+                    if (!stampComponents.ContainsAll(method.RequiredComponents))
+                    {
+                        continue;
+                    }
+
+                    ProtoEntity[,] allCells = grid.Cells;
+                    ProtoEntity cell;
+
+                    for (int x = 0; x < grid.Width; x++)
+                    {
+                        for (int y = 0; y < grid.Height; y++)
+                        {
+                            cell = allCells[x, y];
+
+                            method.Update(state, gameTime, input, cell.Components);
+                        }
+                    }
                 }
-                
+            }
+            catch (NullReferenceException)
+            {
+                throw new InvalidOperationException("Array is not homogenous.");
+            }
+        }
+
+        private void UpdateArrayGridSafe(ArrayGrid grid, GameState state, GameTime gameTime, InputHandler input)
+        {
+            foreach (ComponentUpdateMethod method in updateMethods)
+            {
                 ProtoEntity[,] allCells = grid.Cells;
                 ProtoEntity cell;
 
@@ -68,7 +157,10 @@
                     {
                         cell = allCells[x, y];
 
-                        system.UpdateIndividual(state, gameTime, input, cell.Components);
+                        if (((ComponentBatch)cell.Components).ContainsAll(RequiredComponents))
+                        {
+                            method.Update(state, gameTime, input, cell.Components);
+                        }
                     }
                 }
             }
@@ -76,51 +168,85 @@
 
         private void UpdateBatchedGrid(BatchedGrid grid, GameState state, GameTime gameTime, InputHandler input)
         {
-            foreach (ComponentSystem system in subSystems)
-            {
+            throw new NotImplementedException();
 
-                foreach (CellBatch batch in grid.Batches)
-                {
-                    ComponentBatch stampComponents = batch.Stamp.Components;
+            //foreach (ComponentSystem system in subSystems)
+            //{
+            //    foreach (CellBatch batch in grid.Batches)
+            //    {
+            //        ComponentBatch stampComponents = batch.Stamp.Components;
 
-                    if (!system.CanHostEntity(stampComponents))
-                    {
-                        continue;
-                    }
+            //        if (!system.CanHostEntity(stampComponents))
+            //        {
+            //            continue;
+            //        }
 
-                    system.UpdateIndividual(state, gameTime, input, stampComponents);
-                }
-            }
+            //        system.UpdateIndividual(state, gameTime, input, stampComponents);
+            //    }
+            //}
         }
 
-        public override void DrawAll(GameState state, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
+        public override void DrawAll(GameState state, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch, Matrix cameraTransform)
         {
-            base.DrawAll(state, graphicsDevice, spriteBatch);
+            if (drawMethods.Count == 0)
+            {
+                return;
+            }
+
+            base.DrawAll(state, graphicsDevice, spriteBatch, cameraTransform);
         }
 
-        public override void DrawIndividual(GameState state, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch, Vector2 cameraPosition, ComponentBatch components)
+        public override void DrawIndividual(GameState state, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch, Vector2 drawOffset, ComponentBatch components)
         {
             components.GetComponentsMultiType(out Grid grid, out Unit unit);
             Point viewportSize = new Point(graphicsDevice.Viewport.Width, graphicsDevice.Viewport.Height);
 
-            ProtoEntity[,] drawGrid = ConvertToDrawableGrid(grid);
+            Rectangle visibleCoordinates = GetVisibleTiles(grid, unit, state, state.CameraPosition, viewportSize);
 
-            switch (grid.Perspective)
+            if (grid is ArrayGrid arrayGrid)
             {
-                case Perspective.Standard:
-                    DrawStandardGrid(grid, unit, state, spriteBatch, cameraPosition, viewportSize);
-                    break;
-                case Perspective.Isometric:
-                    DrawIsometricGrid(grid, unit, state, spriteBatch, cameraPosition, viewportSize);
-                    break;
+                DrawArrayGrid(arrayGrid, unit, state, graphicsDevice, spriteBatch, visibleCoordinates);
             }
         }
 
-        private void DrawStandardGrid(Grid grid, Unit unit, ProtoEntity[,] drawGrid, GameState state, SpriteBatch spriteBatch, Vector2 cameraPosition, Point viewportSize)
+        private Rectangle GetVisibleTiles(Grid grid, Unit unit, GameState state, Vector2 cameraPosition, Point viewportSize)
         {
             DrawLayer layer = state.DrawLayers[grid.DrawLayer];
-            Vector2 gridPosition = cameraPosition + GetDrawPosition(layer, grid);
-            Rectangle visibleCoordinates = GetVisibleCartesianCoordinates(cameraPosition, viewportSize, unit, 0);
+            Vector2 gridPosition = GetDrawPosition(layer, grid);
+
+            return GetOffsetVisibleCoordinates(grid, unit, gridPosition, cameraPosition, viewportSize);
+        }
+
+        private ProtoEntity[,] ConvertToDrawableGrid(BatchedGrid grid, Rectangle visibleCoordinates)
+        {
+            ProtoEntity[,] drawGrid = new ProtoEntity[visibleCoordinates.Width, visibleCoordinates.Height];
+
+            //Point startCoordinate = visibleCoordinates.Location;
+            //Point endCoordinate = startCoordinate + visibleCoordinates.Size;
+
+            for (int i = 0; i < grid.Batches.Length; i++)
+            {
+                CellBatch batch = grid.Batches[i];
+
+                //if (batch.Bounds.Intersects(visibleCoordinates))
+                //{
+                //    if (batch is BitMapBatch)
+                //    {
+                //        ParseBitMapBatch((BitMapBatch)batch, ref drawGrid, visibleCoordinates);
+
+
+                //    }
+                //}
+            }
+
+            return drawGrid;
+        }
+
+        private void DrawStandardGrid(Grid grid, Unit unit, ProtoEntity[,] drawGrid, GameState state, SpriteBatch spriteBatch, Point viewportSize)
+        {
+            DrawLayer layer = state.DrawLayers[grid.DrawLayer];
+            Vector2 gridPosition = GetDrawPosition(layer, grid);
+            Rectangle visibleCoordinates = GetVisibleCartesianCoordinates(Vector2.Zero, viewportSize, unit, 0); // TEMP
 
             Point offset = Projector.PixelsToCartesian(gridPosition, unit).ToPoint();
             Point startCoordinate = visibleCoordinates.Location - offset;
@@ -169,21 +295,21 @@
                     {
                         Vector2 drawPosition = gridPosition + new Vector2(x * unit.LengthX, y * unit.LengthY);
 
-                        Texture2D texture = ((ComponentBatch)tile.Components).GetComponent<Sprite>();
-                        Color colour = tile.Colour;
+                        //Texture2D texture = ((ComponentBatch)tile.Components).GetComponent<Sprite>();
+                        //Color colour = tile.Colour;
 
-                        spriteBatch.Draw(texture, drawPosition, drawRectangle, colour);
+                        //spriteBatch.Draw(texture, drawPosition, drawRectangle, colour);
                     }
                 }
             }
         }
 
-        private void DrawIsometricGrid(Grid grid, Unit unit, GameState state, SpriteBatch spriteBatch, Vector2 cameraPosition, Point viewportSize)
+        private void DrawIsometricGrid(Grid grid, Unit unit, GameState state, SpriteBatch spriteBatch, Point viewportSize)
         {
             DrawLayer layer = state.DrawLayers[grid.DrawLayer];
-            Vector2 gridPosition = cameraPosition + GetDrawPosition(layer, grid);
+            Vector2 gridPosition = GetDrawPosition(layer, grid);
 
-            Rectangle visibleCoordinates = GetVisibleIsometricCoordinates(cameraPosition, viewportSize, unit, 0);
+            Rectangle visibleCoordinates = GetVisibleIsometricCoordinates(Vector2.Zero, viewportSize, unit, 0); // TEMP
 
             Point offset = Projector.PixelsToIsometric(gridPosition, unit).ToPoint();
             Point startCoordinate = visibleCoordinates.Location - offset;
@@ -224,222 +350,182 @@
                         }
                     }
 
-                    ProtoEntity tile = tileGrid[coordinate.X, coordinate.Y];
-                    Vector2 drawPosition = gridPosition + new Vector2(x * TileSize.X * 0.5f, y * TileSize.Y * 0.5f);
+                    //ProtoEntity tile = tileGrid[coordinate.X, coordinate.Y];
+                    //Vector2 drawPosition = gridPosition + new Vector2(x * TileSize.X * 0.5f, y * TileSize.Y * 0.5f);
 
-                    Texture2D texture = tileTextures[tile.TextureId];
-                    Color colour = tile.Colour;
+                    //Texture2D texture = tileTextures[tile.TextureId];
+                    //Color colour = tile.Colour;
 
-                    spriteBatch.Draw(texture, drawPosition, drawRectangle, colour);
-                    spriteBatch.Draw(tileTextures[0], drawPosition, colour);
+                    //spriteBatch.Draw(texture, drawPosition, drawRectangle, colour);
+                    //spriteBatch.Draw(tileTextures[0], drawPosition, colour);
 
-                    Log.AddWorldMessage("C:" + x + "," + y, drawPosition + new Vector2(8), camera);
+                    //Log.AddWorldMessage("C:" + x + "," + y, drawPosition + new Vector2(8), camera);
                 }
             }
         }
 
-        private ProtoEntity[,] ConvertToDrawableGrid(Grid grid, Unit unit, GameState state, SpriteBatch spriteBatch, Vector2 cameraPosition, Point viewportSize)
+        private ProtoEntity[,] ConvertToDrawableGrid(Grid grid, Unit unit, GameState state, SpriteBatch spriteBatch, Point viewportSize)
         {
             DrawLayer layer = state.DrawLayers[grid.DrawLayer];
-            Vector2 gridPosition = cameraPosition + GetDrawPosition(layer, grid);
+            Vector2 gridPosition = GetDrawPosition(layer, grid);
 
-            Rectangle visibleCoordinates = GetOffsetVisibleCoordinates(grid, unit, gridPosition, cameraPosition, viewportSize);
-            
+            Rectangle visibleCoordinates = GetOffsetVisibleCoordinates(grid, unit, gridPosition, state.CameraPosition, viewportSize);
+
             // So far so good.
 
-            Point startCoordinate = visibleCoordinates.Location;
-            Point endCoordinate = startCoordinate + visibleCoordinates.Size;
+            //Point startCoordinate = visibleCoordinates.Location;
+            //Point endCoordinate = startCoordinate + visibleCoordinates.Size;
 
-            if (!grid.WrapAround)
-            {
-                if (grid.Perspective == Perspective.Isometric)
-                {
-                    startCoordinate = Projector.IsometricToCartesian(startCoordinate);
-                    endCoordinate = Projector.IsometricToCartesian(endCoordinate);
-                }
+            //if (!grid.WrapAround)
+            //{
+            //    if (grid.Perspective == Perspective.Isometric)
+            //    {
+            //        startCoordinate = Projector.IsometricToCartesian(startCoordinate);
+            //        endCoordinate = Projector.IsometricToCartesian(endCoordinate);
+            //    }
 
-                startCoordinate.X = MathHelper.Clamp(startCoordinate.X, 0, grid.Width);
-                startCoordinate.Y = MathHelper.Clamp(startCoordinate.Y, 0, grid.Height);
-                endCoordinate.X = MathHelper.Clamp(endCoordinate.X, 0, grid.Width);
-                endCoordinate.Y = MathHelper.Clamp(endCoordinate.Y, 0, grid.Height);
+            //    startCoordinate.X = MathHelper.Clamp(startCoordinate.X, 0, grid.Width);
+            //    startCoordinate.Y = MathHelper.Clamp(startCoordinate.Y, 0, grid.Height);
+            //    endCoordinate.X = MathHelper.Clamp(endCoordinate.X, 0, grid.Width);
+            //    endCoordinate.Y = MathHelper.Clamp(endCoordinate.Y, 0, grid.Height);
 
-                if (grid.Perspective == Perspective.Isometric)
-                {
-                    startCoordinate = Projector.CartesianToIsometric(startCoordinate);
-                    endCoordinate = Projector.CartesianToIsometric(endCoordinate);
-                }
-            }
+            //    if (grid.Perspective == Perspective.Isometric)
+            //    {
+            //        startCoordinate = Projector.CartesianToIsometric(startCoordinate);
+            //        endCoordinate = Projector.CartesianToIsometric(endCoordinate);
+            //    }
+            //}
 
-            int frameX = (int)unit.LengthX * 0; // camera.Rotations;
-            Rectangle drawRectangle = new Rectangle(frameX, 0, (int)unit.LengthX, (int)unit.LengthY);
+            //int frameX = (int)unit.LengthX * 0; // camera.Rotations;
+            //Rectangle drawRectangle = new Rectangle(frameX, 0, (int)unit.LengthX, (int)unit.LengthY);
 
-            for (int x = startCoordinate.X; x < endCoordinate.X; x++)
-            {
-                for (int y = startCoordinate.Y; y < endCoordinate.Y; y ++)
-                {
-                    int tileX;
-                    int tileY;
+            //for (int x = startCoordinate.X; x < endCoordinate.X; x++)
+            //{
+            //    for (int y = startCoordinate.Y; y < endCoordinate.Y; y++)
+            //    {
+            //        int tileX;
+            //        int tileY;
 
-                    if (grid.Perspective == Perspective.Standard)
-                    {
-                        tileX = x;
-                        tileY = y;
-                    }
-                    else
-                    {
-                        if ((x + y % 2) != 0)
-                        {
-                            continue;
-                        }
+            //        if (grid.Perspective == Perspective.Standard)
+            //        {
+            //            tileX = x;
+            //            tileY = y;
+            //        }
+            //        else
+            //        {
+            //            if ((x + y % 2) != 0)
+            //            {
+            //                continue;
+            //            }
 
-                        Point index = Projector.IsometricToCartesian(new Point(x, y));
-                        tileX = index.X;
-                        tileY = index.Y;
-                    }
+            //            Point index = Projector.IsometricToCartesian(new Point(x, y));
+            //            tileX = index.X;
+            //            tileY = index.Y;
+            //        }
 
-                    if (grid.WrapAround)
-                    {
-                        bool isNegative = tileX < 0;
-                        tileX %= grid.Width;
+            //        if (grid.WrapAround)
+            //        {
+            //            bool isNegative = tileX < 0;
+            //            tileX %= grid.Width;
 
-                        if (isNegative)
-                        {
-                            tileX = -tileX;
-                        }
+            //            if (isNegative)
+            //            {
+            //                tileX = -tileX;
+            //            }
 
-                        isNegative = tileY < 0;
-                        tileY %= grid.Height;
+            //            isNegative = tileY < 0;
+            //            tileY %= grid.Height;
 
-                        if (isNegative)
-                        {
-                            tileY = -tileY;
-                        }
-                    }
+            //            if (isNegative)
+            //            {
+            //                tileY = -tileY;
+            //            }
+            //        }
 
-                    ProtoEntity tile = drawGrid[tileX, tileY];
+            //        ProtoEntity tile = drawGrid[tileX, tileY];
 
-                    if (tile != null)
-                    {
-                        Vector2 drawPosition = gridPosition + new Vector2(x * unit.LengthX, y * unit.LengthY);
+            //        if (tile != null)
+            //        {
+            //            Vector2 drawPosition = gridPosition + new Vector2(x * unit.LengthX, y * unit.LengthY);
 
-                        Texture2D texture = ((ComponentBatch)tile.Components).GetComponent<Sprite>();
-                        Color colour = tile.Colour;
+            //            //Texture2D texture = ((ComponentBatch)tile.Components).GetComponent<Sprite>();
+            //            //Color colour = tile.Colour;
 
-                        spriteBatch.Draw(texture, drawPosition, drawRectangle, colour);
-                    }
-                }
-            }
+            //            //spriteBatch.Draw(texture, drawPosition, drawRectangle, colour);
+            //        }
+            //    }
+            //}
 
 
             if (grid is ArrayGrid)
             {
-                return ConvertToDrawableGrid((ArrayGrid)grid);
+                return null;// ConvertToDrawableGrid((ArrayGrid)grid, visibleCoordinates);
             }
-            
+
             if (grid is BatchedGrid)
             {
-                return ConvertToDrawableGrid((BatchedGrid)grid);
+                return ConvertToDrawableGrid((BatchedGrid)grid, visibleCoordinates);
             }
 
-            return null;
+            throw new InvalidOperationException($"Grid of type {grid.ToString()} is not supported.");
         }
 
-        private ProtoEntity[,] ConvertToDrawableGrid(ArrayGrid grid, Rectangle visibleCoordinates)
+        private void DrawArrayGrid(ArrayGrid grid, Unit unit, GameState state, GraphicsDevice graphics, SpriteBatch spriteBatch, Rectangle visibleCoordinates)
         {
-            ProtoEntity[,] drawGrid = new ProtoEntity[visibleCoordinates.Width, visibleCoordinates.Height];
-
             Point startCoordinate = visibleCoordinates.Location;
             Point endCoordinate = startCoordinate + visibleCoordinates.Size;
 
-            if (grid.WrapAround)
+            if (grid.Perspective == Perspective.Standard)
             {
-                startCoordinate.X = MathHelper.Clamp(startCoordinate.X, 0, grid.Width);
-                startCoordinate.Y = MathHelper.Clamp(startCoordinate.Y, 0, grid.Height);
-                endCoordinate.X = MathHelper.Clamp(endCoordinate.X, 0, grid.Width);
-                endCoordinate.Y = MathHelper.Clamp(endCoordinate.Y, 0, grid.Height);
-
-                for (int x = startCoordinate.X; x < endCoordinate.X; x++)
+                if (!grid.WrapAround)
                 {
-                    for (int y = startCoordinate.Y; y < endCoordinate.Y; y++)
-                    {
-                        drawGrid[x, y] = grid.Cells[x, y];
-                    }
-                }
-            }
-            else
-            {
-                for (int x = startCoordinate.X; x < endCoordinate.X; x++)
-                {
-                    for (int y = startCoordinate.Y; y < endCoordinate.Y; y++)
-                    {
-                        int xIndex = x;
-                        int yIndex = y;
+                    startCoordinate.X = MathHelper.Clamp(startCoordinate.X, 0, grid.Width);
+                    startCoordinate.Y = MathHelper.Clamp(startCoordinate.Y, 0, grid.Height);
+                    endCoordinate.X = MathHelper.Clamp(endCoordinate.X, 0, grid.Width);
+                    endCoordinate.Y = MathHelper.Clamp(endCoordinate.Y, 0, grid.Height);
 
-                        bool isNegative = xIndex < 0;
-                        xIndex %= grid.Width;
-
-                        if (isNegative)
+                    foreach (ComponentDrawMethod method in drawMethods)
+                    {
+                        for (int x = startCoordinate.X; x < endCoordinate.X; x++)
                         {
-                            xIndex = -xIndex;
+                            for (int y = startCoordinate.Y; y < endCoordinate.Y; y++)
+                            {
+                                method.Draw(state, graphics, spriteBatch, new Vector2(unit.LengthX * x, unit.LengthY * y), grid[x, y].Components);
+                            }
                         }
-
-                        isNegative = yIndex < 0;
-                        yIndex %= grid.Height;
-
-                        if (isNegative)
-                        {
-                            yIndex = -yIndex;
-                        }
-
-                        drawGrid[xIndex, yIndex] = grid.Cells[x, y];
                     }
                 }
-            }
-            
-            return grid.Cells;
-        }
-
-        private ProtoEntity[,] ConvertToDrawableGrid(BatchedGrid grid, Rectangle visibleCoordinates)
-        {
-            ProtoEntity[,] drawGrid = new ProtoEntity[visibleCoordinates.Width, visibleCoordinates.Height];
-
-            //Point startCoordinate = visibleCoordinates.Location;
-            //Point endCoordinate = startCoordinate + visibleCoordinates.Size;
-            
-            for (int i = 0; i < grid.Batches.Length; i++)
-            {
-                CellBatch batch = grid.Batches[i];
-
-                if (batch.Bounds.Intersects(visibleCoordinates))
+                else
                 {
-                    if (batch is BitMapBatch)
+                    foreach (ComponentDrawMethod method in drawMethods)
                     {
-                        ParseBitMapBatch((BitMapBatch)batch, ref drawGrid, visibleCoordinates);
+                        for (int x = startCoordinate.X; x < endCoordinate.X; x++)
+                        {
+                            for (int y = startCoordinate.Y; y < endCoordinate.Y; y++)
+                            {
+                                int xIndex = x;
+                                int yIndex = y;
 
-                        
+                                bool isNegative = xIndex < 0;
+                                xIndex %= grid.Width;
+
+                                if (isNegative)
+                                {
+                                    xIndex = (grid.Width + xIndex) % grid.Width;
+                                }
+
+                                isNegative = yIndex < 0;
+                                yIndex %= grid.Height;
+
+                                if (isNegative)
+                                {
+                                    yIndex = (grid.Height + yIndex) % grid.Height;
+                                }
+
+                                method.Draw(state, graphics, spriteBatch, new Vector2(unit.LengthX * x, unit.LengthY * y), grid[xIndex, yIndex].Components);
+                            }
+                        }
                     }
-                }
-            }
-
-            return drawGrid;
-        }
-
-        private ProtoEntity[,] ParseBitMapBatch(BitMapBatch batch, ref ProtoEntity[,] grid, Rectangle bounds)
-        {
-            Point endCoordinate = new Point(bounds.X + bounds.Width, bounds.Y + bounds.Height);
-            Type bitMapType = batch.BitMap.BitMapType();
-
-            BitMap bitMap = batch.BitMap;
-
-
-            int endX = Math.Min(batch.X + batch.Width, endCoordinate.X);
-            int endY = Math.Min(batch.Y + batch.Height, endCoordinate.Y);
-
-            for (int x = 0; x < endX; x++)
-            {
-                for (int y = 0; y < endY; y++)
-                {
-                    bitMap.
                 }
             }
         }
@@ -452,11 +538,11 @@
             switch (grid.Perspective)
             {
                 case Perspective.Standard:
-                    visibleCoordinates = GetVisibleCartesianCoordinates(cameraPosition, viewportSize, unit, 0);
+                    visibleCoordinates = GetVisibleCartesianCoordinates(cameraPosition, viewportSize, unit, 1);
                     offset = Projector.PixelsToCartesian(gridPosition, unit).ToPoint();
                     break;
                 case Perspective.Isometric:
-                    visibleCoordinates = GetVisibleIsometricCoordinates(cameraPosition, viewportSize, unit, 0);
+                    visibleCoordinates = GetVisibleIsometricCoordinates(cameraPosition, viewportSize, unit, 1);
                     offset = Projector.PixelsToIsometric(gridPosition, unit).ToPoint();
                     break;
                 default:

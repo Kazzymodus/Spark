@@ -1,4 +1,4 @@
-﻿namespace SparkEngine.Systems
+﻿namespace SparkEngine.Systems.Batching
 {
     using System;
     using System.Collections.Generic;
@@ -16,7 +16,7 @@
 
         private const int MaxBitsPerTile = 16;
 
-        private const int MaxUniqueTiles = 32;
+        private const int MaxUniqueTiles = 128;
 
         private BatchedGrid BatchGrid(ArrayGrid grid)
         {
@@ -72,7 +72,7 @@
                         tracker.OpenBatch();
                     }
 
-                    tracker.AddTile
+                    //tracker.AddTile
                 }
             }
 
@@ -125,6 +125,8 @@
             {
                 Point coordinates = tiles[i];
             }
+
+            return 1; // TEMP
         }
 
         private int x;

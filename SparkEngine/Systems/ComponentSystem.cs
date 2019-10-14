@@ -18,11 +18,11 @@
     {
         private bool isUpdating;
 
-        protected List<int> subbedEntities;
+        protected List<int> subbedEntities = new List<int>();
 
-        protected List<int> pendingAdds;
+        protected List<int> pendingAdds = new List<int>();
 
-        protected List<int> pendingRemovals;
+        protected List<int> pendingRemovals = new List<int>();
 
         public ComponentSystem(params Type[] requiredComponents)
         {
@@ -95,26 +95,12 @@
 
         public bool CanHostEntity(ComponentBatch entityComponents)
         {
-            for (int i = 0; i < RequiredComponents.Length; i++)
-            {
-                bool containsSpecificComponent = false;
+            return entityComponents.ContainsAll(RequiredComponents);
+        }
 
-                for (int j = 0; j < entityComponents.Length; j++)
-                {
-                    if (entityComponents[j].GetType() == RequiredComponents[i])
-                    {
-                        containsSpecificComponent = true;
-                        break;
-                    }
-                }
-
-                if (!containsSpecificComponent)
-                {
-                    return false;
-                }
-            }
-
-            return true;
+        public ComponentUpdateMethod ExtractUpdate()
+        {
+            return new ComponentUpdateMethod(this);
         }
     }
 }

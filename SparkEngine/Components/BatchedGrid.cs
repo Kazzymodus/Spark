@@ -7,6 +7,7 @@
     using SparkEngine.Input;
     using SparkEngine.Rendering;
     using SparkEngine.States;
+    using SparkEngine.Systems.Batching;
 
     public class BatchedGrid : Grid
     {
@@ -19,8 +20,8 @@
 
         #region Constructors
 
-        public BatchedGrid(Perspective perspective)
-            : base(perspective)
+        public BatchedGrid(Perspective perspective, bool wrapAround)
+            : base(perspective, 1, 1, wrapAround)
         {
 
         }

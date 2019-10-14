@@ -22,8 +22,26 @@ namespace SparkEngine.Systems
         {
             components.GetComponentsMultiType(out Camera camera, out ScreenPosition position);
 
-            //Camera camera = components.GetComponent<Camera>();
-            //ScreenPosition position = components.GetComponent<ScreenPosition>();
+            // TEMP
+
+            if (input.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.Left))
+            {
+                position.ScreenX -= 2;
+            }
+            if (input.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.Down))
+            {
+                position.ScreenY += 2;
+            }
+            if (input.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.Right))
+            {
+                position.ScreenX += 2;
+            }
+            if (input.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.Up))
+            {
+                position.ScreenY -= 2;
+            }
+
+            // TEMP
 
             if (camera.ConstraintMode == CameraConstraints.Constrained)
             {
@@ -45,26 +63,6 @@ namespace SparkEngine.Systems
         }
 
         #region Methods
-
-        ///// <summary>
-        ///// Gets the range of coordinates currently in camera view.
-        ///// </summary>
-        ///// <returns>A rectangle containing all visible coordinates.</returns>
-        //internal Rectangle GetVisibleCartesianCoordinates(Vector2 unit, int padding)
-        //{
-        //    Point location = Projector.PixelsToCartesian(Position.ToPoint(), unit) - new Point(padding);
-        //    Point size = Projector.PixelsToCartesian(ViewportSize, unit) + new Point(padding * 2);
-
-        //    return new Rectangle(location, size);
-        //}
-
-        //internal Rectangle GetVisibleIsometricCoordinates(Vector2 unit, int padding = 0)
-        //{
-        //    Point location = Projector.PixelsToIsometric(Position, unit).ToPoint() - new Point(padding);
-        //    Point size = Projector.PixelsToIsometric(ViewportSize, unit) + new Point(padding * 2);
-
-        //    return new Rectangle(location, size);
-        //}
 
         /// <summary>
         /// Calculate the camera's transform. Should only be called once per frame, at the beginning of the draw cycle.

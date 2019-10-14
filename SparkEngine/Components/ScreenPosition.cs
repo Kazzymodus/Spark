@@ -12,6 +12,12 @@ namespace SparkEngine.Components
         public float ScreenX { get; set; }
         public float ScreenY { get; set; }
 
+        public ScreenPosition()
+            : this(0, 0)
+        {
+
+        }
+
         public ScreenPosition(float x, float y)
         {
             ScreenX = x;

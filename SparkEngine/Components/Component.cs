@@ -8,6 +8,6 @@
 
     public abstract class Component
     {
-        
+
     }
 }

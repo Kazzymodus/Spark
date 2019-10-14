@@ -12,10 +12,10 @@
     using Microsoft.Xna.Framework.Graphics;
     using SparkEngine.Rendering;
 
-    class SpriteDrawSystem : DrawSystem
+    public class SpriteDrawSystem : DrawSystem
     {
         public SpriteDrawSystem()
-            : base(typeof(Sprite))
+            : base(true, typeof(Sprite))
         {
 
         }
@@ -25,19 +25,19 @@
 
         }
 
-        public override void DrawIndividual(GameState state, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch, Vector2 cameraPosition, ComponentBatch components)
+        public override void DrawIndividual(GameState state, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch, Vector2 drawOffset, ComponentBatch components)
         {
             Sprite[] sprites = components.GetComponentsSingleType<Sprite>();
 
-            foreach (Sprite sprite in sprites)
+            for (int i = 0; i < sprites.Length; i++)
             {
-                DrawSprite(state, spriteBatch, cameraPosition, sprite);
+                DrawSprite(state, spriteBatch, drawOffset, sprites[i]);
             }
         }
 
-        public void DrawSprite(GameState state, SpriteBatch spriteBatch, Vector2 cameraPosition, Sprite sprite)
+        public void DrawSprite(GameState state, SpriteBatch spriteBatch, Vector2 drawOffset, Sprite sprite)
         {
-            spriteBatch.Draw(sprite.Texture, cameraPosition + GetDrawPosition(state, sprite), sprite.ColorMask);
+            spriteBatch.Draw(sprite.Texture, GetDrawPosition(state.DrawLayers[sprite.DrawLayer], sprite) + drawOffset, sprite.ColorMask);
         }
 
         //public Vector2 GetDrawPosition(Sprite sprite)

@@ -1,4 +1,4 @@
-﻿namespace SparkEngine.Components
+﻿namespace SparkEngine.Systems.Batching
 {
     using System;
     using System.Collections.Generic;

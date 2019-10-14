@@ -12,40 +12,49 @@ using SparkEngine.Utilities;
 
 namespace SparkEngine.Systems
 {
-    abstract class DrawSystem : ComponentSystem
+    public abstract class DrawSystem : ComponentSystem
     {
-        private int?[] layerSeperatingIndices;
-
-        public DrawSystem(params Type[] requiredComponents)
+        public DrawSystem(bool noUpdate, params Type[] requiredComponents)
             : base(requiredComponents) 
         {
-
+            NoUpdate = noUpdate;
         }
+
+        protected int?[] LayerSeperatingIndices { get; private set; }
+
+        /// <summary>
+        /// Whether or not this system should have its Update functions called.
+        /// </summary>
+        public bool NoUpdate { get; }
 
         public override void AddEntity(int entity, GameState state)
         {
             int layerIndex = state.GetComponentOfEntity<Drawable>(entity).DrawLayer;
-            if (layerSeperatingIndices == null || layerIndex >= layerSeperatingIndices.Length)
+            if (LayerSeperatingIndices == null || layerIndex >= LayerSeperatingIndices.Length)
             {
                 ExtendLayersToElement(layerIndex);
             }
 
             int insertIndex = GetInsertIndex(layerIndex);
             subbedEntities.Insert(insertIndex, entity);
-            UpdateLayerSeperatingIndices(insertIndex, layerIndex);            
+            UpdateLayerSeperatingIndices(insertIndex, layerIndex);
+
+            OnAddEntity(entity, state);
         }
 
-        public virtual void DrawAll(GameState state, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
+        public virtual void DrawAll(GameState state, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch, Matrix cameraTransform)
         {
-            Vector2 cameraPosition = state.CameraPosition;
+            spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, cameraTransform);
 
             foreach (int drawable in subbedEntities)
             {
-                DrawIndividual(state, graphicsDevice, spriteBatch, cameraPosition, state.GetAllComponentsOfEntity(drawable));
+                DrawIndividual(state, graphicsDevice, spriteBatch, Vector2.Zero, state.GetAllComponentsOfEntity(drawable));
             }
+
+            spriteBatch.End();
         }
 
-        public abstract void DrawIndividual(GameState state, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch, Vector2 cameraPosition, ComponentBatch components);
+        public abstract void DrawIndividual(GameState state, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch, Vector2 drawOffset, ComponentBatch components);
 
         protected Vector2 GetDrawPosition(DrawLayer layer, Drawable drawable)
         {
@@ -77,28 +86,28 @@ namespace SparkEngine.Systems
 
         private void ExtendLayersToElement(int lastLayerIndex)
         {
-            int?[] oldArray = layerSeperatingIndices ?? new int?[0];
-            layerSeperatingIndices = new int?[lastLayerIndex + 1];
+            int?[] oldArray = LayerSeperatingIndices ?? new int?[0];
+            LayerSeperatingIndices = new int?[lastLayerIndex + 1];
 
-            for (int i = 0; i < layerSeperatingIndices.Length; i++)
+            for (int i = 0; i < LayerSeperatingIndices.Length; i++)
             {
-                layerSeperatingIndices[i] = i < oldArray.Length ? oldArray[i] : null;
+                LayerSeperatingIndices[i] = i < oldArray.Length ? oldArray[i] : null;
             }
         }
 
         private int GetInsertIndex(int layerIndex)
         {
-            if (layerIndex == layerSeperatingIndices.Length - 1)
+            if (layerIndex == LayerSeperatingIndices.Length - 1)
             {
                 return subbedEntities.Count;
             }
             else
             {
-                for (int i = layerIndex + 1; i < layerSeperatingIndices.Length; i++)
+                for (int i = layerIndex + 1; i < LayerSeperatingIndices.Length; i++)
                 {
-                    if (layerSeperatingIndices[i] != null)
+                    if (LayerSeperatingIndices[i] != null)
                     {
-                        return (int)layerSeperatingIndices[i];
+                        return (int)LayerSeperatingIndices[i];
                     }
                 }
 
@@ -108,23 +117,28 @@ namespace SparkEngine.Systems
 
         private void UpdateLayerSeperatingIndices(int insertIndex, int layerIndex)
         {
-            if (layerSeperatingIndices[layerIndex] == null)
+            if (LayerSeperatingIndices[layerIndex] == null)
             {
-                if (layerIndex == layerSeperatingIndices.Length - 1)
+                if (layerIndex == LayerSeperatingIndices.Length - 1)
                 {
-                    layerSeperatingIndices[layerIndex] = subbedEntities.Count - 1;
+                    LayerSeperatingIndices[layerIndex] = subbedEntities.Count - 1;
                     return;
                 }
                 else
                 {
-                    layerSeperatingIndices[layerIndex] = insertIndex;
+                    LayerSeperatingIndices[layerIndex] = insertIndex;
                 }
             }
 
-            for (int i = layerIndex + 1; i < layerSeperatingIndices.Length; i++)
+            for (int i = layerIndex + 1; i < LayerSeperatingIndices.Length; i++)
             {
-                layerSeperatingIndices[i]++;
+                LayerSeperatingIndices[i]++;
             }
+        }
+
+        public ComponentDrawMethod ExtractDraw()
+        {
+            return new ComponentDrawMethod(this);
         }
     }
 }

@@ -9,13 +9,16 @@
 
     public class Grid : Drawable
     {
-        public Grid(Perspective perspective)
+        public Grid(Perspective perspective, int width, int height, bool wrapAround)
         {
             Perspective = perspective;
+            Width = width;
+            Height = height;
+            WrapAround = wrapAround;
         }
 
-        public int Width { get; protected set; }
-        public int Height { get; protected set; }
+        public int Width { get; }
+        public int Height { get; }
         public Perspective Perspective { get; }
         public bool WrapAround { get; }
 

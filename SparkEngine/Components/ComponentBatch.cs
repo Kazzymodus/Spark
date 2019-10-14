@@ -31,6 +31,45 @@ namespace SparkEngine.Components
             get => Components.Length;
         }
 
+        public bool ContainsOnly(Type[] requiredComponents)
+        {
+            if (Components.Length != requiredComponents.Length)
+            {
+                return false;
+            }
+
+            return ContainsAll(requiredComponents);
+        }
+
+        public bool ContainsAll(Type[] requiredComponents)
+        {
+            if (Components.Length < requiredComponents.Length)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < requiredComponents.Length; i++)
+            {
+                bool containsSpecificComponent = false;
+
+                for (int j = 0; j < Components.Length; j++)
+                {
+                    if (Components[j].GetType() == requiredComponents[i] || Components[j].GetType().IsSubclassOf(requiredComponents[i]))
+                    {
+                        containsSpecificComponent = true;
+                        break;
+                    }
+                }
+
+                if (!containsSpecificComponent)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         public T GetComponent<T>() where T : Component
         {
             for (int i = 0; i < Components.Length; i++)
@@ -100,7 +139,7 @@ namespace SparkEngine.Components
             {
                 for (int j = 0; j < Components.Length; j++)
                 {
-                    if (componentTypes[i] == Components[j].GetType())
+                    if (componentTypes[i] == Components[j].GetType() || Components[j].GetType().IsSubclassOf(componentTypes[i]))
                     {
                         returnComponents[i] = Components[j];
                         break;

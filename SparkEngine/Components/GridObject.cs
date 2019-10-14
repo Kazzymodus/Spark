@@ -51,9 +51,9 @@
 
         #region Methods
 
-        public static GridObject CreateIsometricGridObject(Texture2D spriteSheet, DrawLayer drawLayer, Vector2 coordinates, Vector2 dimensions, int rotation = Projector.RotationNone)
+        public static GridObject CreateIsometricGridObject(Texture2D spriteSheet, DrawLayer drawLayer, Vector2 coordinates, Vector2 dimensions, int rotation = 0)
         {
-            Sprite spriteData = Sprite.CreateIsometricSprite(spriteSheet, drawLayer.Unit, dimensions, 4, 1);
+            Sprite spriteData = Sprite.CreateIsometricSprite(spriteSheet, new Unit(0, 0), dimensions, 4, 1);
 
             GridObject gridObject = new GridObject(spriteData, coordinates, dimensions, rotation);
             return gridObject;

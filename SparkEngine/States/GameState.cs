@@ -29,17 +29,27 @@
         {
             Name = name;
             ActivityLevel = activityLevel;
+            componentSystems.Add(new CameraSystem());
 
             if (useDefaultCamera)
             {
+                if (DefaultCamera == 0)
+                {
+                    DefaultCamera = CreateNewEntity(new ScreenPosition(), new Camera());
+                }
+
                 SetRenderCamera(DefaultCamera);
             }
+
+            DrawLayers = new DrawLayerCollection();
+            DrawLayers.Add(new DrawLayer());
         }
 
         public GameState(string name, int cameraEntity, StateActivityLevel activityLevel = StateActivityLevel.Active)
         {
             Name = name;
             ActivityLevel = activityLevel;
+            componentSystems.Add(new CameraSystem());
             SetRenderCamera(cameraEntity);
         }
 
@@ -106,9 +116,8 @@
                 highestEntityId = entity;
             }
 
-            AddEntityToApplicableSystems(entity);
-
             entityComponentTable[entity] = components;
+            AddEntityToApplicableSystems(entity);
 
             return entity;
         }
@@ -152,6 +161,11 @@
             entityComponentTable[entity] = null;
 
             availableEntityIdPool.Add(entity);
+        }
+
+        public void RegisterComponentSystem(ComponentSystem system)
+        {
+            componentSystems.Add(system);
         }
 
         public void SetRenderCamera(int cameraEntity)
@@ -212,9 +226,30 @@
 
             foreach (ComponentSystem system in componentSystems)
             {
-                if (system.CanHostEntity(entityComponents))
+                if (entityComponents.ContainsAll(system.RequiredComponents))
                 {
                     system.AddEntity(entity, this);
+                }
+                else
+                {
+                    Console.Write($"Could not add entity {entity} with components ");
+
+                    int amount = entityComponents.Length;
+                    
+                    for (int i = 0; i < amount; i++)
+                    {
+                        Console.Write(entityComponents[i].GetType().Name);
+
+                        if (i < amount - 1)
+                        {
+                            Console.Write(", ");
+                        }
+                    }
+                    Console.Write($" to system {system.GetType().Name} (requires ");
+                    for (int i = 0; i < (amount = system.RequiredComponents.Length); i++)
+                    {
+                        Console.Write(system.RequiredComponents[i].Name + ((i < amount - 1) ? ", " : ")\n"));
+                    }
                 }
             }
         }
@@ -249,6 +284,11 @@
         {
             foreach (ComponentSystem system in componentSystems)
             {
+                if (system is DrawSystem drawSystem && drawSystem.NoUpdate)
+                {
+                    continue;
+                }
+
                 system.UpdateAll(this, gameTime, input);
             }
         }
@@ -260,9 +300,14 @@
                 return;
             }
 
-            foreach (DrawSystem system in componentSystems)
+            Matrix cameraTransform = GetComponentOfEntity<Camera>(RenderCamera).Transform;
+
+            foreach (ComponentSystem system in componentSystems)
             {
-                system.DrawAll(this, graphicsDevice, spriteBatch);
+                if (system is DrawSystem drawSystem)
+                {
+                    drawSystem.DrawAll(this, graphicsDevice, spriteBatch, cameraTransform);
+                }
             }
         }
 
