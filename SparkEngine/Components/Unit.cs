@@ -7,7 +7,7 @@
     using System.Threading.Tasks;
     using Microsoft.Xna.Framework;
 
-    public class Unit : Component 
+    public struct Unit : IComponent 
     {
         public float LengthX { get; set; }
         public float LengthY { get; set; }

@@ -21,7 +21,7 @@
         /// <summary>
         /// Gets the screen position of the mouse.
         /// </summary>
-        public Point MouseScreenPosition
+        public Point MouseScreenPositionPoint
         {
             get { return Mouse.GetState().Position; }
         }
@@ -30,9 +30,9 @@
         /// <summary>
         /// Gets the screen position of the mouse.
         /// </summary>
-        public Vector2 MouseScreenPositionVector
+        public Vector2 MouseScreenPosition
         {
-            get { return Mouse.GetState().Position.ToVector2(); }
+            get { return MouseScreenPositionPoint.ToVector2(); }
         }
 
         #endregion
@@ -47,11 +47,11 @@
             {
                 isMouseDown |= mouseState.LeftButton == ButtonState.Pressed;
             }
-            if (button.HasFlag(MouseButtons.LMB))
+            if (button.HasFlag(MouseButtons.RMB))
             {
                 isMouseDown |= mouseState.RightButton == ButtonState.Pressed;
             }
-            if (button.HasFlag(MouseButtons.LMB))
+            if (button.HasFlag(MouseButtons.MMB))
             {
                 isMouseDown |= mouseState.MiddleButton == ButtonState.Pressed;
             }

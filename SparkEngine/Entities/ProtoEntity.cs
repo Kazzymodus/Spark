@@ -1,4 +1,4 @@
-﻿namespace SparkEngine.Systems.Batching
+﻿namespace SparkEngine.Entities
 { 
     using System;
     using System.Linq;
@@ -11,24 +11,34 @@
 
         //}
 
-        public ProtoEntity(params Component[] components)
+        public ProtoEntity(params IComponent[] components)
         {
-            foreach (Component component in components)
-            {
-                if (!component.GetType().GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IEquatable<>)))
-                {
-                    throw new ArgumentException($"Can not add {component} to ProtoEntity because it does not implement IEquatable<T>");
-                }
-            }
-
             Components = components;
         }
 
-        public Component[] Components { get; }
+        public IComponent[] Components { get; private set; }
+
+        public ComponentBatch Batch
+        {
+            get => Components;
+        }
+
+        public void AddComponent(IComponent component)
+        {
+            int newLength = Components.Length + 1;
+            IComponent[] oldArray = Components;
+            Components = new IComponent[newLength];
+
+            for (int i = 0; i < newLength - 1; i++)
+            {
+                Components[i] = oldArray[i];
+            }
+
+            Components[newLength - 1] = component;
+        }
 
         public override bool Equals(object obj)
         {
-
             if (obj == null || !(obj is ProtoEntity protoEntity) || Components.Length != protoEntity.Components.Length)
             {
                 return false;

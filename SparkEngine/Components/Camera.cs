@@ -8,32 +8,25 @@
     using SparkEngine.Input;
     using SparkEngine.States;
 
-    public class Camera : Component
+    public struct Camera : IComponent
     {
         #region Constructors
-        /// <summary>
-        /// Creates a new camera.
-        /// </summary>
-        /// <param name="viewportWidth">The width of the viewport.</param>
-        /// <param name="viewportHeight">The height of the viewport.</param>
-        public Camera()
-        {
-            ConstraintMode = CameraConstraints.Unconstrained;
-            Constraints = default(Rectangle);
-        }
 
         public Camera(CameraConstraints constraintsMode, Rectangle constraints)
         {
+            PositionX = 0;
+            PositionY = 0;
             ConstraintMode = constraintsMode;
-            if (constraintsMode != CameraConstraints.Unconstrained)
-            {
-                Constraints = constraints;
-            }
+            Constraints = constraintsMode != CameraConstraints.Unconstrained ? constraints : default(Rectangle);
+            Transform = default(Matrix);
         }
 
         #endregion
 
         #region Properties
+        
+        public float PositionX { get; set; }
+        public float PositionY { get; set; }
 
         public CameraConstraints ConstraintMode { get; set; }
 

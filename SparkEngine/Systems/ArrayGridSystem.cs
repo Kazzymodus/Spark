@@ -9,216 +9,202 @@
     using Microsoft.Xna.Framework.Graphics;
     using SparkEngine.Components;
     using SparkEngine.Input;
+    using SparkEngine.Entities;
     using SparkEngine.Rendering;
     using SparkEngine.States;
     using SparkEngine.Utilities;
     using SparkEngine.Systems.Batching;
     
-    public class GridSystem : DrawSystem
+    public class ArrayGridSystem : ComponentSystem<ArrayGrid>, IDrawSystem
     {
-        private readonly List<ComponentUpdateMethod> updateMethods;
-        private readonly List<ComponentDrawMethod> drawMethods;
-
-        public GridSystem(params ComponentSystem[] systems)
-            : base(false, typeof(Grid), typeof(Unit))
+        public ArrayGridSystem(int maxSubs = GameState.MaxEntities)
+            : base(maxSubs)
         {
-            updateMethods = new List<ComponentUpdateMethod>();
-            drawMethods = new List<ComponentDrawMethod>();
+            
+        }
 
-            for (int i = 0; i < systems.Length; i++)
+        public override void UpdateComponents(GameState state, GameTime gameTime, InputHandler input)
+        {
+            ArrayGrid[] grids = Subscribers.GetComponentsByReference();
+
+            for (int i = 0; i < Subscribers.NextIndex; i++)
             {
-                if (systems[i] is DrawSystem drawSystem)
-                {
-                    drawMethods.Add(drawSystem.ExtractDraw());
-
-                    if (drawSystem.NoUpdate)
-                    {
-                        continue;
-                    }
-                }
-
-                updateMethods.Add(ExtractUpdate());                
+                UpdateGrid(ref grids[i], state, gameTime, input);
             }
         }
 
-        public override void OnAddEntity(int entity, GameState state)
+        public virtual void UpdateGrid(ref ArrayGrid grid, GameState state, GameTime gameTime, InputHandler input)
         {
-            ComponentBatch components = state.GetComponentsOfEntity<Grid>(entity);
+        }
 
-            foreach (Grid grid in components)
+        protected Point GetCursorTile(Vector2 gridPosition, Unit unit, Vector2 cameraPosition, Vector2 cursorPosition)
+        {
+            Vector2 tile = -gridPosition + cameraPosition + cursorPosition;
+            tile.X /= unit.LengthX;
+            if (tile.X < 0)
             {
-                if (grid is ArrayGrid arrayGrid && arrayGrid.IsHomogenous == null)
+                tile.X--;
+            }
+            tile.Y /= unit.LengthY;
+            if (tile.Y < 0)
+            {
+                tile.Y--;
+            }
+
+            return tile.ToPoint();
+        }
+
+        public void DrawComponents(GameState state, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch, Matrix cameraTransform)
+        {
+            Vector2 cameraPosition = (Vector2)state.CameraPosition;
+            Vector2[] layerOffsets = state.DrawLayers.GetLayerOffsets();
+
+            ArrayGrid[] grids = Subscribers.GetUpdateArray();
+
+            spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, cameraTransform);
+
+            for (int i = 0; i < grids.Length; i++)
+            {
+                DrawGrid(grids[i], graphicsDevice, spriteBatch, cameraPosition, layerOffsets);
+            }
+
+            spriteBatch.End();
+        }
+
+        public void DrawGrid(ArrayGrid grid, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch, Vector2 cameraPosition, Vector2[] layerOffsets)
+        {
+            Point viewportSize = new Point(graphicsDevice.Viewport.Width, graphicsDevice.Viewport.Height);
+
+            Vector2 layerOffset = layerOffsets[grid.DrawLayer];
+
+            Rectangle visibleCoordinates = GetVisibleTiles(grid, cameraPosition, viewportSize, layerOffset);
+
+            Point startCoordinate = visibleCoordinates.Location;
+            Point endCoordinate = startCoordinate + visibleCoordinates.Size;
+
+            Vector2 startPosition = grid.Position + layerOffset;
+
+            if (grid.Perspective == Perspective.Standard)
+            {
+                if (!grid.WrapAround)
                 {
-                    List<Type> requiredTypes = new List<Type>();
+                    startCoordinate.X = MathHelper.Clamp(startCoordinate.X, 0, grid.Width);
+                    startCoordinate.Y = MathHelper.Clamp(startCoordinate.Y, 0, grid.Height);
+                    endCoordinate.X = MathHelper.Clamp(endCoordinate.X, 0, grid.Width);
+                    endCoordinate.Y = MathHelper.Clamp(endCoordinate.Y, 0, grid.Height);
 
-                    for (int i = 0; i < updateMethods.Count + drawMethods.Count; i++)
-                    {
-                        Type[] requiredComponents;
-                        
-                        if (updateMethods.Count == 0)
-                        {
-                            requiredComponents = drawMethods[i].RequiredComponents;
-                        }
-                        else
-                        {
-                            requiredComponents = i < updateMethods.Count ? updateMethods[i].RequiredComponents : drawMethods[i % updateMethods.Count].RequiredComponents;
-                        }                    
-
-                        for (int j = 0; j < requiredComponents.Length; j++)
-                        {
-                            if (!requiredTypes.Contains(requiredComponents[j]))
-                            {
-                                requiredTypes.Add(requiredComponents[j]);
-                            }
-                        }
+                    Vector2 tileOffset = startPosition + new Vector2(startCoordinate.X * grid.TileSize.X, startCoordinate.Y * grid.TileSize.Y);
                     
+                    for (int x = startCoordinate.X; x < endCoordinate.X; x++)
+                    {
+                        tileOffset.X += grid.TileSize.X;
+
+                        for (int y = startCoordinate.Y; y < endCoordinate.Y; y++)
+                        {
+                            tileOffset.Y += grid.TileSize.Y;
+
+                            DrawCell(grid[x, y].Batch.GetComponent<Sprite>(), spriteBatch, tileOffset);
+                        }
                     }
 
-                    arrayGrid.DetermineHomogenity(requiredTypes.ToArray());
-                }
-            }
-        }
-
-        public override void UpdateAll(GameState state, GameTime gameTime, InputHandler input)
-        {
-            if (updateMethods.Count == 0)
-            {
-                return;
-            }
-
-            base.UpdateAll(state, gameTime, input);
-        }
-
-        public override void UpdateIndividual(GameState state, GameTime gameTime, InputHandler input, ComponentBatch components)
-        {
-            Grid grid = components.GetComponent<Grid>();
-
-            if (grid is ArrayGrid arrayGrid)
-            {
-                if (arrayGrid.IsHomogenous == true)
-                {
-                    UpdateArrayGridUnsafe(arrayGrid, state, gameTime, input);
                 }
                 else
                 {
-                    UpdateArrayGridSafe(arrayGrid, state, gameTime, input);
-                }
-            }
-            else if (grid is BatchedGrid)
-            {
-                UpdateBatchedGrid((BatchedGrid)grid, state, gameTime, input);
-            }
-        }
-
-        private void UpdateArrayGridUnsafe(ArrayGrid grid, GameState state, GameTime gameTime, InputHandler input)
-        {
-            ProtoEntity sampleCell = grid.Cells[0, 0];
-            ComponentBatch stampComponents = sampleCell.Components;
-
-            try
-            {
-                foreach (ComponentUpdateMethod method in updateMethods)
-                {
-                    if (!stampComponents.ContainsAll(method.RequiredComponents))
+                    for (int x = startCoordinate.X; x < endCoordinate.X; x++)
                     {
-                        continue;
-                    }
-
-                    ProtoEntity[,] allCells = grid.Cells;
-                    ProtoEntity cell;
-
-                    for (int x = 0; x < grid.Width; x++)
-                    {
-                        for (int y = 0; y < grid.Height; y++)
+                        for (int y = startCoordinate.Y; y < endCoordinate.Y; y++)
                         {
-                            cell = allCells[x, y];
+                            int xIndex = x % grid.Width;
+                            int yIndex = y % grid.Height;
 
-                            method.Update(state, gameTime, input, cell.Components);
+                            if (xIndex < 0)
+                            {
+                                xIndex += grid.Width;
+                            }
+
+                            if (yIndex < 0)
+                            {
+                                yIndex += grid.Height;
+                            }
+
+                            DrawCell(grid[xIndex, yIndex].Batch.GetComponent<Sprite>(), spriteBatch, startPosition + new Vector2(grid.TileSize.X * x, grid.TileSize.Y * y));
                         }
                     }
-                }
-            }
-            catch (NullReferenceException)
-            {
-                throw new InvalidOperationException("Array is not homogenous.");
-            }
-        }
-
-        private void UpdateArrayGridSafe(ArrayGrid grid, GameState state, GameTime gameTime, InputHandler input)
-        {
-            foreach (ComponentUpdateMethod method in updateMethods)
-            {
-                ProtoEntity[,] allCells = grid.Cells;
-                ProtoEntity cell;
-
-                for (int x = 0; x < grid.Width; x++)
-                {
-                    for (int y = 0; y < grid.Height; y++)
-                    {
-                        cell = allCells[x, y];
-
-                        if (((ComponentBatch)cell.Components).ContainsAll(RequiredComponents))
-                        {
-                            method.Update(state, gameTime, input, cell.Components);
-                        }
-                    }
+                
                 }
             }
         }
 
-        private void UpdateBatchedGrid(BatchedGrid grid, GameState state, GameTime gameTime, InputHandler input)
+        private void DrawCell(Sprite sprite, SpriteBatch spriteBatch, Vector2 offset)
         {
-            throw new NotImplementedException();
+            Rectangle sourceRectangle;
 
-            //foreach (ComponentSystem system in subSystems)
-            //{
-            //    foreach (CellBatch batch in grid.Batches)
-            //    {
-            //        ComponentBatch stampComponents = batch.Stamp.Components;
-
-            //        if (!system.CanHostEntity(stampComponents))
-            //        {
-            //            continue;
-            //        }
-
-            //        system.UpdateIndividual(state, gameTime, input, stampComponents);
-            //    }
-            //}
-        }
-
-        public override void DrawAll(GameState state, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch, Matrix cameraTransform)
-        {
-            if (drawMethods.Count == 0)
+            if (sprite.IsAnimated)
             {
-                return;
+                int frameWidth = (int)sprite.FrameSize.X;
+                int frameHeight = (int)sprite.FrameSize.Y;
+                sourceRectangle = new Rectangle(sprite.FrameX * frameWidth, sprite.FrameY * frameHeight, frameWidth, frameHeight);
+            }
+            else
+            {
+                sourceRectangle = new Rectangle(Point.Zero, sprite.FrameSize.ToPoint());
             }
 
-            base.DrawAll(state, graphicsDevice, spriteBatch, cameraTransform);
+            spriteBatch.Draw(sprite.Texture, sprite.DrawPosition + offset, sourceRectangle, sprite.ColorMask);
         }
 
-        public override void DrawIndividual(GameState state, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch, Vector2 drawOffset, ComponentBatch components)
+        private Rectangle GetVisibleTiles(ArrayGrid grid, Vector2 cameraPosition, Point viewportSize, Vector2 layerOffset)
         {
-            components.GetComponentsMultiType(out Grid grid, out Unit unit);
-            Point viewportSize = new Point(graphicsDevice.Viewport.Width, graphicsDevice.Viewport.Height);
+            Vector2 gridPosition = grid.Position + layerOffset;
 
-            Rectangle visibleCoordinates = GetVisibleTiles(grid, unit, state, state.CameraPosition, viewportSize);
+            Rectangle visibleCoordinates;
+            Point offset;
 
-            if (grid is ArrayGrid arrayGrid)
+            switch (grid.Perspective)
             {
-                DrawArrayGrid(arrayGrid, unit, state, graphicsDevice, spriteBatch, visibleCoordinates);
+                case Perspective.Standard:
+                    visibleCoordinates = GetVisibleCartesianCoordinates(cameraPosition, viewportSize, grid.TileSize, 1);
+                    offset = Projector.PixelsToCartesian(gridPosition, grid.TileSize).ToPoint();
+                    break;
+                case Perspective.Isometric:
+                    visibleCoordinates = GetVisibleIsometricCoordinates(cameraPosition, viewportSize, grid.TileSize, 1);
+                    offset = Projector.PixelsToIsometric(gridPosition, grid.TileSize).ToPoint();
+                    break;
+                default:
+                    throw new InvalidOperationException($"Can not process {grid.Perspective} perspective.");
             }
+
+            visibleCoordinates.Location -= offset; // Is this right?
+
+            return visibleCoordinates;
         }
 
-        private Rectangle GetVisibleTiles(Grid grid, Unit unit, GameState state, Vector2 cameraPosition, Point viewportSize)
+        /// <summary>
+        /// Gets the range of coordinates currently in camera view.
+        /// </summary>
+        /// <returns>A rectangle containing all visible coordinates.</returns>
+        protected Rectangle GetVisibleCartesianCoordinates(Vector2 cameraPosition, Point viewportSize, Vector2 unit, int padding = 0)
         {
-            DrawLayer layer = state.DrawLayers[grid.DrawLayer];
-            Vector2 gridPosition = GetDrawPosition(layer, grid);
+            Point location = Projector.PixelsToCartesian(cameraPosition.ToPoint(), unit) - new Point(padding);
+            Point size = Projector.PixelsToCartesian(viewportSize, unit) + new Point(padding * 2);
 
-            return GetOffsetVisibleCoordinates(grid, unit, gridPosition, cameraPosition, viewportSize);
+            return new Rectangle(location, size);
+        }
+
+        protected Rectangle GetVisibleIsometricCoordinates(Vector2 cameraPosition, Point viewportSize, Vector2 unit, int padding = 0)
+        {
+            Point location = Projector.PixelsToIsometric(cameraPosition, unit).ToPoint() - new Point(padding);
+            Point size = Projector.PixelsToIsometric(viewportSize, unit) + new Point(padding * 2);
+
+            return new Rectangle(location, size);
         }
 
         private ProtoEntity[,] ConvertToDrawableGrid(BatchedGrid grid, Rectangle visibleCoordinates)
         {
+            throw new NotImplementedException();
+
+            /*
+
             ProtoEntity[,] drawGrid = new ProtoEntity[visibleCoordinates.Width, visibleCoordinates.Height];
 
             //Point startCoordinate = visibleCoordinates.Location;
@@ -240,7 +226,11 @@
             }
 
             return drawGrid;
+            
+            */
         }
+
+        /*
 
         private void DrawStandardGrid(Grid grid, Unit unit, ProtoEntity[,] drawGrid, GameState state, SpriteBatch spriteBatch, Point viewportSize)
         {
@@ -475,6 +465,8 @@
             Point startCoordinate = visibleCoordinates.Location;
             Point endCoordinate = startCoordinate + visibleCoordinates.Size;
 
+            Vector2 gridPosition = GetDrawPosition(state.DrawLayers[grid.DrawLayer], grid);
+
             if (grid.Perspective == Perspective.Standard)
             {
                 if (!grid.WrapAround)
@@ -490,7 +482,7 @@
                         {
                             for (int y = startCoordinate.Y; y < endCoordinate.Y; y++)
                             {
-                                method.Draw(state, graphics, spriteBatch, new Vector2(unit.LengthX * x, unit.LengthY * y), grid[x, y].Components);
+                                method.Draw(state, graphics, spriteBatch, gridPosition + new Vector2(unit.LengthX * x, unit.LengthY * y), grid[x, y].Components);
                             }
                         }
                     }
@@ -503,26 +495,20 @@
                         {
                             for (int y = startCoordinate.Y; y < endCoordinate.Y; y++)
                             {
-                                int xIndex = x;
-                                int yIndex = y;
+                                int xIndex = x % grid.Width;
+                                int yIndex = y % grid.Height;
 
-                                bool isNegative = xIndex < 0;
-                                xIndex %= grid.Width;
-
-                                if (isNegative)
+                                if (xIndex < 0)
                                 {
-                                    xIndex = (grid.Width + xIndex) % grid.Width;
+                                    xIndex += grid.Width;
                                 }
 
-                                isNegative = yIndex < 0;
-                                yIndex %= grid.Height;
-
-                                if (isNegative)
+                                if (yIndex < 0)
                                 {
-                                    yIndex = (grid.Height + yIndex) % grid.Height;
+                                    yIndex += grid.Height;
                                 }
 
-                                method.Draw(state, graphics, spriteBatch, new Vector2(unit.LengthX * x, unit.LengthY * y), grid[xIndex, yIndex].Components);
+                                method.Draw(state, graphics, spriteBatch, gridPosition + new Vector2(unit.LengthX * x, unit.LengthY * y), grid[xIndex, yIndex].Components);
                             }
                         }
                     }
@@ -530,29 +516,7 @@
             }
         }
 
-        private Rectangle GetOffsetVisibleCoordinates(Grid grid, Unit unit, Vector2 gridPosition, Vector2 cameraPosition, Point viewportSize)
-        {
-            Rectangle visibleCoordinates;
-            Point offset;
-
-            switch (grid.Perspective)
-            {
-                case Perspective.Standard:
-                    visibleCoordinates = GetVisibleCartesianCoordinates(cameraPosition, viewportSize, unit, 1);
-                    offset = Projector.PixelsToCartesian(gridPosition, unit).ToPoint();
-                    break;
-                case Perspective.Isometric:
-                    visibleCoordinates = GetVisibleIsometricCoordinates(cameraPosition, viewportSize, unit, 1);
-                    offset = Projector.PixelsToIsometric(gridPosition, unit).ToPoint();
-                    break;
-                default:
-                    throw new InvalidOperationException($"Can not process {grid.Perspective} perspective.");
-            }
-
-            visibleCoordinates.Location -= offset; // Is this right?
-
-            return visibleCoordinates;
-        }
+    */
 
         #region Methods
 

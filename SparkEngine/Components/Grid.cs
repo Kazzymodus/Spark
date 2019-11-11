@@ -7,7 +7,7 @@
     using System.Threading.Tasks;
     using Microsoft.Xna.Framework;
 
-    public class Grid : Drawable
+    public class Grid : IComponent
     {
         public Grid(Perspective perspective, int width, int height, bool wrapAround)
         {

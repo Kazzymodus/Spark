@@ -7,6 +7,7 @@
     using System.Threading.Tasks;
     using Components;
     using Microsoft.Xna.Framework;
+    using SparkEngine.Entities;
 
     public class GridBatcher
     {
@@ -76,7 +77,7 @@
                 }
             }
 
-            return null;
+            throw new Exception("Whatever");
         }
 
     }

@@ -9,19 +9,19 @@ namespace SparkEngine.Components
 {
     public struct ComponentBatch : IEnumerable
     {
-        public ComponentBatch(params Component[] components)
+        public ComponentBatch(params IComponent[] components)
         {
             Components = components;
         }
 
-        public static implicit operator ComponentBatch(Component[] components)
+        public static implicit operator ComponentBatch(IComponent[] components)
         {
             return new ComponentBatch(components);
         }
 
-        public Component[] Components { get; }
+        public IComponent[] Components { get; }
 
-        public Component this[int i]
+        public IComponent this[int i]
         {
             get => Components[i];
         }
@@ -29,6 +29,24 @@ namespace SparkEngine.Components
         public int Length
         {
             get => Components.Length;
+        }
+
+        public bool Contains<T>()
+        {
+            return Contains(typeof(T));
+        }
+
+        public bool Contains(Type requiredComponent)
+        {
+            for (int i = 0; i < Components.Length; i++)
+            {
+                if (Components[i].GetType() == requiredComponent)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public bool ContainsOnly(Type[] requiredComponents)
@@ -70,7 +88,7 @@ namespace SparkEngine.Components
             return true;
         }
 
-        public T GetComponent<T>() where T : Component
+        public T GetComponent<T>() where T : IComponent
         {
             for (int i = 0; i < Components.Length; i++)
             {
@@ -80,10 +98,10 @@ namespace SparkEngine.Components
                 }
             }
 
-            return null;
+            return default(T);
         }
 
-        public T[] GetComponentsSingleType<T>() where T : Component
+        public T[] GetComponentsSingleType<T>() where T : IComponent
         {
             List<T> validComponents = new List<T>();
 
@@ -99,41 +117,41 @@ namespace SparkEngine.Components
         }
 
         public void GetComponentsMultiType<T1, T2>(out T1 component1, out T2 component2)
-            where T1 : Component
-            where T2 : Component
+            where T1 : IComponent
+            where T2 : IComponent
         {
-            Component[] components = GetComponentsInTypeOrder(typeof(T1), typeof(T2));
+            IComponent[] components = GetComponentsInTypeOrder(typeof(T1), typeof(T2));
             component1 = (T1)components[0];
             component2 = (T2)components[1];
         }
 
         public void GetComponentsMultiType<T1, T2, T3>(out T1 component1, out T2 component2, out T3 component3)
-            where T1 : Component
-            where T2 : Component
-            where T3 : Component
+            where T1 : IComponent
+            where T2 : IComponent
+            where T3 : IComponent
         {
-            Component[] components = GetComponentsInTypeOrder(typeof(T1), typeof(T2), typeof(T3));
+            IComponent[] components = GetComponentsInTypeOrder(typeof(T1), typeof(T2), typeof(T3));
             component1 = (T1)components[0];
             component2 = (T2)components[1];
             component3 = (T3)components[2];
         }
 
         public void GetComponentsMultiType<T1, T2, T3, T4>(out T1 component1, out T2 component2, out T3 component3, out T4 component4)
-            where T1 : Component
-            where T2 : Component
-            where T3 : Component
-            where T4 : Component
+            where T1 : IComponent
+            where T2 : IComponent
+            where T3 : IComponent
+            where T4 : IComponent
         {
-            Component[] components = GetComponentsInTypeOrder(typeof(T1), typeof(T2), typeof(T3), typeof(T4));
+            IComponent[] components = GetComponentsInTypeOrder(typeof(T1), typeof(T2), typeof(T3), typeof(T4));
             component1 = (T1)components[0];
             component2 = (T2)components[1];
             component3 = (T3)components[2];
             component4 = (T4)components[3];
         }
 
-        public Component[] GetComponentsInTypeOrder(params Type[] componentTypes)
+        public IComponent[] GetComponentsInTypeOrder(params Type[] componentTypes)
         {
-            Component[] returnComponents = new Component[componentTypes.Length];
+            IComponent[] returnComponents = new IComponent[componentTypes.Length];
 
             for (int i = 0; i < componentTypes.Length; i++)
             {

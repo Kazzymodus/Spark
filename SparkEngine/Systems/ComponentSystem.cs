@@ -16,33 +16,41 @@
 
     public abstract class ComponentSystem
     {
-        private bool isUpdating;
+        public bool IsUpdating { get; protected set; }
+        
+        protected readonly List<int> pendingRemovals = new List<int>();
 
-        protected List<int> subbedEntities = new List<int>();
+        public abstract bool HasComponentOfEntity(int owner);
 
-        protected List<int> pendingAdds = new List<int>();
+        public abstract void DestroyComponent(int entity, GameState gameState);
 
-        protected List<int> pendingRemovals = new List<int>();
+        internal abstract void Update(GameState state, GameTime gameTime, InputHandler input);
+    }
 
-        public ComponentSystem(params Type[] requiredComponents)
+    public abstract class ComponentSystem<T> : ComponentSystem where T : struct, IComponent
+    {
+        protected ComponentPool<T> Subscribers { get; }
+
+        private Dictionary<int, T> pendingAdds = new Dictionary<int, T>();
+
+        public ComponentSystem(int maxSubs = GameState.MaxEntities)
         {
-            RequiredComponents = requiredComponents;
+            Subscribers = new ComponentPool<T>(maxSubs, GameState.MaxEntities);
         }
 
-        public Type[] RequiredComponents { get; }
-
-        public virtual void AddEntity(int entity, GameState state)
+        public T? GetComponent(int entity)
         {
-            if (isUpdating)
-            {
-                pendingAdds.Add(entity);
-            }
-            else
-            {
-                subbedEntities.Add(entity);
-            }
+            return Subscribers.GetComponent(entity);
+        }
 
-            OnAddEntity(entity, state);
+        public override bool HasComponentOfEntity(int entity)
+        {
+            return Subscribers.HasComponentOfEntity(entity);
+        }
+
+        public void AddNewComponentToEntity(T template, int entity, GameState state)
+        {
+            RegisterComponent(template, entity, state);
         }
 
         public virtual void OnAddEntity(int entity, GameState state)
@@ -50,57 +58,82 @@
 
         }
 
-        public virtual void RemoveEntity(int entity, GameState state)
-        {
-            if (isUpdating)
-            {
-                pendingRemovals.Add(entity);
-            }
-            else
-            {
-                subbedEntities.Remove(entity);
-            }
-
-            OnRemoveEntity(entity, state);
-        }
-
         public virtual void OnRemoveEntity(int entity, GameState state)
         {
 
         }
 
-        public virtual void UpdateAll(GameState state, GameTime gameTime, InputHandler input)
+        internal override void Update(GameState state, GameTime gameTime, InputHandler input)
         {
-            isUpdating = true;
+            IsUpdating = true;
 
-            foreach (int entity in subbedEntities)
+            UpdateComponents(state, gameTime, input);
+
+            IsUpdating = false;
+
+            if (pendingAdds.Count > 0)
             {
-                ComponentBatch components = state.GetAllComponentsOfEntity(entity);
-                components = components.GetComponentsInTypeOrder(RequiredComponents);
+                foreach (KeyValuePair<int, T> pending in pendingAdds)
+                {
+                    if (!Subscribers.HasComponentOfEntity(pending.Key))
+                    {
+                        AddComponent(pending.Value, pending.Key);
+                    }
+                }
 
-                UpdateIndividual(state, gameTime, input, components);
+                pendingAdds.Clear();
             }
 
-            isUpdating = false;
+            if (pendingRemovals.Count> 0)
+            {
+                foreach (int pending in pendingRemovals)
+                {
+                    if (Subscribers.HasComponentOfEntity(pending))
+                    {
+                        RemoveComponent(pending);
+                    }
+                }
+
+                pendingRemovals.Clear();
+            }
         }
 
-        public abstract void UpdateIndividual(GameState state, GameTime gameTime, InputHandler input, ComponentBatch components);
+        public abstract void UpdateComponents(GameState state, GameTime gameTime, InputHandler input);
 
-        public bool CanHostEntity(GameState state, int entity)
+        public virtual void RegisterComponent(T component, int owner, GameState state)
         {
-            ComponentBatch entityComponents = state.GetAllComponentsOfEntity(entity);
-
-            return CanHostEntity(entityComponents);
+            if (IsUpdating)
+            {
+                pendingAdds.Add(owner, component);
+            }
+            else
+            {
+                AddComponent(component, owner);
+            }
+            OnAddEntity(owner, state);
         }
 
-        public bool CanHostEntity(ComponentBatch entityComponents)
+        public override void DestroyComponent(int owner, GameState state)
         {
-            return entityComponents.ContainsAll(RequiredComponents);
+            if (IsUpdating)
+            {
+                pendingRemovals.Add(owner);
+            }
+            else
+            {
+                RemoveComponent(owner);
+            }
+            OnRemoveEntity(owner, state);
         }
 
-        public ComponentUpdateMethod ExtractUpdate()
+        private void AddComponent(T component, int owner)
         {
-            return new ComponentUpdateMethod(this);
+            Subscribers.Add(component, owner);
+        }
+
+        private void RemoveComponent(int owner)
+        {
+            Subscribers.Remove(owner);           
         }
     }
 }

@@ -9,9 +9,9 @@
     using SparkEngine.States;
     using SparkEngine.Systems.Batching;
 
-    public class BatchedGrid : Grid
+    public struct BatchedGrid : IComponent
     {
-        
+        /*
         #region Fields
 
         public CellBatch[] Batches { get; }
@@ -21,12 +21,26 @@
         #region Constructors
 
         public BatchedGrid(Perspective perspective, bool wrapAround)
-            : base(perspective, 1, 1, wrapAround)
         {
 
         }
 
         #endregion      
-        
+
+        public int Width { get; }
+        public int Height { get; }
+        public Perspective Perspective { get; }
+        public bool WrapAround { get; }
+
+        public bool IsPointWithinBounds(int x, int y)
+        {
+            return !(x < 0 || x >= Width || y < 0 || y >= Height);
+        }
+
+        public bool IsPointWithinBounds(Point coordinate)
+        {
+            return IsPointWithinBounds(coordinate.X, coordinate.Y);
+        }
+        */
     }   
 }

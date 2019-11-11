@@ -149,7 +149,7 @@
 
                 spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied);
 
-                Component.DrawMessages(spriteBatch); // Very much temp, gonna combine this into a manager some day.
+                IComponent.DrawMessages(spriteBatch); // Very much temp, gonna combine this into a manager some day.
                 Camera.DrawMessages(spriteBatch);
 
                 spriteBatch.End();

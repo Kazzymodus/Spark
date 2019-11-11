@@ -12,52 +12,144 @@
     using Microsoft.Xna.Framework.Graphics;
     using SparkEngine.Rendering;
 
-    public class SpriteDrawSystem : DrawSystem
+    public class SpriteDrawSystem : ComponentSystem<Sprite>, IDrawSystem
     {
-        public SpriteDrawSystem()
-            : base(true, typeof(Sprite))
+        public SpriteDrawSystem(int maxSubs = GameState.MaxEntities)
+            : base(maxSubs)
         {
 
         }
 
-        public override void UpdateIndividual(GameState state, GameTime gameTime, InputHandler input, ComponentBatch components)
+        public override void UpdateComponents(GameState state, GameTime gameTime, InputHandler input)
         {
-
         }
 
-        public override void DrawIndividual(GameState state, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch, Vector2 drawOffset, ComponentBatch components)
-        {
-            Sprite[] sprites = components.GetComponentsSingleType<Sprite>();
+        protected int?[] LayerSeperatingIndices { get; private set; }
 
-            for (int i = 0; i < sprites.Length; i++)
+        //private void ExtendLayersToElement(int lastLayerIndex)
+        //{
+        //    int?[] oldArray = LayerSeperatingIndices ?? new int?[0];
+        //    LayerSeperatingIndices = new int?[lastLayerIndex + 1];
+
+        //    for (int i = 0; i < LayerSeperatingIndices.Length; i++)
+        //    {
+        //        LayerSeperatingIndices[i] = i < oldArray.Length ? oldArray[i] : null;
+        //    }
+        //}
+
+        //private int GetInsertIndex(int layerIndex)
+        //{
+        //    if (layerIndex == LayerSeperatingIndices.Length - 1)
+        //    {
+        //        return subbedEntities.Count;
+        //    }
+        //    else
+        //    {
+        //        for (int i = layerIndex + 1; i < LayerSeperatingIndices.Length; i++)
+        //        {
+        //            if (LayerSeperatingIndices[i] != null)
+        //            {
+        //                return (int)LayerSeperatingIndices[i];
+        //            }
+        //        }
+
+        //        throw new InvalidOperationException("layerSeperatingIndices' final element is null and not the only element in the array.");
+        //    }
+        //}
+
+        //private void UpdateLayerSeperatingIndices(int insertIndex, int layerIndex)
+        //{
+        //    if (LayerSeperatingIndices[layerIndex] == null)
+        //    {
+        //        if (layerIndex == LayerSeperatingIndices.Length - 1)
+        //        {
+        //            LayerSeperatingIndices[layerIndex] = subbedEntities.Count - 1;
+        //            return;
+        //        }
+        //        else
+        //        {
+        //            LayerSeperatingIndices[layerIndex] = insertIndex;
+        //        }
+        //    }
+
+        //    for (int i = layerIndex + 1; i < LayerSeperatingIndices.Length; i++)
+        //    {
+        //        LayerSeperatingIndices[i]++;
+        //    }
+        //}
+
+        //public override void AddComponent(int entity, GameState state)
+        //{
+        //    int layerIndex = state.GetComponentOfEntity<Drawable>(entity).DrawLayer;
+        //    if (LayerSeperatingIndices == null || layerIndex >= LayerSeperatingIndices.Length)
+        //    {
+        //        ExtendLayersToElement(layerIndex);
+        //    }
+
+        //    int insertIndex = GetInsertIndex(layerIndex);
+        //    subbedEntities.Insert(insertIndex, entity);
+        //    UpdateLayerSeperatingIndices(insertIndex, layerIndex);
+
+        //    OnAddEntity(entity, state);
+        //}
+
+        public void DrawComponents(GameState state, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch, Matrix cameraTransform)
+        {
+            Vector2[] layerOffsets = new Vector2[state.DrawLayers.Count];
+
+            for (int i = 0; i < layerOffsets.Length; i++)
             {
-                DrawSprite(state, spriteBatch, drawOffset, sprites[i]);
+                layerOffsets[i] = state.DrawLayers[i].DrawOffset;
             }
+
+            spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, cameraTransform);
+
+            Sprite[] sprites = Subscribers.GetUpdateArray();
+
+            for (int i = 0; i < Subscribers.NextIndex; i++)
+            {
+                DrawSprite(state, spriteBatch, sprites[i], layerOffsets);
+            }
+
+            spriteBatch.End();
         }
 
-        public void DrawSprite(GameState state, SpriteBatch spriteBatch, Vector2 drawOffset, Sprite sprite)
+        public void DrawSprite(GameState state, SpriteBatch spriteBatch, Sprite sprite, Vector2[] layerOffsets)
         {
-            spriteBatch.Draw(sprite.Texture, GetDrawPosition(state.DrawLayers[sprite.DrawLayer], sprite) + drawOffset, sprite.ColorMask);
+            Rectangle sourceRectangle;
+
+            if (sprite.IsAnimated)
+            {
+                int frameWidth = (int)sprite.FrameSize.X;
+                int frameHeight = (int)sprite.FrameSize.Y;
+                sourceRectangle = new Rectangle(sprite.FrameX * frameWidth, sprite.FrameY * frameHeight, frameWidth, frameHeight);
+            }
+            else
+            {
+                sourceRectangle = new Rectangle(Point.Zero, sprite.FrameSize.ToPoint());
+            }
+
+            spriteBatch.Draw(sprite.Texture, sprite.DrawPosition + layerOffsets[sprite.DrawLayer], sourceRectangle, sprite.ColorMask);
         }
 
         //public Vector2 GetDrawPosition(Sprite sprite)
         //{
-            //int rotations = camera.Rotations;
+        //int rotations = camera.Rotations;
 
-            // This is what it used to do, prolly not relevant anymore
+        // This is what it used to do, prolly not relevant anymore
 
-            //Vector2 cornerPixels = Projector.CartesianToIsometricToPixels(GetRootCoordinates(rotations), drawLayer.Unit);
-            //Vector2 drawPosition = drawLayer.Position + (cornerPixels - Sprite.Anchor);
+        //Vector2 cornerPixels = Projector.CartesianToIsometricToPixels(GetRootCoordinates(rotations), drawLayer.Unit);
+        //Vector2 drawPosition = drawLayer.Position + (cornerPixels - Sprite.Anchor);
 
-            //// Correction, as we need to draw in the X center of the tile, not the origin.
+        //// Correction, as we need to draw in the X center of the tile, not the origin.
 
-            //drawPosition.X += Projector.DefaultTileWidth / 2;
-            //if (Dimensions == Projector.Dimension1X1)
-            //{
-            //    drawPosition.Y += Projector.DefaultTileHeight / 2;
-            //}
+        //drawPosition.X += Projector.DefaultTileWidth / 2;
+        //if (Dimensions == Projector.Dimension1X1)
+        //{
+        //    drawPosition.Y += Projector.DefaultTileHeight / 2;
+        //}
 
-            //return DrawLayers[sprite.DrawLayer].Position + sprite.DrawPosition;
+        //return DrawLayers[sprite.DrawLayer].Position + sprite.DrawPosition;
         //}
 
         //public Rectangle GetBounds(Camera camera, DrawLayer drawLayer)

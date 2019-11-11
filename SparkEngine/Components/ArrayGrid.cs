@@ -5,16 +5,35 @@
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
-    using SparkEngine.Systems.Batching;
+    using SparkEngine.Entities;
+    using Microsoft.Xna.Framework;
 
-    public class ArrayGrid : Grid
+    public struct ArrayGrid : IComponent
     {
-        public ArrayGrid(Perspective perspective, ProtoEntity[,] grid, bool wrapAround, bool? isHomogenous = null)
-            : base(perspective, grid.GetLength(0), grid.GetLength(1), wrapAround)
+        public ArrayGrid(Perspective perspective, ProtoEntity[,] grid, Vector2 tileSize, bool wrapAround, bool? isHomogenous = null)
         {
+            Position = Vector2.Zero;
+
             Cells = grid;
             IsHomogenous = isHomogenous;
+
+            Width = grid.GetLength(0);
+            Height = grid.GetLength(1);
+            TileSize = tileSize;
+
+            DrawLayer = 0; //temp
+
+            Perspective = perspective;
+            WrapAround = wrapAround;
         }
+
+        public Vector2 Position { get; set; }
+        public int Width { get; }
+        public int Height { get; }
+        public Vector2 TileSize { get; }
+        public int DrawLayer { get; }
+        public Perspective Perspective { get; }
+        public bool WrapAround { get; }
 
         public ProtoEntity this[int x, int y]
         {
@@ -22,7 +41,7 @@
         }
 
         public ProtoEntity[,] Cells { get; }
-        
+
         public bool? IsHomogenous { get; private set; }
 
         public bool DetermineHomogenity(Type[] componentTypes)
@@ -39,6 +58,16 @@
             }
 
             return (bool)(IsHomogenous = true);
+        }
+
+        public bool IsPointWithinBounds(int x, int y)
+        {
+            return !(x < 0 || x >= Width || y < 0 || y >= Height);
+        }
+
+        public bool IsPointWithinBounds(Point coordinate)
+        {
+            return IsPointWithinBounds(coordinate.X, coordinate.Y);
         }
     }
 }

@@ -10,48 +10,35 @@ using SparkEngine.States;
 
 namespace SparkEngine.Systems
 {
-    class CameraSystem : ComponentSystem
+    public class CameraSystem : ComponentSystem<Camera>
     {
-        public CameraSystem()
-            : base(typeof(Camera), typeof(ScreenPosition))
+        public CameraSystem(int maxSubs = GameState.MaxEntities)
+            : base(maxSubs)
         {
 
         }
 
-        public override void UpdateIndividual(GameState state, GameTime gameTime, InputHandler input, ComponentBatch components)
+        public override void UpdateComponents(GameState state, GameTime gameTime, InputHandler input)
         {
-            components.GetComponentsMultiType(out Camera camera, out ScreenPosition position);
+            Camera[] cameras = Subscribers.GetComponentsByReference();
 
-            // TEMP
+            for (int i = 0; i < cameras.Length; i++)
+            {
+                UpdateCameras(ref cameras[i], state, gameTime, input);
+            }            
+        }
 
-            if (input.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.Left))
-            {
-                position.ScreenX -= 2;
-            }
-            if (input.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.Down))
-            {
-                position.ScreenY += 2;
-            }
-            if (input.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.Right))
-            {
-                position.ScreenX += 2;
-            }
-            if (input.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.Up))
-            {
-                position.ScreenY -= 2;
-            }
-
-            // TEMP
-
+        public virtual void UpdateCameras(ref Camera camera, GameState state, GameTime gameTime, InputHandler input)
+        {
             if (camera.ConstraintMode == CameraConstraints.Constrained)
             {
-                ClampCamera(position, camera.Constraints);
+                ClampCamera(ref camera);
             }
             else if (camera.ConstraintMode == CameraConstraints.WrapAround)
             {
-                WrapCamera(position, camera.Constraints);
+                WrapCamera(ref camera);
             }
-            camera.Transform = Matrix.CreateTranslation(new Vector3(-position, 0f));
+            camera.Transform = Matrix.CreateTranslation(new Vector3(-camera.PositionX, -camera.PositionY, 0f));
         }
 
         public override void OnRemoveEntity(int entity, GameState state)
@@ -89,51 +76,59 @@ namespace SparkEngine.Systems
         /// <summary>
         /// Clamps the camera to its constraints.
         /// </summary>
-        private void ClampCamera(ScreenPosition position, Rectangle constraints)
+        private void ClampCamera(ref Camera camera)
         {
-            if (position.ScreenX < constraints.Left)
+            float positionX = camera.PositionX;
+            float positionY = camera.PositionY;
+            Rectangle constraints = camera.Constraints;
+
+            if (positionX < constraints.Left)
             {
-                position.ScreenX = constraints.Left;
+                camera.PositionX = constraints.Left;
             }
-            else if (position.ScreenX > constraints.Right)
+            else if (positionX > constraints.Right)
             {
-                position.ScreenX = constraints.Right;
+                camera.PositionX = constraints.Right;
             }
 
-            if (position.ScreenY < constraints.Top)
+            if (positionY < constraints.Top)
             {
-                position.ScreenY = constraints.Top;
+                camera.PositionY = constraints.Top;
             }
-            else if (position.ScreenY > constraints.Bottom)
+            else if (positionY > constraints.Bottom)
             {
-                position.ScreenY = constraints.Bottom;
+                camera.PositionY = constraints.Bottom;
             }
         }
 
-        private void WrapCamera(ScreenPosition position, Rectangle constraints)
+        private void WrapCamera(ref Camera camera)
         {
-            int overshoot = 0;
+            float positionX = camera.PositionX;
+            float positionY = camera.PositionY;
+            Rectangle constraints = camera.Constraints;
 
-            if (position.ScreenX < constraints.Left)
+            float overshoot = 0;
+
+            if (positionX < constraints.Left)
             {
-                overshoot = (int)position.ScreenX - constraints.Left;
-                position.ScreenX = constraints.Right + overshoot;
+                overshoot = positionX - constraints.Left;
+                camera.PositionX = constraints.Right + overshoot;
             }
-            else if (position.ScreenX > constraints.Right)
+            else if (positionX > constraints.Right)
             {
-                overshoot = (int)position.ScreenX - constraints.Right;
-                position.ScreenX = constraints.Left + overshoot;
+                overshoot = positionX - constraints.Right;
+                camera.PositionX = constraints.Left + overshoot;
             }
 
-            if (position.ScreenY < constraints.Top)
+            if (positionY < constraints.Top)
             {
-                overshoot = (int)position.ScreenY - constraints.Top;
-                position.ScreenY = constraints.Bottom + overshoot;
+                overshoot = positionY - constraints.Top;
+                camera.PositionY = constraints.Bottom + overshoot;
             }
-            else if (position.ScreenY > constraints.Bottom)
+            else if (positionY > constraints.Bottom)
             {
-                overshoot = (int)position.ScreenY - constraints.Bottom;
-                position.ScreenY = constraints.Top + overshoot;
+                overshoot = positionY - constraints.Bottom;
+                camera.PositionY = constraints.Top + overshoot;
             }
         }
 

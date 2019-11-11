@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 
 namespace SparkEngine.Components
 {
-    public class WorldCoordinate : Component
+    public struct WorldCoordinate : IComponent
     {
         public int CoordX { get; set; }
         public int CoordY { get; set; }

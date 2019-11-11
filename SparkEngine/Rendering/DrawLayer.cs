@@ -15,6 +15,11 @@
         public Vector2 Position { get; private set; }
 
         public Vector2 UnitSize { get; }
+
+        public Vector2 DrawOffset
+        {
+            get { return Position * UnitSize; }
+        }
         
         /*
 

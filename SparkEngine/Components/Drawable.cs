@@ -6,11 +6,9 @@
     using Microsoft.Xna.Framework.Graphics;
     using SparkEngine.Rendering;
 
-    public abstract class Drawable : Component
+    public struct Drawable : IComponent
     {
-        public Vector2 DrawPosition { get; }
-
-        //public LayerSortMethod LayerSortMethod { get; }
+        public Vector2 DrawOffset { get; set; }
 
         public int DrawLayer { get; }
     }

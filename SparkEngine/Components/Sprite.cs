@@ -7,8 +7,8 @@
     using System.Threading.Tasks;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
-    
-    public class Sprite : Drawable, IEquatable<Sprite>
+
+    public struct Sprite : IComponent
     {
         #region Constructors
 
@@ -18,11 +18,23 @@
             FrameSize = frameSize;
             Anchor = anchor;
             ColorMask = color ?? Color.White;
+
+            DrawPosition = default(Vector2);
+            DrawLayer = 0;
+
+            FrameX = 0;
+            FrameY = 0;
+
+            IsAnimated = frameSize.ToPoint() != texture.Bounds.Size;
         }
 
         #endregion
 
         #region Properties
+
+        public Vector2 DrawPosition { get; set; }
+
+        public int DrawLayer { get; set; }
 
         public Texture2D Texture { get; }
 
@@ -32,40 +44,20 @@
 
         public Color ColorMask { get; }
 
+        public bool IsAnimated { get; }
+
+        public int FrameX { get; set; }
+        
+        public int FrameY { get; set; }
+
         #endregion
 
         #region Methods
 
-        public override bool Equals(object obj)
+        public void SetFrames(int x, int y)
         {
-            return Equals(obj as Sprite);
-        }
-
-        public bool Equals(Sprite other)
-        {
-            if (other == null)
-            {
-                return false;
-            }
-
-            if (this == other)
-            {
-                return true;
-            }
-
-            return Texture == other.Texture
-                && FrameSize == other.FrameSize;
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                int hash = 17;
-                hash = hash * 23 + Texture?.GetHashCode() ?? 29;
-                hash = hash * 23 + FrameSize.GetHashCode();
-                return hash;
-            }
+            FrameX = x;
+            FrameY = y;
         }
 
         public static Sprite CreateIsometricSprite(Texture2D texture, Vector2 tileSize, Vector2 dimensions, int rotations = 1, int animationLength = 1)
@@ -83,6 +75,11 @@
             return new Sprite(texture, frameSize, anchor);
         }
 
+        public static Sprite CreateClone(Sprite sprite)
+        {
+            return CreateTileSprite(sprite.Texture, sprite.FrameSize, sprite.ColorMask);
+        }
+
         public static Sprite CreateTileSprite(Texture2D texture, int horizontalFrames = 1, int verticalFrames = 1, Color? color = null)
         {
             if (horizontalFrames <= 0 || verticalFrames <= 0)
@@ -92,6 +89,11 @@
 
             Vector2 frameSize = new Vector2(texture.Width / horizontalFrames, texture.Height / verticalFrames);
 
+            return CreateTileSprite(texture, frameSize, color);
+        }
+
+        public static Sprite CreateTileSprite(Texture2D texture, Vector2 frameSize, Color? color = null)
+        {
             return new Sprite(texture, frameSize, Vector2.Zero, color);
         }
 

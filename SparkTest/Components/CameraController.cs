@@ -12,7 +12,7 @@
     using SparkEngine.States;
     using SparkEngine.Input;
 
-    class CameraController : Component
+    class CameraController : IComponent
     {
 
         public CameraController(Camera camera)
