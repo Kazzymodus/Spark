@@ -11,7 +11,7 @@ namespace SparkEngine.Components
     {
         public ComponentBatch(params IComponent[] components)
         {
-            Components = components;
+            this.Components = components;
         }
 
         public static implicit operator ComponentBatch(IComponent[] components)
@@ -19,7 +19,7 @@ namespace SparkEngine.Components
             return new ComponentBatch(components);
         }
 
-        public IComponent[] Components { get; }
+        public IComponent[] Components;
 
         public IComponent this[int i]
         {
@@ -31,7 +31,21 @@ namespace SparkEngine.Components
             get => Components.Length;
         }
 
-        public bool Contains<T>()
+        public void AddComponent<T>(T component) where T : struct, IComponent
+        {
+            int newLength = Components.Length + 1;
+            IComponent[] oldArray = Components;
+            Components = new IComponent[newLength];
+
+            for (int i = 0; i < newLength - 1; i++)
+            {
+                Components[i] = oldArray[i];
+            }
+
+            Components[newLength - 1] = component;
+        }
+
+        public bool Contains<T>() where T : struct, IComponent
         {
             return Contains(typeof(T));
         }

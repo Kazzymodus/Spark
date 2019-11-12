@@ -23,18 +23,9 @@
             
         }
 
-        public override void UpdateComponents(GameState state, GameTime gameTime, InputHandler input)
+        public override void UpdateComponent(ref ArrayGrid grid, GameState state, GameTime gameTime, InputHandler input)
         {
-            ArrayGrid[] grids = Subscribers.GetComponentsByReference();
 
-            for (int i = 0; i < Subscribers.NextIndex; i++)
-            {
-                UpdateGrid(ref grids[i], state, gameTime, input);
-            }
-        }
-
-        public virtual void UpdateGrid(ref ArrayGrid grid, GameState state, GameTime gameTime, InputHandler input)
-        {
         }
 
         protected Point GetCursorTile(Vector2 gridPosition, Unit unit, Vector2 cameraPosition, Vector2 cursorPosition)
@@ -54,12 +45,12 @@
             return tile.ToPoint();
         }
 
-        public void DrawComponents(GameState state, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch, Matrix cameraTransform)
+        public void Draw(GameState state, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch, Matrix cameraTransform)
         {
             Vector2 cameraPosition = (Vector2)state.CameraPosition;
             Vector2[] layerOffsets = state.DrawLayers.GetLayerOffsets();
 
-            ArrayGrid[] grids = Subscribers.GetUpdateArray();
+            ArrayGrid[] grids = Subscribers.GetComponentsCompact();
 
             spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, cameraTransform);
 
@@ -94,7 +85,7 @@
                     endCoordinate.Y = MathHelper.Clamp(endCoordinate.Y, 0, grid.Height);
 
                     Vector2 tileOffset = startPosition + new Vector2(startCoordinate.X * grid.TileSize.X, startCoordinate.Y * grid.TileSize.Y);
-                    
+
                     for (int x = startCoordinate.X; x < endCoordinate.X; x++)
                     {
                         tileOffset.X += grid.TileSize.X;
@@ -130,7 +121,7 @@
                             DrawCell(grid[xIndex, yIndex].Batch.GetComponent<Sprite>(), spriteBatch, startPosition + new Vector2(grid.TileSize.X * x, grid.TileSize.Y * y));
                         }
                     }
-                
+
                 }
             }
         }

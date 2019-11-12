@@ -67,7 +67,19 @@
         {
             IsUpdating = true;
 
-            UpdateComponents(state, gameTime, input);
+            T[] components = Subscribers.GetComponentsByReference();
+            List<int> skipList = Subscribers.AvailableIndices;
+
+            for (int i = 0; i < Subscribers.NextIndex; i++)
+            {
+                if (skipList.Contains(i))
+                {
+                    skipList.Remove(i);
+                    continue;
+                }
+
+                UpdateComponent(ref components[i], state, gameTime, input);
+            }            
 
             IsUpdating = false;
 
@@ -98,7 +110,7 @@
             }
         }
 
-        public abstract void UpdateComponents(GameState state, GameTime gameTime, InputHandler input);
+        public abstract void UpdateComponent(ref T component, GameState state, GameTime gameTime, InputHandler input);
 
         public virtual void RegisterComponent(T component, int owner, GameState state)
         {

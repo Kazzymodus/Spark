@@ -13,40 +13,45 @@
 
         public ProtoEntity(params IComponent[] components)
         {
-            Components = components;
+            this.components = components;
         }
 
-        public IComponent[] Components { get; private set; }
+        private IComponent[] components;
 
         public ComponentBatch Batch
         {
-            get => Components;
+            get => components;
         }
 
-        public void AddComponent(IComponent component)
+        public ref IComponent[] GetComponentsByReference()
         {
-            int newLength = Components.Length + 1;
-            IComponent[] oldArray = Components;
-            Components = new IComponent[newLength];
+            return ref components;
+        }
+
+        public void AddComponent<T>(T component) where T : struct, IComponent
+        {
+            int newLength = components.Length + 1;
+            IComponent[] oldArray = components;
+            components = new IComponent[newLength];
 
             for (int i = 0; i < newLength - 1; i++)
             {
-                Components[i] = oldArray[i];
+                components[i] = oldArray[i];
             }
 
-            Components[newLength - 1] = component;
+            components[newLength - 1] = component;
         }
 
         public override bool Equals(object obj)
         {
-            if (obj == null || !(obj is ProtoEntity protoEntity) || Components.Length != protoEntity.Components.Length)
+            if (obj == null || !(obj is ProtoEntity protoEntity) || components.Length != protoEntity.components.Length)
             {
                 return false;
             }
 
-            for (int i = 0; i < Components.Length; i++)
+            for (int i = 0; i < components.Length; i++)
             {
-                if (!Components[i].Equals(protoEntity.Components[i]))
+                if (!components[i].Equals(protoEntity.components[i]))
                 {
                     return false;
                 }
@@ -61,9 +66,9 @@
             {
                 int hash = 17;
 
-                for (int i = 0; i < Components.Length; i++)
+                for (int i = 0; i < components.Length; i++)
                 {
-                    hash = hash * 23 + Components[i]?.GetHashCode() ?? 29;
+                    hash = hash * 23 + components[i]?.GetHashCode() ?? 29;
                 }
 
                 return hash;

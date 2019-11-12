@@ -11,7 +11,7 @@
     {
         protected readonly int[] indexTable;
         public int NextIndex { get; private set; }
-        protected List<int> AvailableIndices { get; } = new List<int>();
+        internal List<int> AvailableIndices { get; } = new List<int>();
 
         public ComponentPool(int maxComponents, int maxEntities)
         {
@@ -77,17 +77,20 @@
             return HasComponentOfEntity(entity) ? (T?)components[index] : null;
         }
 
-        public T[] GetUpdateArray()
+        public T[] GetComponentsCompact()
         {
             int length = NextIndex - AvailableIndices.Count;
 
             T[] updateArray = new T[length];
             int j = 0;
 
+            List<int> skipList = AvailableIndices;
+
             for (int i = 0; i < NextIndex; i++)
             {
-                if (AvailableIndices.Contains(i))
+                if (skipList.Contains(i))
                 {
+                    skipList.Remove(i);
                     continue;
                 }
 
@@ -98,7 +101,7 @@
             return updateArray;
         }
 
-        public ref T[] GetComponentsByReference()
+        internal ref T[] GetComponentsByReference()
         {
             return ref components;
         }

@@ -18,17 +18,7 @@ namespace SparkEngine.Systems
 
         }
 
-        public override void UpdateComponents(GameState state, GameTime gameTime, InputHandler input)
-        {
-            Camera[] cameras = Subscribers.GetComponentsByReference();
-
-            for (int i = 0; i < cameras.Length; i++)
-            {
-                UpdateCameras(ref cameras[i], state, gameTime, input);
-            }            
-        }
-
-        public virtual void UpdateCameras(ref Camera camera, GameState state, GameTime gameTime, InputHandler input)
+        public override void UpdateComponent(ref Camera camera, GameState state, GameTime gameTime, InputHandler input)
         {
             if (camera.ConstraintMode == CameraConstraints.Constrained)
             {

@@ -50,7 +50,7 @@
             {
                 for (int y = 0; y < Height; y++)
                 {
-                    if (!((ComponentBatch)Cells[x, y].Components).ContainsAll(componentTypes))
+                    if (!Cells[x, y].Batch.ContainsAll(componentTypes))
                     {
                         return (bool)(IsHomogenous = false);
                     }

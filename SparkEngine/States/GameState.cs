@@ -210,7 +210,7 @@
             {
                 if (system is IDrawSystem drawSystem)
                 {
-                    drawSystem.DrawComponents(this, graphicsDevice, spriteBatch, cameraTransform);
+                    drawSystem.Draw(this, graphicsDevice, spriteBatch, cameraTransform);
                 }
             }
         }

@@ -20,7 +20,7 @@
 
         }
 
-        public override void UpdateComponents(GameState state, GameTime gameTime, InputHandler input)
+        public override void UpdateComponent(ref Sprite sprite, GameState state, GameTime gameTime, InputHandler input)
         {
         }
 
@@ -93,7 +93,7 @@
         //    OnAddEntity(entity, state);
         //}
 
-        public void DrawComponents(GameState state, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch, Matrix cameraTransform)
+        public void Draw(GameState state, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch, Matrix cameraTransform)
         {
             Vector2[] layerOffsets = new Vector2[state.DrawLayers.Count];
 
@@ -104,7 +104,7 @@
 
             spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, cameraTransform);
 
-            Sprite[] sprites = Subscribers.GetUpdateArray();
+            Sprite[] sprites = Subscribers.GetComponentsCompact();
 
             for (int i = 0; i < Subscribers.NextIndex; i++)
             {
