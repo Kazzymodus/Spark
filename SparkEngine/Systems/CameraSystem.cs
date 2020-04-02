@@ -18,7 +18,7 @@ namespace SparkEngine.Systems
 
         }
 
-        public override void UpdateComponent(ref Camera camera, GameState state, GameTime gameTime, InputHandler input)
+        protected internal override void UpdateComponent(ref Camera camera, int index, UpdateInfo updateInfo)
         {
             if (camera.ConstraintMode == CameraConstraints.Constrained)
             {
@@ -31,7 +31,7 @@ namespace SparkEngine.Systems
             camera.Transform = Matrix.CreateTranslation(new Vector3(-camera.PositionX, -camera.PositionY, 0f));
         }
 
-        public override void OnRemoveEntity(int entity, GameState state)
+        public override void OnRemoveComponent(ref Camera component, int entity, GameState state)
         {
             if (state.RenderCamera == entity)
             {

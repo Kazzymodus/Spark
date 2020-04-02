@@ -15,28 +15,41 @@
     using SparkEngine.Utilities;
     using SparkEngine.Systems.Batching;
     
-    public class ArrayGridSystem : ComponentSystem<ArrayGrid>, IDrawSystem
+    public class ScreenGridSystem : ComponentSystem<ScreenGrid>, IDrawSystem
     {
-        public ArrayGridSystem(int maxSubs = GameState.MaxEntities)
+        public ScreenGridSystem(int maxSubs = GameState.MaxEntities)
             : base(maxSubs)
         {
             
         }
 
-        public override void UpdateComponent(ref ArrayGrid grid, GameState state, GameTime gameTime, InputHandler input)
+        protected internal override void Update(UpdateInfo updateInfo)
         {
-
+            base.Update(updateInfo);
         }
 
-        protected Point GetCursorTile(Vector2 gridPosition, Unit unit, Vector2 cameraPosition, Vector2 cursorPosition)
+        protected internal override void UpdateComponent(ref ScreenGrid grid, int index, UpdateInfo updateInfo)
+        {
+            //Sprite[,] cells = grid.Cells;
+
+            //for (int x = 0; x < cells.GetLength(0); x++)
+            //{
+            //    for (int y = 0; y < cells.GetLength(1); y++)
+            //    {
+            //        cells[x, y];
+            //    }
+            //}
+        }
+
+        protected Point GetCursorTile(Vector2 gridPosition, Vector2 unit, Vector2 cameraPosition, Vector2 cursorPosition)
         {
             Vector2 tile = -gridPosition + cameraPosition + cursorPosition;
-            tile.X /= unit.LengthX;
+            tile.X /= unit.X;
             if (tile.X < 0)
             {
                 tile.X--;
             }
-            tile.Y /= unit.LengthY;
+            tile.Y /= unit.Y;
             if (tile.Y < 0)
             {
                 tile.Y--;
@@ -45,26 +58,92 @@
             return tile.ToPoint();
         }
 
-        public void Draw(GameState state, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch, Matrix cameraTransform)
+        public ScreenGrid CreateScreenFillingGrid(Texture2D texture, Point screenSize, Vector2 cellSize, Perspective perspective)
         {
-            Vector2 cameraPosition = (Vector2)state.CameraPosition;
-            Vector2[] layerOffsets = state.DrawLayers.GetLayerOffsets();
+            if (perspective == Perspective.Isometric)
+                throw new NotImplementedException();
 
-            ArrayGrid[] grids = Subscribers.GetComponentsCompact();
+            int width = (int)(screenSize.X / cellSize.X + 0.5f) - 2;
+            int height = (int)(screenSize.Y / cellSize.Y + 0.5f) + 1;
 
-            spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, cameraTransform);
+            return new ScreenGrid(texture, width, height, cellSize, perspective);
+
+            //Random rand = new Random();
+            //byte[,] frames = new byte[width, height];
+            //for(int x = 0; x < width; x++)
+            //{
+            //    for (int y= 0; y < height; y++)
+            //    {
+            //        frames[x, y] = (byte)rand.Next(10);
+            //    }
+            //}
+            //return new ScreenTextureGrid(texture, frames, cellSize, perspective);
+        }
+
+        public void Draw(DrawInfo drawInfo)
+        {
+            Vector2 cameraPosition = (Vector2)drawInfo.State.CameraPosition;
+            Vector2[] layerOffsets = drawInfo.State.DrawLayers.GetLayerOffsets();
+
+            ScreenGrid[] grids = Subscribers.GetComponentsCompact();
+
+            drawInfo.SpriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, drawInfo.CameraTransform);
 
             for (int i = 0; i < grids.Length; i++)
             {
-                DrawGrid(grids[i], graphicsDevice, spriteBatch, cameraPosition, layerOffsets);
+                DrawGrid(grids[i], drawInfo, cameraPosition, layerOffsets);
             }
 
-            spriteBatch.End();
+            drawInfo.SpriteBatch.End();
         }
 
-        public void DrawGrid(ArrayGrid grid, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch, Vector2 cameraPosition, Vector2[] layerOffsets)
+        private void DrawGrid(ScreenGrid grid, DrawInfo drawInfo, Vector2 cameraPosition, Vector2[] layerOffsets)
         {
-            Point viewportSize = new Point(graphicsDevice.Viewport.Width, graphicsDevice.Viewport.Height);
+            float xOverflow = cameraPosition.X % grid.CellSize.X;
+            float yOverflow = cameraPosition.Y % grid.CellSize.Y;
+
+            Vector2 startPosition = cameraPosition - new Vector2(xOverflow, yOverflow);// - grid.CellSize;
+            SpriteBatch spriteBatch = drawInfo.SpriteBatch;
+            
+            Rectangle[] sourceRectangles = new Rectangle[(int)(grid.Texture.Width / grid.CellSize.X)];
+
+            for (int i = 0; i < sourceRectangles.Length; i++)
+            {
+                sourceRectangles[i] = new Rectangle((int)grid.CellSize.X * i, 0, (int)grid.CellSize.X, (int)grid.CellSize.Y);
+            }
+
+            if (grid.Perspective == Perspective.Standard)
+            {
+                Vector2 tileOffset = startPosition;
+
+                int xIndex = grid.XHead;
+                int yIndex = grid.YHead;
+
+                for (int x = 0; x < grid.Width; x++)
+                {
+                    for (int y = 0; y < grid.Height; y++)
+                    {
+                        spriteBatch.Draw(grid.Texture, tileOffset, sourceRectangles[grid.FrameGrid[xIndex, yIndex]], Color.White /*new Color(xIndex / (float)grid.Width, 1f, 1f)*/);
+                        //DrawCell(grid[x, y], spriteBatch, tileOffset);
+                        tileOffset.Y += grid.CellSize.Y;
+                        if (++yIndex >= grid.Height)
+                        {
+                            yIndex = 0;
+                        }
+                    }
+
+                    tileOffset.X += grid.CellSize.X;
+                    tileOffset.Y = startPosition.Y;
+                    if (++xIndex >= grid.Width)
+                    {
+                        xIndex = 0;
+                        //return;
+                    }
+                }
+            }
+            /*
+
+            Point viewportSize = new Point(drawInfo.GraphicsDevice.Viewport.Width, drawInfo.GraphicsDevice.Viewport.Height);
 
             Vector2 layerOffset = layerOffsets[grid.DrawLayer];
 
@@ -74,6 +153,7 @@
             Point endCoordinate = startCoordinate + visibleCoordinates.Size;
 
             Vector2 startPosition = grid.Position + layerOffset;
+            SpriteBatch spriteBatch = drawInfo.SpriteBatch;
 
             if (grid.Perspective == Perspective.Standard)
             {
@@ -88,14 +168,14 @@
 
                     for (int x = startCoordinate.X; x < endCoordinate.X; x++)
                     {
-                        tileOffset.X += grid.TileSize.X;
-
                         for (int y = startCoordinate.Y; y < endCoordinate.Y; y++)
                         {
+                            DrawCell(grid[x, y], spriteBatch, tileOffset);
                             tileOffset.Y += grid.TileSize.Y;
-
-                            DrawCell(grid[x, y].Batch.GetComponent<Sprite>(), spriteBatch, tileOffset);
                         }
+
+                        tileOffset.X += grid.TileSize.X;
+                        tileOffset.Y = startPosition.Y + startCoordinate.Y * grid.TileSize.Y;
                     }
 
                 }
@@ -118,12 +198,17 @@
                                 yIndex += grid.Height;
                             }
 
-                            DrawCell(grid[xIndex, yIndex].Batch.GetComponent<Sprite>(), spriteBatch, startPosition + new Vector2(grid.TileSize.X * x, grid.TileSize.Y * y));
+                            DrawCell(grid[xIndex, yIndex], spriteBatch, startPosition + new Vector2(grid.TileSize.X * x, grid.TileSize.Y * y));
                         }
                     }
-
                 }
             }
+            */
+        }
+
+        private void DrawScreenGrid(ArrayGrid<Sprite> grid, DrawInfo drawInfo, Vector2 cameraPosition)
+        {
+            
         }
 
         private void DrawCell(Sprite sprite, SpriteBatch spriteBatch, Vector2 offset)
@@ -144,7 +229,7 @@
             spriteBatch.Draw(sprite.Texture, sprite.DrawPosition + offset, sourceRectangle, sprite.ColorMask);
         }
 
-        private Rectangle GetVisibleTiles(ArrayGrid grid, Vector2 cameraPosition, Point viewportSize, Vector2 layerOffset)
+        private Rectangle GetVisibleTiles(ArrayGrid<Sprite> grid, Vector2 cameraPosition, Point viewportSize, Vector2 layerOffset)
         {
             Vector2 gridPosition = grid.Position + layerOffset;
 

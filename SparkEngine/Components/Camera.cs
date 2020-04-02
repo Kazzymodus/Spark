@@ -26,6 +26,7 @@
         #region Properties
         
         public float PositionX { get; set; }
+
         public float PositionY { get; set; }
 
         public CameraConstraints ConstraintMode { get; set; }

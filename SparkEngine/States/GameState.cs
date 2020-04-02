@@ -19,8 +19,6 @@
 
         public const int MaxEntities = 1000;
 
-        private readonly List<ComponentSystem> componentSystems = new List<ComponentSystem>();
-
         private readonly List<int> availableEntityIdPool = new List<int>();
 
         private int nextEntityId = 1;
@@ -52,6 +50,8 @@
         public string Name { get; }
 
         public StateActivityLevel ActivityLevel { get; set; }
+
+        public SystemCollection ComponentSystems { get; } = new SystemCollection();
 
         public int RenderCamera { get; private set; }
 
@@ -98,7 +98,7 @@
 
         public void CreateComponentForEntity<T>(T template, int entity) where T : struct, IComponent
         {
-            foreach(ComponentSystem system in componentSystems)
+            foreach(ComponentSystem system in ComponentSystems)
             {
                 if (system is ComponentSystem<T> validSystem)
                 {
@@ -119,11 +119,11 @@
 
         public void DestroyEntity(int entity)
         {
-            foreach (ComponentSystem system in componentSystems)
+            foreach (ComponentSystem system in ComponentSystems)
             {
                 if (system.HasComponentOfEntity(entity))
                 {
-                    system.DestroyComponent(entity, this);
+                    //system.DestroyComponent(entity, this);
                 }
             }
 
@@ -132,12 +132,12 @@
 
         public void RegisterComponentSystem(ComponentSystem system)
         {
-            componentSystems.Add(system);
+            ComponentSystems.Add(system);
         }
 
         public T GetComponentOfEntity<T>(int entity) where T : struct, IComponent
         {
-            foreach (ComponentSystem system in componentSystems)
+            foreach (ComponentSystem system in ComponentSystems)
             {
                 if (system is ComponentSystem<T> compSys)
                 {
@@ -163,7 +163,7 @@
                 return;
             }
 
-            foreach (ComponentSystem system in componentSystems)
+            foreach (ComponentSystem system in ComponentSystems)
             {
                 if (system is CameraSystem camSystem)
                 {
@@ -188,12 +188,24 @@
         {
             RenderCamera = 0;
         }
+
+        public void ScheduleGlobalTask<T>(int task, int source, UpdateInfo updateInfo) where T : ComponentSystem
+        {
+            T system = (T)ComponentSystems[typeof(T)];
+        }
+
+        public void ScheduleTask<T>(int task, int source, int target, UpdateInfo updateInfo) where T : ComponentSystem
+        {
+            ((T)ComponentSystems[typeof(T)]).ScheduleTask(task, source, target, updateInfo);
+        }
         
         internal void Update(GameTime gameTime, InputHandler input)
         {
-            foreach (ComponentSystem system in componentSystems)
+            UpdateInfo updateInfo = new UpdateInfo(this, gameTime, input);
+
+            foreach (ComponentSystem system in ComponentSystems)
             {
-                system.Update(this, gameTime, input);
+                system.Update(updateInfo);
             }
         }
 
@@ -204,13 +216,13 @@
                 return;
             }
 
-            Matrix cameraTransform = GetComponentOfEntity<Camera>(RenderCamera).Transform;
+            DrawInfo drawInfo = new DrawInfo(this, graphicsDevice, spriteBatch, GetComponentOfEntity<Camera>(RenderCamera).Transform);
 
-            foreach (ComponentSystem system in componentSystems)
+            foreach (ComponentSystem system in ComponentSystems)
             {
                 if (system is IDrawSystem drawSystem)
                 {
-                    drawSystem.Draw(this, graphicsDevice, spriteBatch, cameraTransform);
+                    drawSystem.Draw(drawInfo);
                 }
             }
         }

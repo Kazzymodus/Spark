@@ -24,6 +24,8 @@
     <DefineConstants>DEBUG;TRACE;WINDOWS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -62,6 +64,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Components\ArrayGrid.cs" />
+    <Compile Include="Components\BitMaskGrid.cs" />
+    <Compile Include="Components\ScreenGrid.cs" />
     <Compile Include="States\ComponentPool.cs" />
     <Compile Include="Systems\Batching\CellBatch.cs" />
     <Compile Include="Systems\Batching\CellData.cs" />
@@ -80,7 +84,6 @@
     <Compile Include="Debug\DebugTile.cs" />
     <Compile Include="Debug\DebugTiler.cs" />
     <Compile Include="Assets\AssetDictionary.cs" />
-    <Compile Include="Entities\Entity.cs" />
     <Compile Include="Input\InputHandler.cs" />
     <Compile Include="Input\MouseButtons.cs" />
     <Compile Include="Level\Map.cs" />
@@ -95,6 +98,11 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Components\Camera.cs" />
     <Compile Include="Systems\Batching\GridBatcher.cs" />
+    <Compile Include="Systems\DrawInfo.cs" />
+    <Compile Include="Systems\SystemCollection.cs" />
+    <Compile Include="Systems\Tasks\SystemTask.cs" />
+    <Compile Include="Systems\Tasks\TaskManager.cs" />
+    <Compile Include="Systems\UpdateInfo.cs" />
     <Compile Include="Utilities\Projector.cs" />
     <Compile Include="Components\Sprite.cs" />
     <Compile Include="Rendering\TileMode.cs" />
@@ -104,7 +112,7 @@
     <Compile Include="States\StateActivityLevel.cs" />
     <Compile Include="States\StateManager.cs" />
     <Compile Include="Systems\IDrawSystem.cs" />
-    <Compile Include="Systems\ArrayGridSystem.cs" />
+    <Compile Include="Systems\ScreenGridSystem.cs" />
     <Compile Include="Systems\SpriteDrawSystem.cs" />
     <Compile Include="Time\OnTickEventArgs.cs" />
     <Compile Include="Time\TemporaryTicker.cs" />

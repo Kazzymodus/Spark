@@ -20,7 +20,12 @@
 
         }
 
-        public override void UpdateComponent(ref Sprite sprite, GameState state, GameTime gameTime, InputHandler input)
+        protected internal override void Update(UpdateInfo updateInfo)
+        {
+            return;
+        }
+
+        protected internal override void UpdateComponent(ref Sprite sprite, int index, UpdateInfo updateInfo)
         {
         }
 
@@ -93,28 +98,28 @@
         //    OnAddEntity(entity, state);
         //}
 
-        public void Draw(GameState state, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch, Matrix cameraTransform)
+        public void Draw(DrawInfo drawInfo)
         {
-            Vector2[] layerOffsets = new Vector2[state.DrawLayers.Count];
+            Vector2[] layerOffsets = new Vector2[drawInfo.State.DrawLayers.Count];
 
             for (int i = 0; i < layerOffsets.Length; i++)
             {
-                layerOffsets[i] = state.DrawLayers[i].DrawOffset;
+                layerOffsets[i] = drawInfo.State.DrawLayers[i].DrawOffset;
             }
 
-            spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, cameraTransform);
+            drawInfo.SpriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, drawInfo.CameraTransform);
 
             Sprite[] sprites = Subscribers.GetComponentsCompact();
 
-            for (int i = 0; i < Subscribers.NextIndex; i++)
+            for (int i = 0; i < sprites.Length; i++)
             {
-                DrawSprite(state, spriteBatch, sprites[i], layerOffsets);
+                DrawSprite(sprites[i], drawInfo, layerOffsets);
             }
 
-            spriteBatch.End();
+            drawInfo.SpriteBatch.End();
         }
 
-        public void DrawSprite(GameState state, SpriteBatch spriteBatch, Sprite sprite, Vector2[] layerOffsets)
+        public void DrawSprite(Sprite sprite, DrawInfo drawInfo, Vector2[] layerOffsets)
         {
             Rectangle sourceRectangle;
 
@@ -129,7 +134,7 @@
                 sourceRectangle = new Rectangle(Point.Zero, sprite.FrameSize.ToPoint());
             }
 
-            spriteBatch.Draw(sprite.Texture, sprite.DrawPosition + layerOffsets[sprite.DrawLayer], sourceRectangle, sprite.ColorMask);
+            drawInfo.SpriteBatch.Draw(sprite.Texture, sprite.DrawPosition + layerOffsets[sprite.DrawLayer], sourceRectangle, sprite.ColorMask);
         }
 
         //public Vector2 GetDrawPosition(Sprite sprite)

@@ -19,66 +19,66 @@
 
         private const int MaxUniqueTiles = 128;
 
-        private BatchedGrid BatchGrid(ArrayGrid grid)
-        {
-            int tileAmount = 0;
+        //    private BatchedGrid BatchGrid(ArrayGrid grid)
+        //    {
+        //        int tileAmount = 0;
 
-            try
-            {
-                tileAmount = grid.Width * grid.Height;
-            }
-            catch (OverflowException)
-            {
-                throw new ArgumentException("The grid is too large to batch.");
-            }
+        //        try
+        //        {
+        //            tileAmount = grid.Width * grid.Height;
+        //        }
+        //        catch (OverflowException)
+        //        {
+        //            throw new ArgumentException("The grid is too large to batch.");
+        //        }
 
-            if (tileAmount > MaxTileAmount)
-            {
+        //        if (tileAmount > MaxTileAmount)
+        //        {
 
-                throw new ArgumentException("The grid is too large to batch.");
-            }
+        //            throw new ArgumentException("The grid is too large to batch.");
+        //        }
 
-            int bitmapDimensions = 8;
+        //        int bitmapDimensions = 8;
 
-            while (grid.Width > bitmapDimensions && grid.Height > bitmapDimensions && bitmapDimensions < 64)
-            {
-                bitmapDimensions *= 2;
-            }
+        //        while (grid.Width > bitmapDimensions && grid.Height > bitmapDimensions && bitmapDimensions < 64)
+        //        {
+        //            bitmapDimensions *= 2;
+        //        }
 
-            int maxBatches = ((bitmapDimensions * bitmapDimensions) + BatchCost) / BatchCost; 
+        //        int maxBatches = ((bitmapDimensions * bitmapDimensions) + BatchCost) / BatchCost; 
 
-            BatchTracker[] trackers = new BatchTracker[MaxUniqueTiles];
+        //        BatchTracker[] trackers = new BatchTracker[MaxUniqueTiles];
 
-            int nextIndex = 0;
+        //        int nextIndex = 0;
 
-            for (int x = 0; x < grid.Width; x++)
-            {
-                for (int y = 0; y < grid.Height; y++)
-                {
-                    ProtoEntity currentTile = grid[x,y];
-                    int trackerIndex = nextIndex;
+        //        for (int x = 0; x < grid.Width; x++)
+        //        {
+        //            for (int y = 0; y < grid.Height; y++)
+        //            {
+        //                ProtoEntity currentTile = grid[x,y];
+        //                int trackerIndex = nextIndex;
 
-                    for (int i = 0; i < trackerIndex; i++)
-                    {
-                        if (trackers[i].Stamp.Equals(currentTile))
-                        {
-                            trackerIndex = i;
-                        }
-                    }
+        //                for (int i = 0; i < trackerIndex; i++)
+        //                {
+        //                    if (trackers[i].Stamp.Equals(currentTile))
+        //                    {
+        //                        trackerIndex = i;
+        //                    }
+        //                }
 
-                    BatchTracker tracker = trackerIndex == nextIndex ? new BatchTracker(currentTile, x, y) : trackers[trackerIndex];
+        //                BatchTracker tracker = trackerIndex == nextIndex ? new BatchTracker(currentTile, x, y) : trackers[trackerIndex];
 
-                    if (!tracker.BatchOpen)
-                    {
-                        tracker.OpenBatch();
-                    }
+        //                if (!tracker.BatchOpen)
+        //                {
+        //                    tracker.OpenBatch();
+        //                }
 
-                    //tracker.AddTile
-                }
-            }
+        //                //tracker.AddTile
+        //            }
+        //        }
 
-            throw new Exception("Whatever");
-        }
+        //        throw new Exception("Whatever");
+        //    }
 
     }
 

@@ -9,7 +9,7 @@
 
     public abstract class ComponentPool
     {
-        protected readonly int[] indexTable;
+        protected readonly ushort[] entityTable;
         public int NextIndex { get; private set; }
         internal List<int> AvailableIndices { get; } = new List<int>();
 
@@ -20,12 +20,40 @@
                 throw new ArgumentException($"maxComponents ({maxComponents}) can not be higher than maxEntities ({maxEntities})");
             }
 
-            indexTable = new int[maxEntities];
+            if (maxComponents > ushort.MaxValue || maxEntities > ushort.MaxValue)
+            {
+                throw new ArgumentException($"Both maxComponents ({maxComponents}) and maxEntities ({maxEntities}) must be lower than {ushort.MaxValue}");
+            }
+
+            entityTable = new ushort[maxComponents];
+        }
+
+        public int GetComponentIndexOfEntity(int entity)
+        {
+            for (int index = 0; index < NextIndex; index++)
+            {
+                if (entityTable[index] == entity)
+                {
+                    return index;
+                }
+            }
+
+            return -1;
+        }
+
+        public bool HasComponentOfEntity(int entity)
+        {
+            return GetComponentIndexOfEntity(entity) != -1;
+        }
+
+        public int GetEntityOfComponentIndex(int index)
+        {
+            return entityTable[index];
         }
 
         protected int GetNewIndex()
         {
-            int index = -1;
+            int index;
 
             if (AvailableIndices.Count > 0)
             {
@@ -45,6 +73,11 @@
             if (index == NextIndex - 1)
             {
                 NextIndex--;
+                
+                while (AvailableIndices.Contains(NextIndex - 1))
+                {
+                    AvailableIndices.Remove(--NextIndex);
+                }
             }
             else
             {
@@ -55,34 +88,44 @@
 
     public class ComponentPool<T> : ComponentPool where T : struct, IComponent
     {
-        private T[] components;
+        internal T[] Components { get; }
 
         public ComponentPool(int maxComponents, int maxEntities)
             : base(maxComponents, maxEntities)
         {
-            components = new T[maxComponents];
+            Components = new T[maxComponents];
         }
 
-        public bool HasComponentOfEntity(int entity)
+        public ref T GetComponentByRef(int entity)
         {
-            int index = indexTable[entity];
+            int index = GetComponentIndexOfEntity(entity);
 
-            return index < NextIndex && !AvailableIndices.Contains(entity);
+            if (index == -1)
+            {
+                throw new ArgumentException($"Entity {entity} does not have an associated component of type {typeof(T)}");
+            }
+
+            return ref Components[index];
         }
 
         public T? GetComponent(int entity)
         {
-            int index =  indexTable[entity];
+            int index = GetComponentIndexOfEntity(entity);
 
-            return HasComponentOfEntity(entity) ? (T?)components[index] : null;
+            if (index == -1)
+            {
+                return null;
+            }
+
+            return (T?)Components[index];
         }
 
         public T[] GetComponentsCompact()
         {
             int length = NextIndex - AvailableIndices.Count;
 
-            T[] updateArray = new T[length];
-            int j = 0;
+            T[] compactArray = new T[length];
+            int compactIndex = 0;
 
             List<int> skipList = AvailableIndices;
 
@@ -94,37 +137,41 @@
                     continue;
                 }
 
-                updateArray[j] = components[i];
-                j++;
+                compactArray[compactIndex] = Components[i];
+                compactIndex++;
             }
 
-            return updateArray;
+            return compactArray;
         }
 
-        internal ref T[] GetComponentsByReference()
+        public T? this[int entity]
         {
-            return ref components;
-        }
-
-        public T this[int entity]
-        {
-            get { return components[indexTable[entity]]; }
+            get => GetComponent(entity);
         }
 
         public void Add(T component, int owner)
         {
             int index = GetNewIndex();
-            components[index] = component;
-            indexTable[owner] = index;
+            Components[index] = component;
+            entityTable[index] = (ushort)owner;
         }
 
         public void Remove(int entity)
         {
-            int index = indexTable[entity];
+            int index;
 
-            components[index] = default(T);
+            for (index = 0; index < NextIndex; index++)
+            {
+                if (entityTable[index] == entity)
+                {
+                    Components[index] = default(T);
+                    entityTable[index] = 0;
+                    ClearIndex(index);
+                    return;
+                }
+            }
 
-            ClearIndex(index);
+            Console.WriteLine($"{this} does not have a component belonging to entity {entity}.");
         }
     }
 }

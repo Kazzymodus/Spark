@@ -1,5 +1,6 @@
 ﻿namespace SparkEngine.Input
 {
+    using System.Linq;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Input;
 
@@ -112,6 +113,16 @@
         public bool IsKeyReleased(Keys key)
         {
             return keyboardState.IsKeyUp(key) && oldKeyboardState.IsKeyDown(key);
+        }
+
+        public Keys[] GetHeldKeys()
+        {
+            return keyboardState.GetPressedKeys();
+        }
+
+        public Keys[] GetPressedKeys()
+        {
+            return keyboardState.GetPressedKeys().Except(oldKeyboardState.GetPressedKeys()).ToArray();
         }
 
         internal void Update()

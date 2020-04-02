@@ -13,18 +13,29 @@
     using SparkEngine.Entities;
     using SparkEngine.Rendering;
     using SparkEngine.States;
+    using SparkEngine.Systems.Tasks;
 
     public abstract class ComponentSystem
     {
-        public bool IsUpdating { get; protected set; }
-        
         protected readonly List<int> pendingRemovals = new List<int>();
+
+        public ComponentSystem(int maxTasks)
+        {
+            TaskManager = new TaskManager(null, maxTasks);
+        }
+
+        public bool IsUpdating { get; protected set; }
+
+        public TaskManager TaskManager { get; protected set; }
+    
+        public void ScheduleTask(int task, int source, int target, UpdateInfo updateInfo)
+        {
+            TaskManager.ScheduleTask(task, source, target, updateInfo);
+        }
 
         public abstract bool HasComponentOfEntity(int owner);
 
-        public abstract void DestroyComponent(int entity, GameState gameState);
-
-        internal abstract void Update(GameState state, GameTime gameTime, InputHandler input);
+        protected internal abstract void Update(UpdateInfo updateInfo);
     }
 
     public abstract class ComponentSystem<T> : ComponentSystem where T : struct, IComponent
@@ -33,17 +44,30 @@
 
         private Dictionary<int, T> pendingAdds = new Dictionary<int, T>();
 
-        public ComponentSystem(int maxSubs = GameState.MaxEntities)
+        public ComponentSystem(int maxSubs = GameState.MaxEntities, int maxTasks = 0)
+            : base(maxTasks)
         {
             Subscribers = new ComponentPool<T>(maxSubs, GameState.MaxEntities);
         }
+
+        //public ComponentSystem(int maxSubs = GameState.MaxEntities, Action<>)
 
         public T? GetComponent(int entity)
         {
             return Subscribers.GetComponent(entity);
         }
 
-        public override bool HasComponentOfEntity(int entity)
+        public ref T GetComponentByReference(int entity)
+        {
+            return ref Subscribers.GetComponentByRef(entity);
+        }
+
+        public T[] GetComponents()
+        {
+            return Subscribers.GetComponentsCompact();
+        }
+
+        public sealed override bool HasComponentOfEntity(int entity)
         {
             return Subscribers.HasComponentOfEntity(entity);
         }
@@ -53,21 +77,21 @@
             RegisterComponent(template, entity, state);
         }
 
-        public virtual void OnAddEntity(int entity, GameState state)
+        public virtual void OnAddComponent(ref T component, int owner, GameState gameState)
         {
 
         }
 
-        public virtual void OnRemoveEntity(int entity, GameState state)
+        public virtual void OnRemoveComponent(ref T component, int entity, GameState state)
         {
 
         }
 
-        internal override void Update(GameState state, GameTime gameTime, InputHandler input)
+        protected internal override void Update(UpdateInfo updateInfo)
         {
             IsUpdating = true;
 
-            T[] components = Subscribers.GetComponentsByReference();
+            T[] components = Subscribers.Components;
             List<int> skipList = Subscribers.AvailableIndices;
 
             for (int i = 0; i < Subscribers.NextIndex; i++)
@@ -78,8 +102,11 @@
                     continue;
                 }
 
-                UpdateComponent(ref components[i], state, gameTime, input);
-            }            
+                UpdateComponent(ref components[i], i, updateInfo);
+            }
+
+            TaskManager.ExecuteTasks();
+            TaskManager.ResetTasks();
 
             IsUpdating = false;
 
@@ -110,10 +137,11 @@
             }
         }
 
-        public abstract void UpdateComponent(ref T component, GameState state, GameTime gameTime, InputHandler input);
+        protected internal abstract void UpdateComponent(ref T component, int index, UpdateInfo updateInfo);
 
         public virtual void RegisterComponent(T component, int owner, GameState state)
         {
+            OnAddComponent(ref component, owner, state);
             if (IsUpdating)
             {
                 pendingAdds.Add(owner, component);
@@ -122,11 +150,11 @@
             {
                 AddComponent(component, owner);
             }
-            OnAddEntity(owner, state);
         }
 
-        public override void DestroyComponent(int owner, GameState state)
+        public virtual void DestroyComponent(T component, int owner, GameState state)
         {
+            OnRemoveComponent(ref component, owner, state);
             if (IsUpdating)
             {
                 pendingRemovals.Add(owner);
@@ -135,7 +163,6 @@
             {
                 RemoveComponent(owner);
             }
-            OnRemoveEntity(owner, state);
         }
 
         private void AddComponent(T component, int owner)

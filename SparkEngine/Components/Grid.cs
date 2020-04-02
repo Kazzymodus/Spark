@@ -18,8 +18,11 @@
         }
 
         public int Width { get; }
+
         public int Height { get; }
+
         public Perspective Perspective { get; }
+
         public bool WrapAround { get; }
 
         public bool IsPointWithinBounds(int x, int y)

@@ -5,17 +5,15 @@
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
-    using SparkEngine.Entities;
     using Microsoft.Xna.Framework;
 
-    public struct ArrayGrid : IComponent
+    public struct ArrayGrid<T> : IComponent where T : struct, IComponent
     {
-        public ArrayGrid(Perspective perspective, ProtoEntity[,] grid, Vector2 tileSize, bool wrapAround, bool? isHomogenous = null)
+        public ArrayGrid(Perspective perspective, T[,] grid, Vector2 tileSize, bool wrapAround = false, bool isScreenGrid = false)
         {
             Position = Vector2.Zero;
 
             Cells = grid;
-            IsHomogenous = isHomogenous;
 
             Width = grid.GetLength(0);
             Height = grid.GetLength(1);
@@ -25,39 +23,31 @@
 
             Perspective = perspective;
             WrapAround = wrapAround;
+            IsScreenGrid = isScreenGrid;
         }
 
         public Vector2 Position { get; set; }
+
         public int Width { get; }
+
         public int Height { get; }
+
         public Vector2 TileSize { get; }
+
         public int DrawLayer { get; }
+
         public Perspective Perspective { get; }
+
         public bool WrapAround { get; }
 
-        public ProtoEntity this[int x, int y]
+        public bool IsScreenGrid { get; }
+
+        public T[,] Cells { get; }
+
+        public T this[int x, int y]
         {
             get => Cells[x, y];
-        }
-
-        public ProtoEntity[,] Cells { get; }
-
-        public bool? IsHomogenous { get; private set; }
-
-        public bool DetermineHomogenity(Type[] componentTypes)
-        {
-            for (int x = 0; x < Width; x++)
-            {
-                for (int y = 0; y < Height; y++)
-                {
-                    if (!Cells[x, y].Batch.ContainsAll(componentTypes))
-                    {
-                        return (bool)(IsHomogenous = false);
-                    }
-                }
-            }
-
-            return (bool)(IsHomogenous = true);
+            set => Cells[x, y] = value;
         }
 
         public bool IsPointWithinBounds(int x, int y)

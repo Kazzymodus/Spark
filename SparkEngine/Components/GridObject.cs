@@ -9,6 +9,7 @@
     /// <summary>
     /// A GridObject is an object that can occupy a coordinate on a grid, like a tile based terrain.
     /// </summary>
+    [Obsolete]
     public class GridObject : IComponent
     {
         #region Constructors

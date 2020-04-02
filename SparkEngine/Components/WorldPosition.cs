@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework;
 
 namespace SparkEngine.Components
 {
+    [Obsolete]
     public struct WorldPosition : IComponent
     {
         public float WorldX { get; set; }

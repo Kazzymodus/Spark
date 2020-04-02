@@ -12,8 +12,8 @@ using SparkEngine.Utilities;
 
 namespace SparkEngine.Systems
 {
-    interface IDrawSystem
+    public interface IDrawSystem
     {
-        void Draw(GameState state, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch, Matrix cameraTransform);
+        void Draw(DrawInfo drawInfo);
     }
 }

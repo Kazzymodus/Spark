@@ -30,7 +30,10 @@
             {
                 return value;
             }
-            else throw new Exception("No asset with key \"" + key + "\" was found.");
+            else
+            {
+                throw new Exception("No asset with key \"" + key + "\" was found.");
+            }
         }
 
         public void AddAsset(string key, TAsset asset)
