@@ -65,7 +65,7 @@
   <ItemGroup>
     <Compile Include="Components\ArrayGrid.cs" />
     <Compile Include="Components\BitMaskGrid.cs" />
-    <Compile Include="Components\ScreenGrid.cs" />
+    <Compile Include="Components\WrappingScreenGrid.cs" />
     <Compile Include="States\ComponentPool.cs" />
     <Compile Include="Systems\Batching\CellBatch.cs" />
     <Compile Include="Systems\Batching\CellData.cs" />
@@ -112,7 +112,7 @@
     <Compile Include="States\StateActivityLevel.cs" />
     <Compile Include="States\StateManager.cs" />
     <Compile Include="Systems\IDrawSystem.cs" />
-    <Compile Include="Systems\ScreenGridSystem.cs" />
+    <Compile Include="Systems\WrappingScreenGridSystem.cs" />
     <Compile Include="Systems\SpriteDrawSystem.cs" />
     <Compile Include="Time\OnTickEventArgs.cs" />
     <Compile Include="Time\TemporaryTicker.cs" />

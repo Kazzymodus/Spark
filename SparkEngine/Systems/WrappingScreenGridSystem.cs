@@ -15,9 +15,9 @@
     using SparkEngine.Utilities;
     using SparkEngine.Systems.Batching;
     
-    public class ScreenGridSystem : ComponentSystem<ScreenGrid>, IDrawSystem
+    public class WrappingScreenGridSystem : ComponentSystem<WrappingScreenGrid>, IDrawSystem
     {
-        public ScreenGridSystem(int maxSubs = GameState.MaxEntities)
+        public WrappingScreenGridSystem(int maxSubs = GameState.MaxEntities)
             : base(maxSubs)
         {
             
@@ -28,7 +28,7 @@
             base.Update(updateInfo);
         }
 
-        protected internal override void UpdateComponent(ref ScreenGrid grid, int index, UpdateInfo updateInfo)
+        protected internal override void UpdateComponent(ref WrappingScreenGrid grid, int index, UpdateInfo updateInfo)
         {
             //Sprite[,] cells = grid.Cells;
 
@@ -58,7 +58,7 @@
             return tile.ToPoint();
         }
 
-        public ScreenGrid CreateScreenFillingGrid(Texture2D texture, Point screenSize, Vector2 cellSize, Perspective perspective)
+        public WrappingScreenGrid CreateScreenFillingGrid(Texture2D texture, Point screenSize, Vector2 cellSize, Perspective perspective)
         {
             if (perspective == Perspective.Isometric)
                 throw new NotImplementedException();
@@ -66,7 +66,7 @@
             int width = (int)(screenSize.X / cellSize.X + 0.5f) - 2;
             int height = (int)(screenSize.Y / cellSize.Y + 0.5f) + 1;
 
-            return new ScreenGrid(texture, width, height, cellSize, perspective);
+            return new WrappingScreenGrid(texture, width, height, cellSize, perspective);
 
             //Random rand = new Random();
             //byte[,] frames = new byte[width, height];
@@ -85,7 +85,7 @@
             Vector2 cameraPosition = (Vector2)drawInfo.State.CameraPosition;
             Vector2[] layerOffsets = drawInfo.State.DrawLayers.GetLayerOffsets();
 
-            ScreenGrid[] grids = Subscribers.GetComponentsCompact();
+            WrappingScreenGrid[] grids = Subscribers.GetComponentsCompact();
 
             drawInfo.SpriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, drawInfo.CameraTransform);
 
@@ -97,7 +97,7 @@
             drawInfo.SpriteBatch.End();
         }
 
-        private void DrawGrid(ScreenGrid grid, DrawInfo drawInfo, Vector2 cameraPosition, Vector2[] layerOffsets)
+        private void DrawGrid(WrappingScreenGrid grid, DrawInfo drawInfo, Vector2 cameraPosition, Vector2[] layerOffsets)
         {
             float xOverflow = cameraPosition.X % grid.CellSize.X;
             float yOverflow = cameraPosition.Y % grid.CellSize.Y;
