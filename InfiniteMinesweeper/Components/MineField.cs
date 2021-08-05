@@ -1,17 +1,13 @@
-﻿namespace InfiniteMinesweeper.Components
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Microsoft.Xna.Framework;
-    using SparkEngine.Components;
+﻿using System;
+using Microsoft.Xna.Framework;
+using SparkEngine.Components;
 
+namespace InfiniteMinesweeper.Components
+{
     public struct MineField : IComponent
     {
-        public BitMaskGrid[] MineMasks { get; private set; }
-        public BitMaskGrid[] RevealMasks { get; private set; }
+        public BitMaskGrid[] MineMasks { get; }
+        public BitMaskGrid[] RevealMasks { get; }
 
         public int MasksPerRow { get; }
 
@@ -32,8 +28,8 @@
             WrapAround = wrapAround;
 
             MasksPerRow = width / BitMaskGrid.Size + 1;
-            int maskAmountY = height / BitMaskGrid.Size + 1;
-            int maskAmountTotal = MasksPerRow * maskAmountY;
+            var maskAmountY = height / BitMaskGrid.Size + 1;
+            var maskAmountTotal = MasksPerRow * maskAmountY;
             MineMasks = SeedMineField(width, height, tileSize, mineRatio, maskAmountTotal);
             RevealMasks = new BitMaskGrid[maskAmountTotal];
         }
@@ -42,8 +38,9 @@
 
         public void RevealCell(int x, int y)
         {
-            int maskIndex = GetMaskIndex(x, y);
-            RevealMasks[maskIndex][y % BitMaskGrid.Size] |= BitMaskGrid.MostSignificantBitOnly >> x % BitMaskGrid.Size;
+            var maskIndex = GetMaskIndex(x, y);
+            RevealMasks[maskIndex][y % BitMaskGrid.Size] |=
+                BitMaskGrid.MostSignificantBitOnly >> (x % BitMaskGrid.Size);
         }
 
         public void RevealCell(Point coordinates)
@@ -63,8 +60,9 @@
 
         public bool IsMine(int x, int y)
         {
-            int maskIndex = GetMaskIndex(x, y);
-            return (MineMasks[maskIndex][y % BitMaskGrid.Size] & BitMaskGrid.MostSignificantBitOnly >> x % BitMaskGrid.Size) != 0;
+            var maskIndex = GetMaskIndex(x, y);
+            return (MineMasks[maskIndex][y % BitMaskGrid.Size] &
+                    (BitMaskGrid.MostSignificantBitOnly >> (x % BitMaskGrid.Size))) != 0;
         }
 
         public bool IsMine(Point coordinates)
@@ -74,8 +72,9 @@
 
         public bool IsRevealed(int x, int y)
         {
-            int maskIndex = GetMaskIndex(x, y);
-            return (RevealMasks[maskIndex][y % BitMaskGrid.Size] & BitMaskGrid.MostSignificantBitOnly >> x % BitMaskGrid.Size) != 0;
+            var maskIndex = GetMaskIndex(x, y);
+            return (RevealMasks[maskIndex][y % BitMaskGrid.Size] &
+                    (BitMaskGrid.MostSignificantBitOnly >> (x % BitMaskGrid.Size))) != 0;
         }
 
         public bool IsRevealed(Point coordinates)
@@ -83,38 +82,36 @@
             return IsRevealed(coordinates.X, coordinates.Y);
         }
 
-        private static BitMaskGrid[] SeedMineField(int width, int height, Point tileSize, float mineRatio, int totalMasks)
+        private static BitMaskGrid[] SeedMineField(int width, int height, Point tileSize, float mineRatio,
+            int totalMasks)
         {
             mineRatio = MathHelper.Clamp(mineRatio, 0, 1);
-            bool invertSeeding = mineRatio > 0.5f;
+            var invertSeeding = mineRatio > 0.5f;
 
-            BitMaskGrid[] mineMasks = new BitMaskGrid[totalMasks];
+            var mineMasks = new BitMaskGrid[totalMasks];
 
             if (invertSeeding)
-            {
-                for (int i = 0; i < mineMasks.Length; i++)
-                {
+                for (var i = 0; i < mineMasks.Length; i++)
                     mineMasks[i].ResetToOne();
-                }
-            }
 
-            int seedAmount = (int)(width * height * (invertSeeding ? 1 - mineRatio : mineRatio));
-            uint seedValue = (uint)(invertSeeding ? 0 : 1);
-            Random mineLayer = new Random();
+            var seedAmount = (int) (width * height * (invertSeeding ? 1 - mineRatio : mineRatio));
+            var seedValue = (uint) (invertSeeding ? 0 : 1);
+            var mineLayer = new Random();
 
             while (seedAmount > 0)
             {
-                int x = mineLayer.Next(width);
-                int y = mineLayer.Next(height);
+                var x = mineLayer.Next(width);
+                var y = mineLayer.Next(height);
 
-                int maskIndex = y / BitMaskGrid.Size * (width / BitMaskGrid.Size + 1) + x / BitMaskGrid.Size;
+                var maskIndex = y / BitMaskGrid.Size * (width / BitMaskGrid.Size + 1) + x / BitMaskGrid.Size;
 
-                if ((mineMasks[maskIndex][y % BitMaskGrid.Size] & BitMaskGrid.MostSignificantBitOnly >> x % BitMaskGrid.Size) == 0 ^ invertSeeding)
-                {
-                    mineMasks[maskIndex][y % BitMaskGrid.Size] ^= BitMaskGrid.MostSignificantBitOnly >> x;
-                    //Console.WriteLine(mask[y % BitMaskGrid.Size]);
-                    seedAmount--;
-                }
+                if (!(((mineMasks[maskIndex][y % BitMaskGrid.Size] &
+                        (BitMaskGrid.MostSignificantBitOnly >> (x % BitMaskGrid.Size))) == 0) ^
+                      invertSeeding)) continue;
+
+                mineMasks[maskIndex][y % BitMaskGrid.Size] ^= BitMaskGrid.MostSignificantBitOnly >> x;
+                //Console.WriteLine(mask[y % BitMaskGrid.Size]);
+                seedAmount--;
             }
 
             return mineMasks;

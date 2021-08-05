@@ -1,9 +1,9 @@
-﻿namespace SparkEngine.Input
-{
-    using System.Linq;
-    using Microsoft.Xna.Framework;
-    using Microsoft.Xna.Framework.Input;
+﻿using System.Linq;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 
+namespace SparkEngine.Input
+{
     public class InputHandler
     {
         #region Fields
@@ -18,23 +18,16 @@
 
         #region Properties
 
-
         /// <summary>
-        /// Gets the screen position of the mouse.
+        ///     Gets the screen position of the mouse.
         /// </summary>
-        public Point MouseScreenPositionPoint
-        {
-            get { return Mouse.GetState().Position; }
-        }
+        public Point MouseScreenPositionPoint => Mouse.GetState().Position;
 
 
         /// <summary>
-        /// Gets the screen position of the mouse.
+        ///     Gets the screen position of the mouse.
         /// </summary>
-        public Vector2 MouseScreenPosition
-        {
-            get { return MouseScreenPositionPoint.ToVector2(); }
-        }
+        public Vector2 MouseScreenPosition => MouseScreenPositionPoint.ToVector2();
 
         #endregion
 
@@ -42,60 +35,45 @@
 
         public bool IsMouseDown(MouseButtons button)
         {
-            bool isMouseDown = false;
+            var isMouseDown = false;
 
-            if (button.HasFlag(MouseButtons.LMB))
-            {
-                isMouseDown |= mouseState.LeftButton == ButtonState.Pressed;
-            }
-            if (button.HasFlag(MouseButtons.RMB))
-            {
-                isMouseDown |= mouseState.RightButton == ButtonState.Pressed;
-            }
-            if (button.HasFlag(MouseButtons.MMB))
-            {
-                isMouseDown |= mouseState.MiddleButton == ButtonState.Pressed;
-            }
+            if (button.HasFlag(MouseButtons.LMB)) isMouseDown |= mouseState.LeftButton == ButtonState.Pressed;
+            if (button.HasFlag(MouseButtons.RMB)) isMouseDown |= mouseState.RightButton == ButtonState.Pressed;
+            if (button.HasFlag(MouseButtons.MMB)) isMouseDown |= mouseState.MiddleButton == ButtonState.Pressed;
 
             return isMouseDown;
         }
 
         public bool IsMousePressed(MouseButtons button)
         {
-            bool isMousePressed = false;
+            var isMousePressed = false;
 
             if (button.HasFlag(MouseButtons.LMB))
-            {
-                isMousePressed |= mouseState.LeftButton == ButtonState.Pressed && oldMouseState.LeftButton == ButtonState.Released;
-            }
+                isMousePressed |= mouseState.LeftButton == ButtonState.Pressed &&
+                                  oldMouseState.LeftButton == ButtonState.Released;
             if (button.HasFlag(MouseButtons.RMB))
-            {
-                isMousePressed |= mouseState.RightButton == ButtonState.Pressed && oldMouseState.RightButton == ButtonState.Released;
-            }
+                isMousePressed |= mouseState.RightButton == ButtonState.Pressed &&
+                                  oldMouseState.RightButton == ButtonState.Released;
             if (button.HasFlag(MouseButtons.MMB))
-            {
-                isMousePressed |= mouseState.MiddleButton == ButtonState.Pressed && oldMouseState.MiddleButton == ButtonState.Released;
-            }
+                isMousePressed |= mouseState.MiddleButton == ButtonState.Pressed &&
+                                  oldMouseState.MiddleButton == ButtonState.Released;
 
             return isMousePressed;
         }
 
         public bool IsMouseReleased(MouseButtons button)
         {
-            bool isMouseReleased = false;
+            var isMouseReleased = false;
 
             if (button.HasFlag(MouseButtons.LMB))
-            {
-                isMouseReleased |= mouseState.LeftButton == ButtonState.Released && oldMouseState.LeftButton == ButtonState.Pressed;
-            }
+                isMouseReleased |= mouseState.LeftButton == ButtonState.Released &&
+                                   oldMouseState.LeftButton == ButtonState.Pressed;
             if (button.HasFlag(MouseButtons.RMB))
-            {
-                isMouseReleased |= mouseState.RightButton == ButtonState.Released && oldMouseState.RightButton == ButtonState.Pressed;
-            }
+                isMouseReleased |= mouseState.RightButton == ButtonState.Released &&
+                                   oldMouseState.RightButton == ButtonState.Pressed;
             if (button.HasFlag(MouseButtons.MMB))
-            {
-                isMouseReleased |= mouseState.MiddleButton == ButtonState.Released && oldMouseState.MiddleButton == ButtonState.Pressed;
-            }
+                isMouseReleased |= mouseState.MiddleButton == ButtonState.Released &&
+                                   oldMouseState.MiddleButton == ButtonState.Pressed;
 
             return isMouseReleased;
         }

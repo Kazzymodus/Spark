@@ -1,11 +1,7 @@
-﻿namespace SparkEngine.Rendering
-{
-    using Microsoft.Xna.Framework;
-    using Microsoft.Xna.Framework.Graphics;
-    using SparkEngine.Components;
-    using System;
-    using System.Collections.Generic;
+﻿using Microsoft.Xna.Framework;
 
+namespace SparkEngine.Rendering
+{
     public class DrawLayer
     {
         public int ID { get; }
@@ -16,11 +12,8 @@
 
         public Vector2 UnitSize { get; }
 
-        public Vector2 DrawOffset
-        {
-            get { return Position * UnitSize; }
-        }
-        
+        public Vector2 DrawOffset => Position * UnitSize;
+
         /*
 
         public Rectangle GetBounds(Camera camera)

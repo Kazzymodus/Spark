@@ -1,14 +1,10 @@
-﻿namespace SparkEngine.Time
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 
+namespace SparkEngine.Time
+{
     /// <summary>
-    /// A ticker that will continuously fire in set intervals.
+    ///     A ticker that will continuously fire in set intervals.
     /// </summary>
     public class Ticker
     {
@@ -44,7 +40,7 @@
         #region Methods
 
         /// <summary>
-        /// Creates a ticker that continuously fires in set intervals.
+        ///     Creates a ticker that continuously fires in set intervals.
         /// </summary>
         /// <param name="interval">The length of the tick interval.</param>
         /// <returns></returns>
@@ -65,13 +61,11 @@
 
         internal virtual void Update(GameTime gameTime)
         {
-            Timer += (float)gameTime.ElapsedGameTime.TotalSeconds;
+            Timer += (float) gameTime.ElapsedGameTime.TotalSeconds;
 
             if (Timer > Interval)
             {
-                OnTickEventArgs args = new OnTickEventArgs
-                {
-                };
+                var args = new OnTickEventArgs();
                 OnTickEvent?.Invoke(this, args);
                 Timer = 0;
             }

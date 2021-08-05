@@ -1,31 +1,15 @@
-﻿namespace SparkEngine.Systems
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Microsoft.Xna.Framework;
-    using SparkEngine.Components;
-    using SparkEngine.States;
-    using SparkEngine.Input;
-    using Microsoft.Xna.Framework.Graphics;
-    using SparkEngine.Rendering;
+﻿using System.Collections.Generic;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using SparkEngine.Components;
+using SparkEngine.States;
 
+namespace SparkEngine.Systems
+{
     public class SpriteDrawSystem : ComponentSystem<Sprite>, IDrawSystem
     {
         public SpriteDrawSystem(int maxSubs = GameState.MaxEntities)
             : base(maxSubs)
-        {
-
-        }
-
-        protected internal override void Update(UpdateInfo updateInfo)
-        {
-            return;
-        }
-
-        protected internal override void UpdateComponent(ref Sprite sprite, int index, UpdateInfo updateInfo)
         {
         }
 
@@ -100,41 +84,45 @@
 
         public void Draw(DrawInfo drawInfo)
         {
-            Vector2[] layerOffsets = new Vector2[drawInfo.State.DrawLayers.Count];
+            var layerOffsets = new Vector2[drawInfo.State.DrawLayers.Count];
 
-            for (int i = 0; i < layerOffsets.Length; i++)
-            {
-                layerOffsets[i] = drawInfo.State.DrawLayers[i].DrawOffset;
-            }
+            for (var i = 0; i < layerOffsets.Length; i++) layerOffsets[i] = drawInfo.State.DrawLayers[i].DrawOffset;
 
             drawInfo.SpriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, drawInfo.CameraTransform);
 
-            Sprite[] sprites = Subscribers.GetComponentsCompact();
+            var sprites = Subscribers.GetComponentsCompact();
 
-            for (int i = 0; i < sprites.Length; i++)
-            {
-                DrawSprite(sprites[i], drawInfo, layerOffsets);
-            }
+            for (var i = 0; i < sprites.Length; i++) DrawSprite(sprites[i], drawInfo, layerOffsets);
 
             drawInfo.SpriteBatch.End();
         }
 
-        public void DrawSprite(Sprite sprite, DrawInfo drawInfo, Vector2[] layerOffsets)
+        protected internal override void Update(UpdateInfo updateInfo)
+        {
+        }
+
+        protected internal override void UpdateComponent(ref Sprite sprite, int index, UpdateInfo updateInfo)
+        {
+        }
+
+        private static void DrawSprite(Sprite sprite, DrawInfo drawInfo, IReadOnlyList<Vector2> layerOffsets)
         {
             Rectangle sourceRectangle;
 
             if (sprite.IsAnimated)
             {
-                int frameWidth = (int)sprite.FrameSize.X;
-                int frameHeight = (int)sprite.FrameSize.Y;
-                sourceRectangle = new Rectangle(sprite.FrameX * frameWidth, sprite.FrameY * frameHeight, frameWidth, frameHeight);
+                var frameWidth = (int) sprite.FrameSize.X;
+                var frameHeight = (int) sprite.FrameSize.Y;
+                sourceRectangle = new Rectangle(sprite.FrameX * frameWidth, sprite.FrameY * frameHeight, frameWidth,
+                    frameHeight);
             }
             else
             {
                 sourceRectangle = new Rectangle(Point.Zero, sprite.FrameSize.ToPoint());
             }
 
-            drawInfo.SpriteBatch.Draw(sprite.Texture, sprite.DrawPosition + layerOffsets[sprite.DrawLayer], sourceRectangle, sprite.ColorMask);
+            drawInfo.SpriteBatch.Draw(sprite.Texture, sprite.DrawPosition + layerOffsets[sprite.DrawLayer],
+                sourceRectangle, sprite.ColorMask);
         }
 
         //public Vector2 GetDrawPosition(Sprite sprite)

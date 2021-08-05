@@ -1,20 +1,10 @@
-﻿namespace SparkEngine.Systems
-{
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using SparkEngine.Components;
-    using SparkEngine.Input;
-    using Microsoft.Xna.Framework;
-    using Microsoft.Xna.Framework.Graphics;
-    using SparkEngine.Entities;
-    using SparkEngine.Rendering;
-    using SparkEngine.States;
-    using SparkEngine.Systems.Tasks;
+﻿using System.Collections.Generic;
+using SparkEngine.Components;
+using SparkEngine.States;
+using SparkEngine.Systems.Tasks;
 
+namespace SparkEngine.Systems
+{
     public abstract class ComponentSystem
     {
         protected readonly List<int> pendingRemovals = new List<int>();
@@ -27,7 +17,7 @@
         public bool IsUpdating { get; protected set; }
 
         public TaskManager TaskManager { get; protected set; }
-    
+
         public void ScheduleTask(int task, int source, int target, UpdateInfo updateInfo)
         {
             TaskManager.ScheduleTask(task, source, target, updateInfo);
@@ -40,15 +30,15 @@
 
     public abstract class ComponentSystem<T> : ComponentSystem where T : struct, IComponent
     {
-        protected ComponentPool<T> Subscribers { get; }
-
-        private Dictionary<int, T> pendingAdds = new Dictionary<int, T>();
+        private readonly Dictionary<int, T> pendingAdds = new Dictionary<int, T>();
 
         public ComponentSystem(int maxSubs = GameState.MaxEntities, int maxTasks = 0)
             : base(maxTasks)
         {
             Subscribers = new ComponentPool<T>(maxSubs, GameState.MaxEntities);
         }
+
+        protected ComponentPool<T> Subscribers { get; }
 
         //public ComponentSystem(int maxSubs = GameState.MaxEntities, Action<>)
 
@@ -79,22 +69,20 @@
 
         public virtual void OnAddComponent(ref T component, int owner, GameState gameState)
         {
-
         }
 
         public virtual void OnRemoveComponent(ref T component, int entity, GameState state)
         {
-
         }
 
         protected internal override void Update(UpdateInfo updateInfo)
         {
             IsUpdating = true;
 
-            T[] components = Subscribers.Components;
-            List<int> skipList = Subscribers.AvailableIndices;
+            var components = Subscribers.Components;
+            var skipList = Subscribers.AvailableIndices;
 
-            for (int i = 0; i < Subscribers.NextIndex; i++)
+            for (var i = 0; i < Subscribers.NextIndex; i++)
             {
                 if (skipList.Contains(i))
                 {
@@ -112,26 +100,18 @@
 
             if (pendingAdds.Count > 0)
             {
-                foreach (KeyValuePair<int, T> pending in pendingAdds)
-                {
+                foreach (var pending in pendingAdds)
                     if (!Subscribers.HasComponentOfEntity(pending.Key))
-                    {
                         AddComponent(pending.Value, pending.Key);
-                    }
-                }
 
                 pendingAdds.Clear();
             }
 
-            if (pendingRemovals.Count> 0)
+            if (pendingRemovals.Count > 0)
             {
-                foreach (int pending in pendingRemovals)
-                {
+                foreach (var pending in pendingRemovals)
                     if (Subscribers.HasComponentOfEntity(pending))
-                    {
                         RemoveComponent(pending);
-                    }
-                }
 
                 pendingRemovals.Clear();
             }
@@ -143,26 +123,18 @@
         {
             OnAddComponent(ref component, owner, state);
             if (IsUpdating)
-            {
                 pendingAdds.Add(owner, component);
-            }
             else
-            {
                 AddComponent(component, owner);
-            }
         }
 
         public virtual void DestroyComponent(T component, int owner, GameState state)
         {
             OnRemoveComponent(ref component, owner, state);
             if (IsUpdating)
-            {
                 pendingRemovals.Add(owner);
-            }
             else
-            {
                 RemoveComponent(owner);
-            }
         }
 
         private void AddComponent(T component, int owner)
@@ -172,7 +144,7 @@
 
         private void RemoveComponent(int owner)
         {
-            Subscribers.Remove(owner);           
+            Subscribers.Remove(owner);
         }
     }
 }

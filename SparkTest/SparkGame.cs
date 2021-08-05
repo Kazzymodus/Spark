@@ -1,38 +1,19 @@
-﻿namespace SparkTest
-{
-    using System;
-    using System.Collections.Generic;
-    using Microsoft.Xna.Framework;
-    using Microsoft.Xna.Framework.Graphics;
-    using Microsoft.Xna.Framework.Input;
-    using SparkEngine.Debug;
-    using SparkEngine.Assets;
-    using SparkEngine.Input;
-    using SparkEngine.States;
-    using SparkEngine.Components;
-    using SparkEngine.Rendering;
-    using SparkTest.Components;
+﻿using System;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using SparkEngine.Assets;
+using SparkEngine.Components;
+using SparkEngine.Debug;
+using SparkEngine.Input;
+using SparkEngine.Rendering;
+using SparkEngine.States;
+using SparkTest.Components;
 
+namespace SparkTest
+{
     public class SparkGame : Game
     {
-        #region Fields
-
-        private GraphicsDeviceManager graphics;
-        private SpriteBatch spriteBatch;
-        private static bool quitFlag;
-
-        private StateManager stateManager = new StateManager();
-
-        private AssetDictionary<Texture2D> textures;
-        private AssetDictionary<SpriteFont> fonts;
-        private AssetDictionary<Texture2D> uiTextures;
-
-        GameState menu;
-        GameState level;
-        GameState options;
-
-        #endregion
-
         #region Constructors
 
         public SparkGame()
@@ -43,7 +24,7 @@
                 // 1152x648 is the highest windowed resolution that fits on my screen.
 
                 PreferredBackBufferWidth = 1152,
-                PreferredBackBufferHeight = 648,
+                PreferredBackBufferHeight = 648
                 //IsFullScreen = true                
             };
 
@@ -52,10 +33,28 @@
 
         #endregion
 
+        #region Fields
+
+        private readonly GraphicsDeviceManager graphics;
+        private SpriteBatch spriteBatch;
+        private static bool quitFlag;
+
+        private readonly StateManager stateManager = new StateManager();
+
+        private AssetDictionary<Texture2D> textures;
+        private AssetDictionary<SpriteFont> fonts;
+        private AssetDictionary<Texture2D> uiTextures;
+
+        private GameState menu;
+        private GameState level;
+        private GameState options;
+
+        #endregion
+
         #region Methods
 
         /// <summary>
-        /// Calling this method will quit the application at the end of the current Update call.
+        ///     Calling this method will quit the application at the end of the current Update call.
         /// </summary>
         public static void QuitApplication()
         {
@@ -94,8 +93,8 @@
         }
 
         /// <summary>
-        /// UnloadContent will be called once per game and is the place to unload
-        /// game-specific content.
+        ///     UnloadContent will be called once per game and is the place to unload
+        ///     game-specific content.
         /// </summary>
         protected override void UnloadContent()
         {
@@ -103,8 +102,8 @@
         }
 
         /// <summary>
-        /// Allows the game to run logic such as updating the world,
-        /// checking for collisions, gathering input, and playing audio.
+        ///     Allows the game to run logic such as updating the world,
+        ///     checking for collisions, gathering input, and playing audio.
         /// </summary>
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
@@ -127,14 +126,11 @@
 
             base.Update(gameTime);
 
-            if (quitFlag)
-            {
-                Exit();
-            }
+            if (quitFlag) Exit();
         }
 
         /// <summary>
-        /// This is called when the game should draw itself.
+        ///     This is called when the game should draw itself.
         /// </summary>
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
@@ -197,25 +193,29 @@
             //DrawLayer cartTerrainLayer = menu.CreateNewDrawLayer("CartTerrain", false, new Vector2(32), new Vector2(400, 0));
             DrawLayer structureLayer = level.CreateNewDrawLayer("Structures", false, new Vector2(64, 32));
 
-            BatchedGrid <ProtoEntity> isoTerrain = BatchedGrid<ProtoEntity>.CreateIsometricGrid(new Vector2(0, 0), false, textures.GetAsset("GridTile"), textures.GetAsset("GrassTile"));
+            BatchedGrid<ProtoEntity> isoTerrain = BatchedGrid<ProtoEntity>.CreateIsometricGrid(new Vector2(0, 0), false,
+                textures.GetAsset("GridTile"), textures.GetAsset("GrassTile"));
             level.CreateNewEntity("IsoTerrain", isoTerrain);
 
             //Terrain cartTerrain = Terrain.CreateSquareTerrain(new Vector2(4, 0), new Vector2(10), textures.GetAsset("GridTile"), textures.GetAsset("GrassTopDown"));
             //menu.CreateNewEntity("CartTerrain", cartTerrain);
 
-            Random rand = new Random();
+            var rand = new Random();
 
-            for (int i = 0; i < 500; i++)
+            for (var i = 0; i < 500; i++)
             {
-                Vector2 pos = new Vector2(rand.Next(100), rand.Next(100));
-                GridObject gridObject = GridObject.CreateIsometricGridObject(textures.GetAsset("Obelisk"), structureLayer, pos, new Vector2(2), 0);
+                var pos = new Vector2(rand.Next(100), rand.Next(100));
+                var gridObject = GridObject.CreateIsometricGridObject(textures.GetAsset("Obelisk"),
+                    structureLayer, pos, new Vector2(2));
                 level.CreateNewEntity("Structures", gridObject);
 
                 pos = new Vector2(rand.Next(100), rand.Next(100));
-                gridObject = GridObject.CreateIsometricGridObject(textures.GetAsset("House"), structureLayer, pos, new Vector2(1), 0);
+                gridObject = GridObject.CreateIsometricGridObject(textures.GetAsset("House"), structureLayer, pos,
+                    new Vector2(1));
                 level.CreateNewEntity("Structures", gridObject);
             }
-            CameraController cameraController = new CameraController(menu.Camera);
+
+            var cameraController = new CameraController(menu.Camera);
             level.CreateNewEntity(cameraController);
 
             options = new GameState("Options", StateActivityLevel.Inactive);

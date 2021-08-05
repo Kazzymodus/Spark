@@ -1,13 +1,12 @@
-﻿namespace SparkEngine.Components
-{
-    using System;
-    using System.Collections.Generic;
-    using Microsoft.Xna.Framework;
-    using Microsoft.Xna.Framework.Graphics;
-    using SparkEngine.Rendering;
+﻿using System;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using SparkEngine.Rendering;
 
+namespace SparkEngine.Components
+{
     /// <summary>
-    /// A GridObject is an object that can occupy a coordinate on a grid, like a tile based terrain.
+    ///     A GridObject is an object that can occupy a coordinate on a grid, like a tile based terrain.
     /// </summary>
     [Obsolete]
     public class GridObject : IComponent
@@ -24,39 +23,14 @@
 
         #endregion
 
-        #region Public Properties
-
-        /// <summary>
-        /// The position of the object in coordinates, where 0.0 is the upper left corner.
-        /// </summary>
-        public Vector2 Coordinates { get; private set; }
-
-        /// <summary>
-        /// The (clockwise) rotations of the object. Each rotation signifies 90 degrees.
-        /// </summary>
-        public int Rotation { get; private set; }
-
-        /// <summary>
-        /// The dimensions in tiles of the object.
-        /// </summary>
-        public Vector2 Dimensions { get; }
-
-        /// <summary>
-        /// The sprite data used for rendering the object.
-        /// </summary>
-        public Sprite SpriteData { get; }
-
-        public LayerSortMethod LayerSortMethod { get; private set; } = LayerSortMethod.HeightAsDistance;
-
-        #endregion
-
         #region Methods
 
-        public static GridObject CreateIsometricGridObject(Texture2D spriteSheet, DrawLayer drawLayer, Vector2 coordinates, Vector2 dimensions, int rotation = 0)
+        public static GridObject CreateIsometricGridObject(Texture2D spriteSheet, DrawLayer drawLayer,
+            Vector2 coordinates, Vector2 dimensions, int rotation = 0)
         {
-            Sprite spriteData = Sprite.CreateIsometricSprite(spriteSheet, new Unit(0, 0), dimensions, 4, 1);
+            var spriteData = Sprite.CreateIsometricSprite(spriteSheet, new Unit(0, 0), dimensions, 4);
 
-            GridObject gridObject = new GridObject(spriteData, coordinates, dimensions, rotation);
+            var gridObject = new GridObject(spriteData, coordinates, dimensions, rotation);
             return gridObject;
         }
 
@@ -144,6 +118,32 @@
 
         //    //return rotatedCoords;
         //}
+
+        #endregion
+
+        #region Public Properties
+
+        /// <summary>
+        ///     The position of the object in coordinates, where 0.0 is the upper left corner.
+        /// </summary>
+        public Vector2 Coordinates { get; }
+
+        /// <summary>
+        ///     The (clockwise) rotations of the object. Each rotation signifies 90 degrees.
+        /// </summary>
+        public int Rotation { get; }
+
+        /// <summary>
+        ///     The dimensions in tiles of the object.
+        /// </summary>
+        public Vector2 Dimensions { get; }
+
+        /// <summary>
+        ///     The sprite data used for rendering the object.
+        /// </summary>
+        public Sprite SpriteData { get; }
+
+        public LayerSortMethod LayerSortMethod { get; } = LayerSortMethod.HeightAsDistance;
 
         #endregion
     }

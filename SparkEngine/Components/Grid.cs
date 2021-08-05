@@ -1,12 +1,7 @@
-﻿namespace SparkEngine.Components
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 
+namespace SparkEngine.Components
+{
     public class Grid : IComponent
     {
         public Grid(Perspective perspective, int width, int height, bool wrapAround)

@@ -1,31 +1,32 @@
-﻿namespace SparkEngine.Systems
+﻿using System;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using SparkEngine.Components;
+using SparkEngine.Entities;
+using SparkEngine.States;
+using SparkEngine.Utilities;
+
+namespace SparkEngine.Systems
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Microsoft.Xna.Framework;
-    using Microsoft.Xna.Framework.Graphics;
-    using SparkEngine.Components;
-    using SparkEngine.Input;
-    using SparkEngine.Entities;
-    using SparkEngine.Rendering;
-    using SparkEngine.States;
-    using SparkEngine.Utilities;
-    using SparkEngine.Systems.Batching;
-    
     public class WrappingScreenGridSystem : ComponentSystem<WrappingScreenGrid>, IDrawSystem
     {
         public WrappingScreenGridSystem(int maxSubs = GameState.MaxEntities)
             : base(maxSubs)
         {
-            
         }
 
-        protected internal override void Update(UpdateInfo updateInfo)
+        public void Draw(DrawInfo drawInfo)
         {
-            base.Update(updateInfo);
+            var cameraPosition = (Vector2) drawInfo.State.CameraPosition;
+            var layerOffsets = drawInfo.State.DrawLayers.GetLayerOffsets();
+
+            var grids = Subscribers.GetComponentsCompact();
+
+            drawInfo.SpriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, drawInfo.CameraTransform);
+
+            for (var i = 0; i < grids.Length; i++) DrawGrid(grids[i], drawInfo, cameraPosition, layerOffsets);
+
+            drawInfo.SpriteBatch.End();
         }
 
         protected internal override void UpdateComponent(ref WrappingScreenGrid grid, int index, UpdateInfo updateInfo)
@@ -41,30 +42,26 @@
             //}
         }
 
-        protected Point GetCursorTile(Vector2 gridPosition, Vector2 unit, Vector2 cameraPosition, Vector2 cursorPosition)
+        protected static Point GetCursorTile(Vector2 gridPosition, Vector2 unit, Vector2 cameraPosition,
+            Vector2 cursorPosition)
         {
-            Vector2 tile = -gridPosition + cameraPosition + cursorPosition;
+            var tile = -gridPosition + cameraPosition + cursorPosition;
             tile.X /= unit.X;
-            if (tile.X < 0)
-            {
-                tile.X--;
-            }
+            if (tile.X < 0) tile.X--;
             tile.Y /= unit.Y;
-            if (tile.Y < 0)
-            {
-                tile.Y--;
-            }
+            if (tile.Y < 0) tile.Y--;
 
             return tile.ToPoint();
         }
 
-        public WrappingScreenGrid CreateScreenFillingGrid(Texture2D texture, Point screenSize, Vector2 cellSize, Perspective perspective)
+        public static WrappingScreenGrid CreateScreenFillingGrid(Texture2D texture, Point screenSize, Vector2 cellSize,
+            Perspective perspective)
         {
             if (perspective == Perspective.Isometric)
                 throw new NotImplementedException();
 
-            int width = (int)(screenSize.X / cellSize.X + 0.5f) - 2;
-            int height = (int)(screenSize.Y / cellSize.Y + 0.5f) + 1;
+            var width = (int) (screenSize.X / cellSize.X + 0.5f) - 2;
+            var height = (int) (screenSize.Y / cellSize.Y + 0.5f) + 1;
 
             return new WrappingScreenGrid(texture, width, height, cellSize, perspective);
 
@@ -80,67 +77,47 @@
             //return new ScreenTextureGrid(texture, frames, cellSize, perspective);
         }
 
-        public void Draw(DrawInfo drawInfo)
+        private void DrawGrid(WrappingScreenGrid grid, DrawInfo drawInfo, Vector2 cameraPosition,
+            Vector2[] layerOffsets)
         {
-            Vector2 cameraPosition = (Vector2)drawInfo.State.CameraPosition;
-            Vector2[] layerOffsets = drawInfo.State.DrawLayers.GetLayerOffsets();
+            var xOverflow = cameraPosition.X % grid.CellSize.X;
+            var yOverflow = cameraPosition.Y % grid.CellSize.Y;
 
-            WrappingScreenGrid[] grids = Subscribers.GetComponentsCompact();
+            var startPosition = cameraPosition - new Vector2(xOverflow, yOverflow); // - grid.CellSize;
+            var spriteBatch = drawInfo.SpriteBatch;
 
-            drawInfo.SpriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, drawInfo.CameraTransform);
+            var sourceRectangles = new Rectangle[(int) (grid.Texture.Width / grid.CellSize.X)];
 
-            for (int i = 0; i < grids.Length; i++)
-            {
-                DrawGrid(grids[i], drawInfo, cameraPosition, layerOffsets);
-            }
-
-            drawInfo.SpriteBatch.End();
-        }
-
-        private void DrawGrid(WrappingScreenGrid grid, DrawInfo drawInfo, Vector2 cameraPosition, Vector2[] layerOffsets)
-        {
-            float xOverflow = cameraPosition.X % grid.CellSize.X;
-            float yOverflow = cameraPosition.Y % grid.CellSize.Y;
-
-            Vector2 startPosition = cameraPosition - new Vector2(xOverflow, yOverflow);// - grid.CellSize;
-            SpriteBatch spriteBatch = drawInfo.SpriteBatch;
-            
-            Rectangle[] sourceRectangles = new Rectangle[(int)(grid.Texture.Width / grid.CellSize.X)];
-
-            for (int i = 0; i < sourceRectangles.Length; i++)
-            {
-                sourceRectangles[i] = new Rectangle((int)grid.CellSize.X * i, 0, (int)grid.CellSize.X, (int)grid.CellSize.Y);
-            }
+            for (var i = 0; i < sourceRectangles.Length; i++)
+                sourceRectangles[i] =
+                    new Rectangle((int) grid.CellSize.X * i, 0, (int) grid.CellSize.X, (int) grid.CellSize.Y);
 
             if (grid.Perspective == Perspective.Standard)
             {
-                Vector2 tileOffset = startPosition;
+                var tileOffset = startPosition;
 
-                int xIndex = grid.XHead;
-                int yIndex = grid.YHead;
+                var xIndex = grid.XHead;
+                var yIndex = grid.YHead;
 
-                for (int x = 0; x < grid.Width; x++)
+                for (var x = 0; x < grid.Width; x++)
                 {
-                    for (int y = 0; y < grid.Height; y++)
+                    for (var y = 0; y < grid.Height; y++)
                     {
-                        spriteBatch.Draw(grid.Texture, tileOffset, sourceRectangles[grid.FrameGrid[xIndex, yIndex]], Color.White /*new Color(xIndex / (float)grid.Width, 1f, 1f)*/);
+                        spriteBatch.Draw(grid.Texture, tileOffset, sourceRectangles[grid.FrameGrid[xIndex, yIndex]],
+                            Color.White /*new Color(xIndex / (float)grid.Width, 1f, 1f)*/);
                         //DrawCell(grid[x, y], spriteBatch, tileOffset);
                         tileOffset.Y += grid.CellSize.Y;
-                        if (++yIndex >= grid.Height)
-                        {
-                            yIndex = 0;
-                        }
+                        if (++yIndex >= grid.Height) yIndex = 0;
                     }
 
                     tileOffset.X += grid.CellSize.X;
                     tileOffset.Y = startPosition.Y;
                     if (++xIndex >= grid.Width)
-                    {
                         xIndex = 0;
-                        //return;
-                    }
+                    //return;
                 }
             }
+
             /*
 
             Point viewportSize = new Point(drawInfo.GraphicsDevice.Viewport.Width, drawInfo.GraphicsDevice.Viewport.Height);
@@ -208,7 +185,6 @@
 
         private void DrawScreenGrid(ArrayGrid<Sprite> grid, DrawInfo drawInfo, Vector2 cameraPosition)
         {
-            
         }
 
         private void DrawCell(Sprite sprite, SpriteBatch spriteBatch, Vector2 offset)
@@ -217,9 +193,10 @@
 
             if (sprite.IsAnimated)
             {
-                int frameWidth = (int)sprite.FrameSize.X;
-                int frameHeight = (int)sprite.FrameSize.Y;
-                sourceRectangle = new Rectangle(sprite.FrameX * frameWidth, sprite.FrameY * frameHeight, frameWidth, frameHeight);
+                var frameWidth = (int) sprite.FrameSize.X;
+                var frameHeight = (int) sprite.FrameSize.Y;
+                sourceRectangle = new Rectangle(sprite.FrameX * frameWidth, sprite.FrameY * frameHeight, frameWidth,
+                    frameHeight);
             }
             else
             {
@@ -229,9 +206,10 @@
             spriteBatch.Draw(sprite.Texture, sprite.DrawPosition + offset, sourceRectangle, sprite.ColorMask);
         }
 
-        private Rectangle GetVisibleTiles(ArrayGrid<Sprite> grid, Vector2 cameraPosition, Point viewportSize, Vector2 layerOffset)
+        private Rectangle GetVisibleTiles(ArrayGrid<Sprite> grid, Vector2 cameraPosition, Point viewportSize,
+            Vector2 layerOffset)
         {
-            Vector2 gridPosition = grid.Position + layerOffset;
+            var gridPosition = grid.Position + layerOffset;
 
             Rectangle visibleCoordinates;
             Point offset;
@@ -256,21 +234,23 @@
         }
 
         /// <summary>
-        /// Gets the range of coordinates currently in camera view.
+        ///     Gets the range of coordinates currently in camera view.
         /// </summary>
         /// <returns>A rectangle containing all visible coordinates.</returns>
-        protected Rectangle GetVisibleCartesianCoordinates(Vector2 cameraPosition, Point viewportSize, Vector2 unit, int padding = 0)
+        protected static Rectangle GetVisibleCartesianCoordinates(Vector2 cameraPosition, Point viewportSize, Vector2 unit,
+            int padding = 0)
         {
-            Point location = Projector.PixelsToCartesian(cameraPosition.ToPoint(), unit) - new Point(padding);
-            Point size = Projector.PixelsToCartesian(viewportSize, unit) + new Point(padding * 2);
+            var location = Projector.PixelsToCartesian(cameraPosition.ToPoint(), unit) - new Point(padding);
+            var size = Projector.PixelsToCartesian(viewportSize, unit) + new Point(padding * 2);
 
             return new Rectangle(location, size);
         }
 
-        protected Rectangle GetVisibleIsometricCoordinates(Vector2 cameraPosition, Point viewportSize, Vector2 unit, int padding = 0)
+        protected static Rectangle GetVisibleIsometricCoordinates(Vector2 cameraPosition, Point viewportSize, Vector2 unit,
+            int padding = 0)
         {
-            Point location = Projector.PixelsToIsometric(cameraPosition, unit).ToPoint() - new Point(padding);
-            Point size = Projector.PixelsToIsometric(viewportSize, unit) + new Point(padding * 2);
+            var location = Projector.PixelsToIsometric(cameraPosition, unit).ToPoint() - new Point(padding);
+            var size = Projector.PixelsToIsometric(viewportSize, unit) + new Point(padding * 2);
 
             return new Rectangle(location, size);
         }
@@ -658,7 +638,6 @@
         //    if (cloneAmount > totalCells / 2)
         //    {
         //        isStencil = true;
-
 
 
         //    }

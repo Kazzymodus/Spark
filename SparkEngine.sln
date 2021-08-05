@@ -5,10 +5,6 @@ VisualStudioVersion = 15.0.28307.106
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SparkEngine", "SparkEngine\SparkEngine.csproj", "{DA514F5A-0945-4F6F-B46D-C6C266F0B19C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SparkTest", "SparkTest\SparkTest.csproj", "{E1963A87-D850-4E8D-B744-C6EF1DF4A0B5}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShootingRange", "ShootingRange\ShootingRange.csproj", "{616158A5-82B5-4D3F-87AD-205960EBDDD5}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfiniteMinesweeper", "InfiniteMinesweeper\InfiniteMinesweeper.csproj", "{131FBF51-1774-4590-A69C-F5095CC88082}"
 EndProject
 Global
@@ -27,18 +23,6 @@ Global
 		{DA514F5A-0945-4F6F-B46D-C6C266F0B19C}.Release|x64.Build.0 = Release|x64
 		{DA514F5A-0945-4F6F-B46D-C6C266F0B19C}.Release|x86.ActiveCfg = Release|x86
 		{DA514F5A-0945-4F6F-B46D-C6C266F0B19C}.Release|x86.Build.0 = Release|x86
-		{E1963A87-D850-4E8D-B744-C6EF1DF4A0B5}.Debug|x64.ActiveCfg = Debug|x86
-		{E1963A87-D850-4E8D-B744-C6EF1DF4A0B5}.Debug|x86.ActiveCfg = Debug|x86
-		{E1963A87-D850-4E8D-B744-C6EF1DF4A0B5}.Debug|x86.Build.0 = Debug|x86
-		{E1963A87-D850-4E8D-B744-C6EF1DF4A0B5}.Release|x64.ActiveCfg = Release|x86
-		{E1963A87-D850-4E8D-B744-C6EF1DF4A0B5}.Release|x86.ActiveCfg = Release|x86
-		{E1963A87-D850-4E8D-B744-C6EF1DF4A0B5}.Release|x86.Build.0 = Release|x86
-		{616158A5-82B5-4D3F-87AD-205960EBDDD5}.Debug|x64.ActiveCfg = Debug|x86
-		{616158A5-82B5-4D3F-87AD-205960EBDDD5}.Debug|x86.ActiveCfg = Debug|x86
-		{616158A5-82B5-4D3F-87AD-205960EBDDD5}.Debug|x86.Build.0 = Debug|x86
-		{616158A5-82B5-4D3F-87AD-205960EBDDD5}.Release|x64.ActiveCfg = Release|x86
-		{616158A5-82B5-4D3F-87AD-205960EBDDD5}.Release|x86.ActiveCfg = Release|x86
-		{616158A5-82B5-4D3F-87AD-205960EBDDD5}.Release|x86.Build.0 = Release|x86
 		{131FBF51-1774-4590-A69C-F5095CC88082}.Debug|x64.ActiveCfg = Debug|x86
 		{131FBF51-1774-4590-A69C-F5095CC88082}.Debug|x64.Build.0 = Debug|x86
 		{131FBF51-1774-4590-A69C-F5095CC88082}.Debug|x86.ActiveCfg = Debug|x86

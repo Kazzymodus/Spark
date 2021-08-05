@@ -1,22 +1,13 @@
-﻿namespace InfiniteMinesweeper.Systems
-{
-    using System;
-    using Microsoft.Xna.Framework;
-    using Microsoft.Xna.Framework.Graphics;
-    using SparkEngine.Components;
-    using SparkEngine.Entities;
-    using SparkEngine.Input;
-    using SparkEngine.States;
-    using SparkEngine.Systems;
-    using SparkEngine.Systems.Tasks;
-    using Components;
+﻿using InfiniteMinesweeper.Components;
+using SparkEngine.Systems;
 
+namespace InfiniteMinesweeper.Systems
+{
     internal sealed class MineFieldSystem : ComponentSystem<MineField>
     {
         internal MineFieldSystem()
             : base(1)
         {
-
         }
 
         protected override void UpdateComponent(ref MineField mineField, int index, UpdateInfo updateInfo)
@@ -72,7 +63,5 @@
             }
             */
         }
-
-        
     }
 }

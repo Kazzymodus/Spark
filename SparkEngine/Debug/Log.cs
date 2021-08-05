@@ -1,12 +1,17 @@
-﻿namespace SparkEngine.Debug
-{
-    using System.Collections.Generic;
-    using Microsoft.Xna.Framework;
-    using Microsoft.Xna.Framework.Graphics;
-    using SparkEngine.Rendering;
+﻿using System.Collections.Generic;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
+namespace SparkEngine.Debug
+{
     public class Log
     {
+        #region Properties
+
+        public Color LogColour { get; set; } = Color.White;
+
+        #endregion
+
         #region Fields
 
         private const int ListMessageDistance = 10;
@@ -14,13 +19,7 @@
         private static SpriteFont messageFont;
 
         private readonly List<LogMessage> messages = new List<LogMessage>();
-        private int listMessages = 0;
-
-        #endregion
-
-        #region Properties
-
-        public Color LogColour { get; set; } = Color.White;
+        private int listMessages;
 
         #endregion
 
@@ -60,22 +59,19 @@
 
         public void AddListMessage(string text, Color colour)
         {
-            Vector2 drawPosition = new Vector2(0, listMessages++ * ListMessageDistance);
+            var drawPosition = new Vector2(0, listMessages++ * ListMessageDistance);
             AddMessage(text, drawPosition, colour);
         }
-        
+
         private void AddMessage(string text, Vector2 position, Color colour)
         {
-            LogMessage message = new LogMessage(text, position, colour);
+            var message = new LogMessage(text, position, colour);
             messages.Add(message);
         }
 
         internal void DrawMessages(SpriteBatch spriteBatch)
         {
-            foreach (LogMessage message in messages)
-            {
-                message.Draw(spriteBatch, messageFont);
-            }
+            foreach (var message in messages) message.Draw(spriteBatch, messageFont);
 
             messages.Clear();
             listMessages = 0;

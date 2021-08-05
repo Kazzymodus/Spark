@@ -1,13 +1,9 @@
-﻿namespace SparkEngine.Components
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Microsoft.Xna.Framework;
-    using Microsoft.Xna.Framework.Graphics;
+﻿using System;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
+namespace SparkEngine.Components
+{
     public struct Sprite : IComponent
     {
         #region Constructors
@@ -19,7 +15,7 @@
             Anchor = anchor;
             ColorMask = color ?? Color.White;
 
-            DrawPosition = default(Vector2);
+            DrawPosition = default;
             DrawLayer = 0;
 
             FrameX = 0;
@@ -47,7 +43,7 @@
         public bool IsAnimated { get; }
 
         public int FrameX { get; set; }
-        
+
         public int FrameY { get; set; }
 
         #endregion
@@ -60,17 +56,16 @@
             FrameY = y;
         }
 
-        public static Sprite CreateIsometricSprite(Texture2D texture, Vector2 tileSize, Vector2 dimensions, int rotations = 1, int animationLength = 1)
+        public static Sprite CreateIsometricSprite(Texture2D texture, Vector2 tileSize, Vector2 dimensions,
+            int rotations = 1, int animationLength = 1)
         {
             if (rotations <= 0 || animationLength <= 0)
-            {
                 throw new ArgumentException("rotations and animationLength must be larger than 0.");
-            }
 
-            int frameX = texture.Width / rotations;
-            int frameY = texture.Height / animationLength;
-            Vector2 frameSize = new Vector2(frameX, frameY);
-            Vector2 anchor = GetIsometricSpriteAnchor(frameSize, dimensions, tileSize);
+            var frameX = texture.Width / rotations;
+            var frameY = texture.Height / animationLength;
+            var frameSize = new Vector2(frameX, frameY);
+            var anchor = GetIsometricSpriteAnchor(frameSize, dimensions, tileSize);
 
             return new Sprite(texture, frameSize, anchor);
         }
@@ -80,14 +75,14 @@
             return CreateTileSprite(sprite.Texture, sprite.FrameSize, sprite.ColorMask);
         }
 
-        public static Sprite CreateTileSprite(Texture2D texture, int horizontalFrames = 1, int verticalFrames = 1, Color? color = null)
+        public static Sprite CreateTileSprite(Texture2D texture, int horizontalFrames = 1, int verticalFrames = 1,
+            Color? color = null)
         {
             if (horizontalFrames <= 0 || verticalFrames <= 0)
-            {
-                throw new ArgumentOutOfRangeException("The amount of horizontal and vertical frames must be larger than 0");
-            }
+                throw new ArgumentOutOfRangeException(
+                    "The amount of horizontal and vertical frames must be larger than 0");
 
-            Vector2 frameSize = new Vector2(texture.Width / horizontalFrames, texture.Height / verticalFrames);
+            var frameSize = new Vector2(texture.Width / horizontalFrames, texture.Height / verticalFrames);
 
             return CreateTileSprite(texture, frameSize, color);
         }
@@ -99,14 +94,14 @@
 
         private static Vector2 GetSquareSpriteAnchor(Vector2 frameSize, Vector2 dimensions, Vector2 unit)
         {
-            float anchorY = frameSize.Y - (dimensions.Y * unit.Y);
+            var anchorY = frameSize.Y - dimensions.Y * unit.Y;
             return new Vector2(0, anchorY);
         }
 
         private static Vector2 GetIsometricSpriteAnchor(Vector2 frameSize, Vector2 dimensions, Vector2 unit)
         {
-            float anchorX = unit.X * (dimensions.X * 0.5f - 0.5f);
-            float anchorY = frameSize.Y - unit.Y;
+            var anchorX = unit.X * (dimensions.X * 0.5f - 0.5f);
+            var anchorY = frameSize.Y - unit.Y;
 
             return new Vector2(anchorX, anchorY);
         }

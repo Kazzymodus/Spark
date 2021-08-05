@@ -1,45 +1,27 @@
-﻿namespace InfiniteMinesweeper.Systems
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Microsoft.Xna.Framework;
-    using Microsoft.Xna.Framework.Input;
-    using SparkEngine.Components;
-    using SparkEngine.Input;
-    using SparkEngine.States;
-    using SparkEngine.Systems;
+﻿using Microsoft.Xna.Framework.Input;
+using SparkEngine.Components;
+using SparkEngine.States;
+using SparkEngine.Systems;
 
-    class MineCameraSystem : CameraSystem
+namespace InfiniteMinesweeper.Systems
+{
+    internal class MineCameraSystem : CameraSystem
     {
+        private const int Speed = 8;
+
         public MineCameraSystem(int maxSubs = GameState.MaxEntities)
             : base(maxSubs)
         {
-
         }
 
         protected override void UpdateComponent(ref Camera camera, int index, UpdateInfo updateInfo)
         {
-            InputHandler input = updateInfo.Input;
+            var input = updateInfo.Input;
 
-            if (input.IsKeyDown(Keys.Left))
-            {
-                camera.PositionX -= 4;
-            }
-            if (input.IsKeyDown(Keys.Right))
-            {
-                camera.PositionX += 4;
-            }
-            if (input.IsKeyDown(Keys.Up))
-            {
-                camera.PositionY -= 4;
-            }
-            if (input.IsKeyDown(Keys.Down))
-            {
-                camera.PositionY += 4;
-            }
+            if (input.IsKeyDown(Keys.Left)) camera.PositionX -= Speed;
+            if (input.IsKeyDown(Keys.Right)) camera.PositionX += Speed;
+            if (input.IsKeyDown(Keys.Up)) camera.PositionY -= Speed;
+            if (input.IsKeyDown(Keys.Down)) camera.PositionY += Speed;
 
             base.UpdateComponent(ref camera, index, updateInfo);
         }

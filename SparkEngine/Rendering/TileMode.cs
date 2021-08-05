@@ -1,24 +1,27 @@
 ﻿namespace SparkEngine.Rendering
 {
     /// <summary>
-    /// Determines what shape the rendererer considers the grid tiles to be for rendering purpose.
+    ///     Determines what shape the rendererer considers the grid tiles to be for rendering purpose.
     /// </summary>
     public enum TileMode
     {
         /// <summary>
-        /// Doesn't use tiles.
+        ///     Doesn't use tiles.
         /// </summary>
         None,
+
         /// <summary>
-        /// Tiles are square.
+        ///     Tiles are square.
         /// </summary>
         Square,
+
         /// <summary>
-        /// Tiles are isometric.
+        ///     Tiles are isometric.
         /// </summary>
         Isometric,
+
         /// <summary>
-        /// Tiles are hexagonal. Let's not use this one yet.
+        ///     Tiles are hexagonal. Let's not use this one yet.
         /// </summary>
         Hexagonal
     }

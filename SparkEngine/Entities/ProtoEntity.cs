@@ -1,11 +1,10 @@
-﻿namespace SparkEngine.Entities
-{ 
-    using System;
-    using System.Linq;
-    using SparkEngine.Components;
+﻿using SparkEngine.Components;
 
+namespace SparkEngine.Entities
+{
     public class ProtoEntity
     {
+        private IComponent[] components;
         //public ProtoEntity()
         //{
 
@@ -16,12 +15,7 @@
             this.components = components;
         }
 
-        private IComponent[] components;
-
-        public ComponentBatch Batch
-        {
-            get => components;
-        }
+        public ComponentBatch Batch => components;
 
         public ref IComponent[] GetComponentsByReference()
         {
@@ -30,32 +24,23 @@
 
         public void AddComponent<T>(T component) where T : struct, IComponent
         {
-            int newLength = components.Length + 1;
-            IComponent[] oldArray = components;
+            var newLength = components.Length + 1;
+            var oldArray = components;
             components = new IComponent[newLength];
 
-            for (int i = 0; i < newLength - 1; i++)
-            {
-                components[i] = oldArray[i];
-            }
+            for (var i = 0; i < newLength - 1; i++) components[i] = oldArray[i];
 
             components[newLength - 1] = component;
         }
 
         public override bool Equals(object obj)
         {
-            if (obj == null || !(obj is ProtoEntity protoEntity) || components.Length != protoEntity.components.Length)
-            {
-                return false;
-            }
+            if (obj == null || !(obj is ProtoEntity protoEntity) ||
+                components.Length != protoEntity.components.Length) return false;
 
-            for (int i = 0; i < components.Length; i++)
-            {
+            for (var i = 0; i < components.Length; i++)
                 if (!components[i].Equals(protoEntity.components[i]))
-                {
                     return false;
-                }
-            }
 
             return true;
         }
@@ -64,12 +49,9 @@
         {
             unchecked
             {
-                int hash = 17;
+                var hash = 17;
 
-                for (int i = 0; i < components.Length; i++)
-                {
-                    hash = hash * 23 + components[i]?.GetHashCode() ?? 29;
-                }
+                for (var i = 0; i < components.Length; i++) hash = hash * 23 + components[i]?.GetHashCode() ?? 29;
 
                 return hash;
             }

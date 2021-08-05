@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using SparkEngine.Components;
-using SparkEngine.Input;
 using SparkEngine.States;
 
 namespace SparkEngine.Systems
@@ -15,34 +9,25 @@ namespace SparkEngine.Systems
         public CameraSystem(int maxSubs = GameState.MaxEntities)
             : base(maxSubs)
         {
-
         }
 
         protected internal override void UpdateComponent(ref Camera camera, int index, UpdateInfo updateInfo)
         {
             if (camera.ConstraintMode == CameraConstraints.Constrained)
-            {
                 ClampCamera(ref camera);
-            }
-            else if (camera.ConstraintMode == CameraConstraints.WrapAround)
-            {
-                WrapCamera(ref camera);
-            }
+            else if (camera.ConstraintMode == CameraConstraints.WrapAround) WrapCamera(ref camera);
             camera.Transform = Matrix.CreateTranslation(new Vector3(-camera.PositionX, -camera.PositionY, 0f));
         }
 
         public override void OnRemoveComponent(ref Camera component, int entity, GameState state)
         {
-            if (state.RenderCamera == entity)
-            {
-                state.ClearRenderCamera();
-            }
+            if (state.RenderCamera == entity) state.ClearRenderCamera();
         }
 
         #region Methods
 
         /// <summary>
-        /// Calculate the camera's transform. Should only be called once per frame, at the beginning of the draw cycle.
+        ///     Calculate the camera's transform. Should only be called once per frame, at the beginning of the draw cycle.
         /// </summary>
         internal Matrix CalculateTransform(Vector2 position)
         {
@@ -64,38 +49,28 @@ namespace SparkEngine.Systems
         //}
 
         /// <summary>
-        /// Clamps the camera to its constraints.
+        ///     Clamps the camera to its constraints.
         /// </summary>
-        private void ClampCamera(ref Camera camera)
+        private static void ClampCamera(ref Camera camera)
         {
-            float positionX = camera.PositionX;
-            float positionY = camera.PositionY;
-            Rectangle constraints = camera.Constraints;
+            var positionX = camera.PositionX;
+            var positionY = camera.PositionY;
+            var constraints = camera.Constraints;
 
             if (positionX < constraints.Left)
-            {
                 camera.PositionX = constraints.Left;
-            }
-            else if (positionX > constraints.Right)
-            {
-                camera.PositionX = constraints.Right;
-            }
+            else if (positionX > constraints.Right) camera.PositionX = constraints.Right;
 
             if (positionY < constraints.Top)
-            {
                 camera.PositionY = constraints.Top;
-            }
-            else if (positionY > constraints.Bottom)
-            {
-                camera.PositionY = constraints.Bottom;
-            }
+            else if (positionY > constraints.Bottom) camera.PositionY = constraints.Bottom;
         }
 
-        private void WrapCamera(ref Camera camera)
+        private static void WrapCamera(ref Camera camera)
         {
-            float positionX = camera.PositionX;
-            float positionY = camera.PositionY;
-            Rectangle constraints = camera.Constraints;
+            var positionX = camera.PositionX;
+            var positionY = camera.PositionY;
+            var constraints = camera.Constraints;
 
             float overshoot = 0;
 

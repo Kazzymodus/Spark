@@ -1,17 +1,13 @@
-﻿namespace SparkEngine.Time
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Microsoft.Xna.Framework;
+﻿using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 
+namespace SparkEngine.Time
+{
     public static class TimeManager
     {
         #region Fields
 
-        private static List<TemporaryTicker> temporaryTickers = new List<TemporaryTicker>();
+        private static readonly List<TemporaryTicker> temporaryTickers = new List<TemporaryTicker>();
 
         #endregion
 
@@ -21,9 +17,9 @@
         {
             // Probably should do this differently.
 
-            for (int i = 0; i < temporaryTickers.Count; i++)
+            for (var i = 0; i < temporaryTickers.Count; i++)
             {
-                TemporaryTicker ticker = temporaryTickers[i];
+                var ticker = temporaryTickers[i];
                 if (ticker.IsActive)
                 {
                     ticker.Update(gameTime); // This is bad.

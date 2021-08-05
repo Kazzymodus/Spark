@@ -1,14 +1,5 @@
 ﻿namespace SparkEngine.Components
 {
-    using System;
-    using System.Collections.Generic;
-    using Microsoft.Xna.Framework;
-    using Microsoft.Xna.Framework.Graphics;
-    using SparkEngine.Input;
-    using SparkEngine.Rendering;
-    using SparkEngine.States;
-    using SparkEngine.Systems.Batching;
-
     public struct BatchedGrid : IComponent
     {
         /*
@@ -42,5 +33,5 @@
             return IsPointWithinBounds(coordinate.X, coordinate.Y);
         }
         */
-    }   
+    }
 }

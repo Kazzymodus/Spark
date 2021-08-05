@@ -1,14 +1,10 @@
-﻿namespace SparkEngine.Systems.Batching
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Components;
-    using Microsoft.Xna.Framework;
-    using SparkEngine.Entities;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.Xna.Framework;
+using SparkEngine.Entities;
 
+namespace SparkEngine.Systems.Batching
+{
     public class GridBatcher
     {
         private const int MaxTileAmount = 1000000;
@@ -79,12 +75,17 @@
 
         //        throw new Exception("Whatever");
         //    }
-
     }
 
     public class BatchTracker
     {
         private const float BaseHeuristic = 1f;
+        private readonly List<Point> tiles = new List<Point>();
+        private int height;
+        private int width;
+
+        private int x;
+        private int y;
 
         public BatchTracker(ProtoEntity stamp, int x, int y)
         {
@@ -92,10 +93,14 @@
             tiles.Add(new Point(x, y));
         }
 
+        public ProtoEntity Stamp { get; }
+        public bool BatchOpen { get; private set; }
+        public float Heuristics { get; private set; } = BaseHeuristic;
+
         public CellBatch CloseBatch()
         {
             //
-            
+
             if (!BatchOpen)
                 Console.WriteLine("ERROR: Batch not open!");
 
@@ -112,7 +117,7 @@
 
             if (BatchOpen)
                 Console.WriteLine("ERROR: Batch already open!");
-            
+
             //
 
             BatchOpen = true;
@@ -122,22 +127,12 @@
 
         public float GetTileHeuristicsScore(int x, int y)
         {
-            for (int i = 0; i < tiles.Count; i++)
+            for (var i = 0; i < tiles.Count; i++)
             {
-                Point coordinates = tiles[i];
+                var coordinates = tiles[i];
             }
 
             return 1; // TEMP
         }
-
-        private int x;
-        private int y;
-        private int width;
-        private int height;
-
-        public ProtoEntity Stamp { get; }
-        public bool BatchOpen { get; private set; }
-        public float Heuristics { get; private set; } = BaseHeuristic;
-        private List<Point> tiles = new List<Point>();
     }
 }

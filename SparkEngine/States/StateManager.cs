@@ -1,22 +1,19 @@
-﻿namespace SparkEngine.States
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using Microsoft.Xna.Framework;
-    using Microsoft.Xna.Framework.Graphics;
-    using SparkEngine.Rendering;
-    using SparkEngine.Debug;
-    using SparkEngine.Input;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using SparkEngine.Input;
 
+namespace SparkEngine.States
+{
     public class StateManager
     {
         #region Fields
 
-        private Stack<GameState> states = new Stack<GameState>();
-        private List<GameState> pushRequests = new List<GameState>();
+        private readonly Stack<GameState> states = new Stack<GameState>();
+        private readonly List<GameState> pushRequests = new List<GameState>();
 
-        private InputHandler inputHandler = new InputHandler();
+        private readonly InputHandler inputHandler = new InputHandler();
 
         #endregion
 
@@ -35,45 +32,35 @@
         {
             inputHandler.Update();
 
-            IEnumerable<GameState> reversedStates = states.Reverse();
+            var reversedStates = states.Reverse();
 
-            foreach(GameState state in reversedStates)
+            foreach (var state in reversedStates)
             {
-                StateActivityLevel activityLevel = state.ActivityLevel;
+                var activityLevel = state.ActivityLevel;
 
                 if (activityLevel != StateActivityLevel.Paused && activityLevel != StateActivityLevel.Inactive)
-                {
                     state.Update(gameTime, inputHandler);
-                }
             }
 
-            if (pushRequests.Count > 0)
-            {
-                PushNewRequests();
-            }
+            if (pushRequests.Count > 0) PushNewRequests();
         }
 
         public void DrawStates(GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
         {
-            IEnumerable<GameState> reversedStates = states.Reverse();
+            var reversedStates = states.Reverse();
 
-            foreach (GameState state in reversedStates)
+            foreach (var state in reversedStates)
             {
-                StateActivityLevel activityLevel = state.ActivityLevel;
+                var activityLevel = state.ActivityLevel;
 
                 if (activityLevel != StateActivityLevel.Hidden && activityLevel != StateActivityLevel.Inactive)
-                {
                     state.Draw(graphicsDevice, spriteBatch);
-                }
             }
         }
 
         private void PushNewRequests()
         {
-            foreach (GameState state in pushRequests)
-            {
-                states.Push(state);
-            }
+            foreach (var state in pushRequests) states.Push(state);
 
             pushRequests.Clear();
         }

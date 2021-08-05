@@ -1,15 +1,15 @@
-﻿namespace SparkEngine.Debug
-{
-    using Microsoft.Xna.Framework;
-    using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
+namespace SparkEngine.Debug
+{
     public struct LogMessage
     {
         #region Fields
 
-        private string message;
-        private Vector2 drawPosition;
-        private Color colour;
+        private readonly string message;
+        private readonly Vector2 drawPosition;
+        private readonly Color colour;
 
         #endregion
 

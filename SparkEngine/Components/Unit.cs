@@ -1,14 +1,10 @@
-﻿namespace SparkEngine.Components
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 
+namespace SparkEngine.Components
+{
     [Obsolete]
-    public struct Unit : IComponent 
+    public struct Unit : IComponent
     {
         public float LengthX { get; set; }
         public float LengthY { get; set; }
@@ -21,7 +17,8 @@
 
         public static implicit operator Unit(Vector2 unit)
         {
-            return new Unit(unit.X, unit.Y);
+            var (x, y) = unit;
+            return new Unit(x, y);
         }
 
         public static implicit operator Vector2(Unit unit)

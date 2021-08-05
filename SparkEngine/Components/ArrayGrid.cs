@@ -1,15 +1,11 @@
-﻿namespace SparkEngine.Components
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 
+namespace SparkEngine.Components
+{
     public struct ArrayGrid<T> : IComponent where T : struct, IComponent
     {
-        public ArrayGrid(Perspective perspective, T[,] grid, Vector2 tileSize, bool wrapAround = false, bool isScreenGrid = false)
+        public ArrayGrid(Perspective perspective, T[,] grid, Vector2 tileSize, bool wrapAround = false,
+            bool isScreenGrid = false)
         {
             Position = Vector2.Zero;
 
@@ -26,7 +22,7 @@
             IsScreenGrid = isScreenGrid;
         }
 
-        public Vector2 Position { get; set; }
+        public Vector2 Position { get; }
 
         public int Width { get; }
 
@@ -57,7 +53,8 @@
 
         public bool IsPointWithinBounds(Point coordinate)
         {
-            return IsPointWithinBounds(coordinate.X, coordinate.Y);
+            var (x, y) = coordinate;
+            return IsPointWithinBounds(x, y);
         }
     }
 }
